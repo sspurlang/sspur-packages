@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "name": "sessions",
+  "description": "Session tokens stored as SHA-256 digests, secure cookies and CSRF tokens for HTTP services",
+  "repository": "https://github.com/utkarshavardhana/sspur-sessions",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/utkarshavardhana/sspur-sessions.git",
+      "tag": "v0.1.0",
+      "commit": "a761bfb566344118895235f72bbf7e082156e0a9",
+      "hash": "4ueasiow6lnfnhp5qdl2qavrwrenowki2rdwysjiis2asjetv2oq",
+      "snapshot": {
+        "url": "https://github.com/utkarshavardhana/sspur-packages/releases/download/sessions-0.1.0/sessions-0.1.0.tar",
+        "sha256": "dc52dc96503fa6d714bf51b1395e043cc22fdde2f922ca73459744276eeec993",
+        "size": 10240
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T16:11:49Z",
+      "publisher": "utkarshavardhana",
+      "request": 6,
+      "api": [
+        {
+          "name": "Token",
+          "kind": "type",
+          "sig": "pub type Token = {token: Str, digest: Str} derive Eq, Show",
+          "sig_hash": "fwjruumwvg6tv5k4wgu6v6alm4",
+          "hash": "ceoib7t4khnmnf2uvp7t7vryz4qub6jsr4kravnc3pih6bvnbp4a",
+          "effects": [],
+          "doc": "A new session: `token` goes to the client, `digest` is what the server stores."
+        },
+        {
+          "name": "CookieOpts",
+          "kind": "type",
+          "sig": "pub type CookieOpts = {name: Str where _.len > 0 and _.chars.all(c => c.is_alpha or c == \"_\" or c == \"-\"), path: Str, max_age: Int where _ >= 0, same_site: Str where _ == \"Lax\" or _ == \"Strict\", secure: Bool} derive Eq, Show",
+          "sig_hash": "oa54jiohjd2xon3j23tidu4zum",
+          "hash": "4nk7bgzlpymn5ppgo7u5p3e33mpe2xuisejlqmyh2ix6226mwouq",
+          "effects": [],
+          "doc": "How the session cookie is set. `secure` should be true whenever the site is served over HTTPS."
+        },
+        {
+          "name": "new_token",
+          "kind": "fn",
+          "sig": "fn new_token() -> Token ! rand",
+          "sig_hash": "l7rikig4cynmgi6oxsnctitjyy",
+          "hash": "aibdlyoriegcdqm4gi3r4pdpabe2opvswfu234exbkuxgwr36wiq",
+          "effects": [
+            "rand"
+          ],
+          "doc": "A new random token and its digest."
+        },
+        {
+          "name": "digest",
+          "kind": "fn",
+          "sig": "fn digest(token: Str) -> Str",
+          "sig_hash": "6iw5wjpggbp7qg63muss55cbpi",
+          "hash": "53krb54bpq7762kakka4sigpntrlmbrdrswdorouy25tdnmmzhnq",
+          "effects": [],
+          "doc": "The digest a server stores for `token`."
+        },
+        {
+          "name": "cookie_opts",
+          "kind": "fn",
+          "sig": "fn cookie_opts(name: Str, days: Int, secure: Bool) -> CookieOpts",
+          "sig_hash": "ttpliyitc4p6d7lkef63nc2wiu",
+          "hash": "hyv7bzkheprjod62r76ysjjk33dec2iyso4wrlaiyazaj2grd7pq",
+          "effects": [],
+          "doc": "Secure defaults: HttpOnly always, SameSite=Lax, Path=/, and a lifetime of `days`."
+        },
+        {
+          "name": "set_cookie",
+          "kind": "fn",
+          "sig": "fn set_cookie(o: CookieOpts, value: Str) -> (Str, Str)",
+          "sig_hash": "tvlxdnjk77bbxbc2euqfxsb45i",
+          "hash": "reyjmpnf2vujtqfipcufntif2c7ckwrtdhgt2is6t66vdxbbpiaq",
+          "effects": [],
+          "doc": "The `set-cookie` header that gives the client `value`."
+        },
+        {
+          "name": "clear_cookie",
+          "kind": "fn",
+          "sig": "fn clear_cookie(o: CookieOpts) -> (Str, Str)",
+          "sig_hash": "baa2jdi2uohhvuj2eab4cyycai",
+          "hash": "l4nmqdgthyw6kj4hlf6bzeav4rxqsgfhkeu2lvfgzjssbdwmzuua",
+          "effects": [],
+          "doc": "The `set-cookie` header that removes the cookie."
+        },
+        {
+          "name": "bearer",
+          "kind": "fn",
+          "sig": "fn bearer(req: Request) -> Opt[Str]",
+          "sig_hash": "lcuvo5ff34btoxyiydw3blpstu",
+          "hash": "wwbkflq5nfl2auhgvgzknu2vstwfffdnfkkl7m3hhtl5vf7dvkca",
+          "effects": [],
+          "doc": "The token sent as `Authorization: Bearer <token>`, if any."
+        },
+        {
+          "name": "csrf_token",
+          "kind": "fn",
+          "sig": "fn csrf_token(key: Secret[Str], binding: Str) -> Str",
+          "sig_hash": "ehul42sul3ei6ab4s3pv4af3sq",
+          "hash": "amj7ccnqj6h722r56xmbbek2t6bylbdbxz5crik3gvktwtq3dcwq",
+          "effects": [],
+          "doc": "ANCHOR: csrf\nThe CSRF token for a form or request bound to `binding` (a session digest, or the value of an\nanonymous cookie): an HMAC under the server's key, so it can't be forged or moved to another\nsession."
+        },
+        {
+          "name": "csrf_ok",
+          "kind": "fn",
+          "sig": "fn csrf_ok(key: Secret[Str], binding: Str, given: Str) -> Bool",
+          "sig_hash": "terb6h56dbszxcqllcyvaiu5ka",
+          "hash": "htkeolqy6jukcihv54pvqgnxlkswrg46ae5344g7nj5nbk3sb4wq",
+          "effects": [],
+          "doc": "Whether `given` is the CSRF token for `binding`, compared in constant time."
+        }
+      ]
+    }
+  ]
+}

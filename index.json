@@ -20,6 +20,16 @@
       "updated": "2026-10-16T16:11:24Z",
       "yanked": false,
       "deprecated": null
+    },
+    {
+      "name": "sessions",
+      "description": "Session tokens stored as SHA-256 digests, secure cookies and CSRF tokens for HTTP services",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T16:11:49Z",
+      "yanked": false,
+      "deprecated": null
     }
   ]
 }
