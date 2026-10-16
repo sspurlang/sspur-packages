@@ -1,0 +1,997 @@
+{
+  "schema": 1,
+  "name": "numeric",
+  "description": "Number theory, exact rounding modes, primes, combinatorics and statistics for Int, F64 and BigInt, pure and tested in both tiers",
+  "repository": "https://github.com/sspurlang/sspur-numeric",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-numeric.git",
+      "tag": "v0.1.0",
+      "commit": "3a9747ca64b082a9634093e6640511213f657494",
+      "hash": "bejoirtui4i7fjpskkacoijkxaacszazktqjtdt7lo2oeedall6a",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/numeric-0.1.0/numeric-0.1.0.tar",
+        "sha256": "83741fbe45041b137b4b9bfda940feb56831cdb4d6f3adae334bc11b6b99b443",
+        "size": 81408
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:04:46Z",
+      "publisher": "utkarshavardhana",
+      "request": 18,
+      "api": [
+        {
+          "name": "int_max",
+          "kind": "fn",
+          "sig": "fn int_max() -> Int",
+          "sig_hash": "jpppxe57kulu7yt7gwdfedy26q",
+          "hash": "rf6f52ahuo7ldjanbsr2wdgzpj7khoxyidiuszkckj3dxtmsjmja",
+          "effects": [],
+          "doc": "The largest Int, 2^63 - 1."
+        },
+        {
+          "name": "int_min",
+          "kind": "fn",
+          "sig": "fn int_min() -> Int",
+          "sig_hash": "n6yvt5rks4nl54s3to77xzyqi4",
+          "hash": "nov76qihqqkfaapknupkchfjujio2ra5235rv275tpus6hsgei7q",
+          "effects": [],
+          "doc": "The smallest Int, -2^63."
+        },
+        {
+          "name": "checked_abs",
+          "kind": "fn",
+          "sig": "fn checked_abs(x: Int) -> Opt[Int]",
+          "sig_hash": "fu23pxdpx4ps2nzhjsoyoxlrwu",
+          "hash": "zpfxhwuml3vepavl3j2gziek7xracopse4dzlsq2hhzptfgccv3q",
+          "effects": [],
+          "doc": "The absolute value of `x`, or `none` for `int_min()`, whose absolute value is not an Int."
+        },
+        {
+          "name": "sign_int",
+          "kind": "fn",
+          "sig": "fn sign_int(x: Int) -> Int",
+          "sig_hash": "ftxr5ukl4lwglc6zg54xcltsb4",
+          "hash": "oftukz3u7i7lauakrgsfiv2mkfsn3omi6xhn4kx4be5dwmuj6fva",
+          "effects": [],
+          "doc": "The sign of `x`: -1, 0 or 1."
+        },
+        {
+          "name": "sign_f64",
+          "kind": "fn",
+          "sig": "fn sign_f64(x: F64) -> F64",
+          "sig_hash": "6l3o5piyvjavj35zazd7vdc2lm",
+          "hash": "mkk455siyupsn32bwxy2hr7rlurq7xpxrlvwrxtdmh56deq7mg5a",
+          "effects": [],
+          "doc": "The sign of `x`: -1.0, 1.0, or `x` itself for zeros (keeping -0.0) and NaN."
+        },
+        {
+          "name": "gcd_all",
+          "kind": "fn",
+          "sig": "fn gcd_all(xs: List[Int]) -> Int",
+          "sig_hash": "mkax244zxjc7exjokyg4oh4iom",
+          "hash": "334szqael3rmek3hzhgs2qd6tbqh2jbbwzkosj5bveqxmjgcjbba",
+          "effects": [],
+          "doc": "The greatest common divisor of every number in `xs`, never negative; 0 for an empty list or\nall zeros. Traps, like `Int.gcd`, only when the result would be 2^63 (only `int_min()` and zeros)."
+        },
+        {
+          "name": "checked_lcm",
+          "kind": "fn",
+          "sig": "fn checked_lcm(a: Int, b: Int) -> Opt[Int]",
+          "sig_hash": "k22kbgyibyby6ys2nroclwax3u",
+          "hash": "rk5hsxnuaxkiodlliuuowt7rglhjfljfodl4qk2fy5zuc563eylq",
+          "effects": [],
+          "doc": "The least common multiple of `a` and `b`, never negative (0 if either is 0), or `none` when\nit doesn't fit in an Int."
+        },
+        {
+          "name": "lcm_all",
+          "kind": "fn",
+          "sig": "fn lcm_all(xs: List[Int]) -> Opt[Int]",
+          "sig_hash": "buoelc4rsxh6rhrxcuw4gf5cdu",
+          "hash": "zrm6fx4qlvwqefb7t4ktqsmcnlfew2cnfhgpa3tnmcvantairw5q",
+          "effects": [],
+          "doc": "The least common multiple of every number in `xs`, never negative: 1 for an empty list, 0\nif any is 0, `none` when it doesn't fit in an Int."
+        },
+        {
+          "name": "egcd",
+          "kind": "fn",
+          "sig": "fn egcd(a: Int where _ != -9223372036854775807 - 1, b: Int where _ != -9223372036854775807 - 1) -> (Int, Int, Int)",
+          "sig_hash": "culnmznpus4yekupyq4haa3mi4",
+          "hash": "jheny235azivgjwddpab3tbz6gvme3vzbceycxbsnywpenidvl5a",
+          "effects": [],
+          "doc": "The extended Euclidean algorithm: `(g, x, y)` with `g = gcd(a, b) >= 0` and\n`a * x + b * y == g`. Neither argument may be `int_min()`."
+        },
+        {
+          "name": "is_coprime",
+          "kind": "fn",
+          "sig": "fn is_coprime(a: Int, b: Int) -> Bool",
+          "sig_hash": "xzxharp7px4xzzz5c3o77nfqu4",
+          "hash": "i2lpar5vmnmgtn2ezhbfaqrd7tfxizjal43q6mxxxfsckgy3ic6a",
+          "effects": [],
+          "doc": "Whether `a` and `b` have no common divisor above 1."
+        },
+        {
+          "name": "floor_div",
+          "kind": "fn",
+          "sig": "fn floor_div(a: Int, b: Int where _ != 0) -> Int",
+          "sig_hash": "unbcs5ekedmyrgxnfsptqsn2xi",
+          "hash": "ujqpbuuhdu6k5oogwi5lgstshblazygjjfnagmxnfx45g6ogqanq",
+          "effects": [],
+          "doc": "Division rounded toward negative infinity, like Python's `//`: `floor_div(-7, 2) == -4`.\nTraps on `int_min() / -1`, like `/`."
+        },
+        {
+          "name": "floor_mod",
+          "kind": "fn",
+          "sig": "fn floor_mod(a: Int, b: Int where _ != 0) -> Int",
+          "sig_hash": "emhp5vbomjhajyauvfodxmdluq",
+          "hash": "wf6g4fuf7nzilznymo7ict2vplamsjjjuc4bf234honij4lerdwq",
+          "effects": [],
+          "doc": "The remainder that goes with `floor_div`, with the sign of `b`, like Python's `%`:\n`floor_mod(-7, 2) == 1`, `floor_mod(7, -2) == -1`."
+        },
+        {
+          "name": "ceil_div",
+          "kind": "fn",
+          "sig": "fn ceil_div(a: Int, b: Int where _ != 0) -> Int",
+          "sig_hash": "5rw5z54va2oib5n7dxrj6xa2xu",
+          "hash": "dr4zidc6j7ljs3fbiqe2cmqbitm45ptzcp5bbvhjwvjkbauc7lqa",
+          "effects": [],
+          "doc": "Division rounded toward positive infinity: `ceil_div(7, 2) == 4`, `ceil_div(-7, 2) == -3`."
+        },
+        {
+          "name": "euclid_mod",
+          "kind": "fn",
+          "sig": "fn euclid_mod(a: Int, b: Int where _ != 0) -> Int",
+          "sig_hash": "5ojunc2hskcqccrmyudobkd5py",
+          "hash": "eyw4aaxu3ftitmvenuam3kggdmgyfiy4spua3aneksyxhcoeqo7a",
+          "effects": [],
+          "doc": "The Euclidean remainder: always in `0 .. |b|`, whatever the signs: `euclid_mod(-7, 3) == 2`.\nThis is the \"mod that is never negative\"."
+        },
+        {
+          "name": "euclid_div",
+          "kind": "fn",
+          "sig": "fn euclid_div(a: Int, b: Int where _ != 0) -> Int",
+          "sig_hash": "zmg4cqj6nlbezjnxpktfh7ewnm",
+          "hash": "uoynjyk72hwc3jnzgylmrrq6n6hx33dquu4udxrrkojoo7hy2hdq",
+          "effects": [],
+          "doc": "The Euclidean quotient: `a == b * euclid_div(a, b) + euclid_mod(a, b)`."
+        },
+        {
+          "name": "addmod",
+          "kind": "fn",
+          "sig": "fn addmod(a: Int, b: Int, m: Int where _ > 0) -> Int",
+          "sig_hash": "bmdjmirmqp7zrn7t4d3waxlucy",
+          "hash": "mx55gehemz726wafy5ypobeghsbqlzvgupt7kjeyrr6yghlg2jba",
+          "effects": [],
+          "doc": "`(a + b) mod m` in `0 .. m`, without overflow for any Int inputs."
+        },
+        {
+          "name": "mulmod",
+          "kind": "fn",
+          "sig": "fn mulmod(a: Int, b: Int, m: Int where _ > 0) -> Int",
+          "sig_hash": "qad4gn6bw5dzix5mp4cudkl2ga",
+          "hash": "sbvfzufsxfkm5o5odqvu3lj6taq7h2yaf3evp7ojcabloi7mhdva",
+          "effects": [],
+          "doc": "`(a * b) mod m` in `0 .. m`, without overflow for any Int inputs (it uses BigInt when the\nproduct doesn't fit)."
+        },
+        {
+          "name": "mod_pow",
+          "kind": "fn",
+          "sig": "fn mod_pow(base: Int, exp: Int where _ >= 0, m: Int where _ > 0) -> Int",
+          "sig_hash": "lci22xu4m7fr2b6zxvb4apwzte",
+          "hash": "iyjty3vgxvr36jlwzjtbeqa4nabvkpp4s333576oz5ezdqhi73lq",
+          "effects": [],
+          "doc": "`base ^ exp mod m` in `0 .. m`, by square and multiply; `mod_pow(x, 0, m)` is `1 mod m`."
+        },
+        {
+          "name": "mod_inv",
+          "kind": "fn",
+          "sig": "fn mod_inv(a: Int, m: Int where _ > 0) -> Opt[Int]",
+          "sig_hash": "zque6rsjbewsc32rxzs5goq37m",
+          "hash": "i2l5vnhgeft4zujhulpvygc2polgvwt56gsmmwp4vjgx3l2u6arq",
+          "effects": [],
+          "doc": "The inverse of `a` modulo `m`: `x` in `0 .. m` with `a * x mod m == 1 mod m`, or `none`\nwhen `a` and `m` are not coprime."
+        },
+        {
+          "name": "isqrt",
+          "kind": "fn",
+          "sig": "fn isqrt(n: Int where _ >= 0) -> Int",
+          "sig_hash": "obe6golpnpwsoikj5vqv4pf2va",
+          "hash": "3djadiirqs2vzpt7jwdyeix6qfqhl4syzboct6cwmsb3ejispv7a",
+          "effects": [],
+          "doc": "The integer square root: the largest `r` with `r * r <= n`."
+        },
+        {
+          "name": "iroot",
+          "kind": "fn",
+          "sig": "fn iroot(n: Int where _ >= 0, k: Int where _ >= 1) -> Int",
+          "sig_hash": "gmz4vf7l4hlqxxhfmd6xcoupvu",
+          "hash": "4e4goavsvcam6tdd7miqsosvrikysahecmg3pg42jtxdpwi2l6va",
+          "effects": [],
+          "doc": "The integer `k`-th root: the largest `r >= 0` with `r ^ k <= n`."
+        },
+        {
+          "name": "icbrt",
+          "kind": "fn",
+          "sig": "fn icbrt(n: Int) -> Int",
+          "sig_hash": "6oyuvohkcjj2s7f5fnkrtyaf6m",
+          "hash": "ff2b56kg2bxdvtjdmhv2c7wh4afhja2kcacvenz5mloqrq3ygoaq",
+          "effects": [],
+          "doc": "The integer cube root, rounded toward negative infinity, for any `n`:\n`icbrt(27) == 3`, `icbrt(26) == 2`, `icbrt(-9) == -3`."
+        },
+        {
+          "name": "checked_pow",
+          "kind": "fn",
+          "sig": "fn checked_pow(base: Int, exp: Int where _ >= 0) -> Opt[Int]",
+          "sig_hash": "wbs4ylretsyohixotf6m563nyu",
+          "hash": "scszlv4ti3yymzkevkig3dhj3kntuafjclpz5fggizglnlu557aq",
+          "effects": [],
+          "doc": "`base ^ exp`, or `none` if it overflows. `checked_pow(0, 0) == some(1)`.\nFor exact big powers use `big(base).pow(exp)`."
+        },
+        {
+          "name": "is_perfect_square",
+          "kind": "fn",
+          "sig": "fn is_perfect_square(n: Int) -> Bool",
+          "sig_hash": "g34jphlbnaiax5ajenmev77okm",
+          "hash": "dnaofnm5reekkmvoqpkm5dj3khtoctvl75wq66lee5oqxcvi5vvq",
+          "effects": [],
+          "doc": "Whether `n` is the square of an Int (0 and 1 are; negatives are not)."
+        },
+        {
+          "name": "perfect_power",
+          "kind": "fn",
+          "sig": "fn perfect_power(n: Int) -> Opt[(Int, Int)]",
+          "sig_hash": "sfyfbepzahumyopolrmm4mhfhu",
+          "hash": "7tnevrtxzaho37yshuksoxs6nbpzagxm2embqs7rmvmrx4h2jceq",
+          "effects": [],
+          "doc": "The largest exponent `k >= 2` and its base `b` with `b ^ k == n`, or `none`. Negative `n`\ncan only be odd powers (`-8` is `(-2, 3)`); 0, 1 and -1 give `none`, since every exponent fits."
+        },
+        {
+          "name": "is_perfect_power",
+          "kind": "fn",
+          "sig": "fn is_perfect_power(n: Int) -> Bool",
+          "sig_hash": "cmcu26f6qsercyf5blexulkgpy",
+          "hash": "2si4qn5oupo64qpj5ddvhnuqyriu55dc2ab576w4bj4ysfw72hua",
+          "effects": [],
+          "doc": "Whether `n` is `b ^ k` for some Int `b` and `k >= 2` (see `perfect_power`)."
+        },
+        {
+          "name": "is_power_of_two",
+          "kind": "fn",
+          "sig": "fn is_power_of_two(n: Int) -> Bool",
+          "sig_hash": "la2h6s33jdvibvwp7jmfxxeqdq",
+          "hash": "zhag2kmwlmcbgbs4zfihjnszytcokq3cnoauvfthqrq2vxnun5ma",
+          "effects": [],
+          "doc": "Whether `n` is a positive power of two (1, 2, 4, ...)."
+        },
+        {
+          "name": "next_power_of_two",
+          "kind": "fn",
+          "sig": "fn next_power_of_two(n: Int) -> Opt[Int]",
+          "sig_hash": "inflgkpw6ism4vkuj3ythtlrnu",
+          "hash": "ugijju2k3wt23nogtr6fxwjvw4v2xwnebavhf3r2wttrl2ljzlsa",
+          "effects": [],
+          "doc": "The smallest power of two `>= n` (1 for `n <= 1`), or `none` above 2^62."
+        },
+        {
+          "name": "digits",
+          "kind": "fn",
+          "sig": "fn digits(n: Int, base: Int where _ >= 2) -> List[Int]",
+          "sig_hash": "bar54wc5u2arpeiqc2srdyrdce",
+          "hash": "m4twuemvrih6u7xxwpzbhglsqnjpqbp4sulkfv72uuy66fmibeoq",
+          "effects": [],
+          "doc": "The digits of `|n|` in `base`, most significant first; `[0]` for 0. Works for `int_min()`."
+        },
+        {
+          "name": "digit_sum",
+          "kind": "fn",
+          "sig": "fn digit_sum(n: Int) -> Int",
+          "sig_hash": "f3yobjybinm72edcnzx35h3zfu",
+          "hash": "2ovv4slbsr6dqxpj2q4ve27srcfnvgeutx2qvfotppo4dydxqtvq",
+          "effects": [],
+          "doc": "The sum of the decimal digits of `|n|`."
+        },
+        {
+          "name": "num_digits",
+          "kind": "fn",
+          "sig": "fn num_digits(n: Int, base: Int where _ >= 2) -> Int",
+          "sig_hash": "i6krqa2oskfbc2xroru3jshtma",
+          "hash": "6e5oiobvssdgjr634e42k4ml35oltr46okcasrfrqlpqhpseyiza",
+          "effects": [],
+          "doc": "The number of digits of `|n|` in `base` (1 for 0)."
+        },
+        {
+          "name": "digital_root",
+          "kind": "fn",
+          "sig": "fn digital_root(n: Int) -> Int",
+          "sig_hash": "r6lcolrte4nio7alj3mvu4bq7m",
+          "hash": "ymtzmvlpg77jpqcuzok6ro3xxlbo7hifudmtvtzupydtommffwaa",
+          "effects": [],
+          "doc": "The repeated digit sum of `|n|` down to one decimal digit (0 for 0, else 1 to 9)."
+        },
+        {
+          "name": "from_digits",
+          "kind": "fn",
+          "sig": "fn from_digits(ds: List[Int], base: Int where _ >= 2) -> Opt[Int]",
+          "sig_hash": "4z6uzieyjlearlzfnaumg2ncli",
+          "hash": "vgsks2h5yue3hqynhwni5o6uxeimipe7afvhkpy3sm7lxdacamxq",
+          "effects": [],
+          "doc": "The number with these digits in `base`, most significant first, or `none` if a digit is\noutside `0 .. base` or the value overflows. `from_digits([], b) == some(0)`."
+        },
+        {
+          "name": "to_radix",
+          "kind": "fn",
+          "sig": "fn to_radix(n: Int, base: Int where _ >= 2 and _ <= 36) -> Str",
+          "sig_hash": "m6i7vp2okloubg4gxerouddxci",
+          "hash": "6bt2eseth6czbt2xbesy7xv7jnimxllmroksavtbjavr5lpyvgbq",
+          "effects": [],
+          "doc": "`n` written in `base` 2 to 36 with lowercase letters and a leading `-` when negative:\n`to_radix(255, 16) == \"ff\"`, `to_radix(-5, 2) == \"-101\"`."
+        },
+        {
+          "name": "from_radix",
+          "kind": "fn",
+          "sig": "fn from_radix(s: Str, base: Int where _ >= 2 and _ <= 36) -> Opt[Int]",
+          "sig_hash": "7dqpzwacssyhwd2uw3oz3j62py",
+          "hash": "4hpmh5duqs2lnd2vfyz73xofd3crpxv4eynrolnyajvybkndeooa",
+          "effects": [],
+          "doc": "Parses `s` as an Int in `base` 2 to 36: an optional `+` or `-`, then one or more digits in\neither case. No spaces, prefixes or separators. `none` on anything else or on overflow."
+        },
+        {
+          "name": "Rounding",
+          "kind": "type",
+          "sig": "pub type Rounding = HalfUp | HalfDown | HalfEven | HalfAwayFromZero | HalfTowardZero | Up | Down | Ceiling | Floor derive Eq, Show",
+          "sig_hash": "crui5tv3xexpjjmd7vcq2iggti",
+          "hash": "bpwu4qnvgydmdlfygu2yaxxbazpodsvw37ecmyhw47mbzaynkgea",
+          "effects": [],
+          "doc": "How to round a value that falls between two candidates. The `Half` modes only differ on\nexact ties; the others look only at whether anything is discarded.\n`HalfUp` ties toward +infinity (2.5 to 3, -2.5 to -2); `HalfDown` ties toward -infinity;\n`HalfEven` ties to the even neighbour (banker's rounding); `HalfAwayFromZero` ties away from\nzero (school rounding, Java's HALF_UP); `HalfTowardZero` ties toward zero (Java's HALF_DOWN);\n`Up` rounds away from zero; `Down` toward zero (truncation); `Ceiling` toward +infinity;\n`Floor` toward -infinity."
+        },
+        {
+          "name": "div_round",
+          "kind": "fn",
+          "sig": "fn div_round(a: Int, b: Int where _ != 0, mode: Rounding) -> Int",
+          "sig_hash": "y463mf4jenw3esepvk3gakldbe",
+          "hash": "c74iz4z64o5354zjsowtildippsppoawjclfircko63tvwh5xsda",
+          "effects": [],
+          "doc": "`a / b` rounded to an Int with `mode` (the exact quotient decides, with no overflow in the\ncomparison): `div_round(7, 2, HalfEven) == 4`, `div_round(-7, 2, Floor) == -4`.\nTraps on `int_min() / -1`, like `/`."
+        },
+        {
+          "name": "round_int_to_multiple",
+          "kind": "fn",
+          "sig": "fn round_int_to_multiple(n: Int, step: Int where _ > 0, mode: Rounding) -> Opt[Int]",
+          "sig_hash": "jpp6m35bwhvmraxdf2vtzernvi",
+          "hash": "zll4payxoif3c7t5ab6vgcxb3yxaomddyifies7d62tf5wopomna",
+          "effects": [],
+          "doc": "`n` rounded to a multiple of `step` with `mode`, or `none` if that multiple overflows:\n`round_int_to_multiple(17, 5, HalfEven) == some(15)`."
+        },
+        {
+          "name": "round_to",
+          "kind": "fn",
+          "sig": "fn round_to(x: F64, places: Int where _ >= -400 and _ <= 400, mode: Rounding) -> F64",
+          "sig_hash": "nr5wa2f72vrkv5rwyugjylyzke",
+          "hash": "swhywpr4ii7hhyonipm4ol77kbcbgqax2ntds3wzjdo6vpimmf2a",
+          "effects": [],
+          "doc": "`x` rounded to `places` decimal places (negative `places` round to tens, hundreds, ...) with\n`mode`. The rounding is exact on the shortest decimal that prints as `x` (its `.str`), so\n`round_to(2.675, 2, HalfAwayFromZero) == 2.68` even though the binary double is slightly\nbelow 2.675; the result is the double nearest to the rounded decimal. NaN, infinities and\nzeros come back unchanged, and a value already short enough is returned as it is."
+        },
+        {
+          "name": "round_to_multiple",
+          "kind": "fn",
+          "sig": "fn round_to_multiple(x: F64, step: F64 where _ > 0.0, mode: Rounding) -> F64",
+          "sig_hash": "exzm3377vtfqmmpguxnwgihh7a",
+          "hash": "jicpbgetcpaewnonf2qk7j5ggzqq5vttamnooidvlbwj3y4ioh3a",
+          "effects": [],
+          "doc": "`x` rounded to a multiple of `step` with `mode`: `round_to_multiple(7.3, 0.5, HalfEven) == 7.5`.\nLike `round_to`, it works exactly on the shortest decimals that print as `x` and `step`, so\n`round_to_multiple(0.3, 0.1, Floor) == 0.3` (where `(0.3 / 0.1).floor` is 2), and returns the\ndouble nearest the exact multiple. NaN and infinities come back unchanged; a multiple too\nlarge for F64 is an infinity."
+        },
+        {
+          "name": "lerp",
+          "kind": "fn",
+          "sig": "fn lerp(a: F64, b: F64, t: F64) -> F64",
+          "sig_hash": "ghife3axzxwaf4dn55ev2lfxhm",
+          "hash": "uwbbwjg6nbnjmdyaciosffoklwqb75y6puvuhmpoydk6wjuqdvha",
+          "effects": [],
+          "doc": "The value `t` of the way from `a` to `b`: `a` at 0, `b` at 1, extrapolating outside\n(`lerp(10.0, 20.0, 0.25) == 12.5`). Exact at both ends."
+        },
+        {
+          "name": "inverse_lerp",
+          "kind": "fn",
+          "sig": "fn inverse_lerp(a: F64, b: F64, v: F64) -> Opt[F64]",
+          "sig_hash": "3tjfvzsltwnzrpc6ipckx62zvi",
+          "hash": "n5d455c3j3i6vmp3wi34s3nwazkfpydgjgku7b5x65ukrav2xvaq",
+          "effects": [],
+          "doc": "Where `v` lies between `a` and `b` (0 at `a`, 1 at `b`), or `none` when `a == b`."
+        },
+        {
+          "name": "remap",
+          "kind": "fn",
+          "sig": "fn remap(v: F64, in_lo: F64, in_hi: F64, out_lo: F64, out_hi: F64) -> Opt[F64]",
+          "sig_hash": "pyageasymqf6vs4h7sy6pmwwiy",
+          "hash": "b75wg4ntzhrznukvfzdgx4ixamdd27rzyya5zbkjpwsgeb27l57q",
+          "effects": [],
+          "doc": "`v` mapped linearly from the range `in_lo .. in_hi` to `out_lo .. out_hi` (not clamped), or\n`none` when the input range is empty."
+        },
+        {
+          "name": "smoothstep",
+          "kind": "fn",
+          "sig": "fn smoothstep(edge0: F64, edge1: F64, x: F64) -> F64",
+          "sig_hash": "q36555mbffffm4zycgyx3umgfa",
+          "hash": "qkbfgfqd6ou6x6vxyhqid7gnghjx27m4akby3ew6jf77pfaqgksa",
+          "effects": [],
+          "doc": "The smooth Hermite step from 0 at `edge0` to 1 at `edge1` (GLSL `smoothstep`), clamped to\n0 and 1 outside; when the edges are equal it is a hard step at `edge0`."
+        },
+        {
+          "name": "approx_equal",
+          "kind": "fn",
+          "sig": "fn approx_equal(a: F64, b: F64, rel_tol: F64 where _ >= 0.0, abs_tol: F64 where _ >= 0.0) -> Bool",
+          "sig_hash": "h6xr2s6th5qiecg57zbyct6sqa",
+          "hash": "bxuag7rjwpoxhov6t4bj42fitftshzaqcc25h5opmrvluuljqqja",
+          "effects": [],
+          "doc": "Whether `a` and `b` are close, as Python's `math.isclose`: `|a - b| <= max(rel_tol *\nmax(|a|, |b|), abs_tol)`. NaN is close to nothing (not even NaN), an infinity only to itself,\nand 0.0 and -0.0 are close. Use an `abs_tol` above 0 to compare with zero."
+        },
+        {
+          "name": "is_close",
+          "kind": "fn",
+          "sig": "fn is_close(a: F64, b: F64) -> Bool",
+          "sig_hash": "dpkectyo56abtpm5c2fj3vjgyi",
+          "hash": "ux2efrlgqkdctcztulkzesa7tsrpkexhavil35iwywo2uiryc54q",
+          "effects": [],
+          "doc": "`approx_equal(a, b, 1e-9, 0.0)`, Python's default."
+        },
+        {
+          "name": "deg_to_rad",
+          "kind": "fn",
+          "sig": "fn deg_to_rad(d: F64) -> F64",
+          "sig_hash": "wi3ov3tczv5egn5bp7vxckiqki",
+          "hash": "5jp2htik6zq6tifrcawmcgu5in3nbvvfhyt6hzzvrm6wcm6lnynq",
+          "effects": [],
+          "doc": "Degrees to radians."
+        },
+        {
+          "name": "rad_to_deg",
+          "kind": "fn",
+          "sig": "fn rad_to_deg(r: F64) -> F64",
+          "sig_hash": "45dpfof4re3ud35s3okkb74hsy",
+          "hash": "u2ge3o42htdd524tdmdafyc7xyqedzkangitjm5zjezrjoahhpqq",
+          "effects": [],
+          "doc": "Radians to degrees."
+        },
+        {
+          "name": "wrap",
+          "kind": "fn",
+          "sig": "fn wrap(x: F64, lo: F64, hi: F64) -> F64",
+          "sig_hash": "dd5iy5axjokvwfjdo3vie4kihi",
+          "hash": "wtr5wk73c4dmlz4mj7yfs5vytbyyz3mr5twdn2l5nckkbrgeouga",
+          "effects": [],
+          "doc": "`x` wrapped into the half-open range `lo .. hi`, as an angle or a ring buffer index would\nwrap: `wrap(370.0, 0.0, 360.0) == 10.0`, `wrap(-1.0, 0.0, 360.0) == 359.0`. NaN and the\ninfinities give NaN."
+        },
+        {
+          "name": "normalize_degrees",
+          "kind": "fn",
+          "sig": "fn normalize_degrees(d: F64) -> F64",
+          "sig_hash": "7pgufie3rdiozc3s3e3wcjokz4",
+          "hash": "orfeabctumq46mvbhozru3r2skfg3nugaulooyp64lhaywrbh3ua",
+          "effects": [],
+          "doc": "An angle in degrees normalized to `0 .. 360`."
+        },
+        {
+          "name": "normalize_radians",
+          "kind": "fn",
+          "sig": "fn normalize_radians(r: F64) -> F64",
+          "sig_hash": "me63aaxypgdnhxgfbg5ec5zh2i",
+          "hash": "zasownjxyr4b5u2fejgfjsnjnvru7hfk5kpbviywphlz44mfqyja",
+          "effects": [],
+          "doc": "An angle in radians normalized to `-pi .. pi`."
+        },
+        {
+          "name": "is_prime",
+          "kind": "fn",
+          "sig": "fn is_prime(n: Int) -> Bool",
+          "sig_hash": "cybgku2g4v4ol45tgs4nxmygt4",
+          "hash": "qmgj3vcifizx4gre2555wdu5unxj4j2espcihcrhdhtrnpxumxia",
+          "effects": [],
+          "doc": "Whether `n` is prime. Deterministic for every Int: trial division by the primes below 40,\nthen Miller-Rabin with the first twelve prime bases, which has no false positives below\n3.3 * 10^24."
+        },
+        {
+          "name": "primes_up_to",
+          "kind": "fn",
+          "sig": "fn primes_up_to(limit: Int where _ >= 0 and _ <= 10000000) -> List[Int]",
+          "sig_hash": "f3dxmiewepi3ghdyxphhrtjjma",
+          "hash": "qpi42m7xperj4xdcc6jdninskeh5bjov3wyixi5frsgxd5dze2la",
+          "effects": [],
+          "doc": "Every prime up to and including `limit`, in order, by the sieve of Eratosthenes. The limit is\ncapped at 10,000,000 (664,579 primes) to keep the memory bounded."
+        },
+        {
+          "name": "next_prime",
+          "kind": "fn",
+          "sig": "fn next_prime(n: Int) -> Opt[Int]",
+          "sig_hash": "25bq7g73vy2ldqep63lgg6mmeu",
+          "hash": "52zuecrp7b3spfyiaq7hnbfardzrdt33pjfwrvzc7cwjo4lue7rq",
+          "effects": [],
+          "doc": "The smallest prime greater than `n`, or `none` when that is above `int_max()`\n(the largest Int prime is 9223372036854775783)."
+        },
+        {
+          "name": "prev_prime",
+          "kind": "fn",
+          "sig": "fn prev_prime(n: Int) -> Opt[Int]",
+          "sig_hash": "p5x2tsehooe4366vcolgtzeh4q",
+          "hash": "ikqan72usiuol6wiltv7aseoe7xex2u3qog47prrvv7ob44kgfxq",
+          "effects": [],
+          "doc": "The largest prime less than `n`, or `none` when `n <= 2`."
+        },
+        {
+          "name": "prime_factors",
+          "kind": "fn",
+          "sig": "fn prime_factors(n: Int where _ >= 1) -> List[Int]",
+          "sig_hash": "u6no4wu2uezh6lekgf34qqwch4",
+          "hash": "mpvuw4mox73nceiquh5baoodmdujjykqp4wjkoz26fi7zp4bqosa",
+          "effects": [],
+          "doc": "The prime factors of `n` with multiplicity, in increasing order: `prime_factors(360) ==\n[2, 2, 2, 3, 3, 5]`, `prime_factors(1) == []`. Trial division by the primes below 1000, then\nPollard's rho (with Miller-Rabin to stop), so any Int factors in well under a second natively."
+        },
+        {
+          "name": "factorize",
+          "kind": "fn",
+          "sig": "fn factorize(n: Int where _ >= 1) -> List[(Int, Int)]",
+          "sig_hash": "eezy4jenj4nxyo5yt63fpjcmjq",
+          "hash": "st4yfwjtit3eeiks5goobfwnsdryke6powb6lxjncath3ut6fgaa",
+          "effects": [],
+          "doc": "The factorization of `n` as `(prime, exponent)` pairs in increasing order of prime:\n`factorize(360) == [(2, 3), (3, 2), (5, 1)]`, `factorize(1) == []`."
+        },
+        {
+          "name": "divisors",
+          "kind": "fn",
+          "sig": "fn divisors(n: Int where _ >= 1) -> List[Int]",
+          "sig_hash": "deam7toi7lod5et4vvkyspnpru",
+          "hash": "my6gqz7ewcpv42kb233ejupi5og5o5jcfaavlwalsmkyyx7ypbba",
+          "effects": [],
+          "doc": "Every positive divisor of `n`, in increasing order: `divisors(12) == [1, 2, 3, 4, 6, 12]`."
+        },
+        {
+          "name": "totient",
+          "kind": "fn",
+          "sig": "fn totient(n: Int where _ >= 1) -> Int",
+          "sig_hash": "vgobb3rjzj64p34yfigogwdbke",
+          "hash": "x3o3kktkvs74k4wtnrtt2gs7td3p57srvipgdhcn4bndnraqgi5a",
+          "effects": [],
+          "doc": "Euler's totient: how many of `1 ..= n` are coprime to `n`."
+        },
+        {
+          "name": "factorial",
+          "kind": "fn",
+          "sig": "fn factorial(n: Int where _ >= 0 and _ <= 100000) -> BigInt",
+          "sig_hash": "67ykiqpsczbdsrxofril3hi3jy",
+          "hash": "7ma6td3y45rztrkji2w6ib3vplqjtjyeebvynodd5gvpks2ghkpq",
+          "effects": [],
+          "doc": "`n!`, exactly. `n` is capped at 100,000 (456,574 digits)."
+        },
+        {
+          "name": "factorial_int",
+          "kind": "fn",
+          "sig": "fn factorial_int(n: Int where _ >= 0) -> Opt[Int]",
+          "sig_hash": "7tnitx5tnttb33fpzfs5xqmxsi",
+          "hash": "7n7lsxr3n46lpwdva7jfjfiufilrsblxusjkwg5rj7pprtyvy46a",
+          "effects": [],
+          "doc": "`n!` as an Int, or `none` above 20!."
+        },
+        {
+          "name": "comb",
+          "kind": "fn",
+          "sig": "fn comb(n: Int where _ >= 0, k: Int) -> BigInt",
+          "sig_hash": "akmr6pezrp73o24aeikspb4t5i",
+          "hash": "fssldxhwhts42t6kmoolr6fozo3napd3nido3pgon34cytkomj2a",
+          "effects": [],
+          "doc": "The binomial coefficient \"n choose k\", exactly: 0 when `k < 0` or `k > n`. Takes\n`min(k, n - k)` BigInt steps."
+        },
+        {
+          "name": "comb_int",
+          "kind": "fn",
+          "sig": "fn comb_int(n: Int where _ >= 0, k: Int) -> Opt[Int]",
+          "sig_hash": "vakx5sotkj57k3mzjp4mypa3hi",
+          "hash": "xtwhg76c6zzcbjrpm2xpu7tnknge7tehgmhe4u2w5ax6eqsn5ipa",
+          "effects": [],
+          "doc": "\"n choose k\" as an Int, or `none` if it overflows; 0 when `k < 0` or `k > n`."
+        },
+        {
+          "name": "perm",
+          "kind": "fn",
+          "sig": "fn perm(n: Int where _ >= 0, k: Int) -> BigInt",
+          "sig_hash": "v7asp56e5dfjizbsgaojnhbo7a",
+          "hash": "vtinbx3titmvbytgaxk5mbm4qenfav47i4mo45gmlsitcv2gylca",
+          "effects": [],
+          "doc": "The number of ordered arrangements of `k` items out of `n`, `n! / (n - k)!`, exactly;\n0 when `k < 0` or `k > n`."
+        },
+        {
+          "name": "perm_int",
+          "kind": "fn",
+          "sig": "fn perm_int(n: Int where _ >= 0, k: Int) -> Opt[Int]",
+          "sig_hash": "pdn3oys2zwpl3w2mgo7v3ymy3a",
+          "hash": "no6awmq3kzbzggilnhw46mrbqmq3mmh5gacvorkgvk4gh4qg3ifa",
+          "effects": [],
+          "doc": "`perm(n, k)` as an Int, or `none` if it overflows."
+        },
+        {
+          "name": "multinomial",
+          "kind": "fn",
+          "sig": "fn multinomial(ks: List[Int] where _.all(k => k >= 0)) -> BigInt",
+          "sig_hash": "zm4xe656n67gcmnfkj2syxkc4q",
+          "hash": "5z5mbbtleq24vm2sgscl4hhcix6ouao6edbwxstqxypj2uhpkc6q",
+          "effects": [],
+          "doc": "The multinomial coefficient `(k1 + k2 + ...)! / (k1! k2! ...)`, exactly; 1 for an empty list."
+        },
+        {
+          "name": "catalan",
+          "kind": "fn",
+          "sig": "fn catalan(n: Int where _ >= 0) -> BigInt",
+          "sig_hash": "t3xesektz2h3vpkxcor7vswery",
+          "hash": "kk5uw56yl4dmralcicjxh45pkujrmfcjsq6q6zogeawj7xr4wo6a",
+          "effects": [],
+          "doc": "The `n`th Catalan number, `comb(2n, n) / (n + 1)`: 1, 1, 2, 5, 14, 42, ..."
+        },
+        {
+          "name": "fibonacci",
+          "kind": "fn",
+          "sig": "fn fibonacci(n: Int where _ >= 0) -> BigInt",
+          "sig_hash": "ijtytz53kyifinm5kppwrfej6a",
+          "hash": "aebqqnxy2napmbydpmbylwl5ijpqpxxrx6yzv2ieyxj7rkbr6l6a",
+          "effects": [],
+          "doc": "The `n`th Fibonacci number (F(0) = 0, F(1) = 1), exactly, by fast doubling."
+        },
+        {
+          "name": "fibonacci_int",
+          "kind": "fn",
+          "sig": "fn fibonacci_int(n: Int where _ >= 0) -> Opt[Int]",
+          "sig_hash": "znhq4exa53vugv3f2zihkmzxku",
+          "hash": "md5u6mq7m7jezkjf7ujvhfa2cmeabza44nns7jjdlc3scxlumaqa",
+          "effects": [],
+          "doc": "The `n`th Fibonacci number as an Int, or `none` above F(92)."
+        },
+        {
+          "name": "floats",
+          "kind": "fn",
+          "sig": "fn floats(xs: List[Int]) -> List[F64]",
+          "sig_hash": "leqxugvd2lebgec6abq26cbylm",
+          "hash": "vsj7gc65342sxycoubgvycuryjpwgedcu5tsdal3xvvvp5n4q7ea",
+          "effects": [],
+          "doc": "The Int list as F64s, to feed the statistics functions."
+        },
+        {
+          "name": "checked_sum",
+          "kind": "fn",
+          "sig": "fn checked_sum(xs: List[Int]) -> Opt[Int]",
+          "sig_hash": "t6zfkzmhn2noymdgws6d27ym3a",
+          "hash": "6k7rt76yycfji5cyx2u37gbe6lpbc5e3mnsfwjltnueb4jsvgjpq",
+          "effects": [],
+          "doc": "The sum of `xs`, or `none` if it overflows (the builtin `sum` traps instead)."
+        },
+        {
+          "name": "checked_product",
+          "kind": "fn",
+          "sig": "fn checked_product(xs: List[Int]) -> Opt[Int]",
+          "sig_hash": "5qcdfcpd33pzzhlhjfw46adps4",
+          "hash": "dt7k2w5ft2uzd4n5sd265prhofkfjjd2kzwitjhm4tl2jt5eit3a",
+          "effects": [],
+          "doc": "The product of `xs` (1 for an empty list), or `none` if it overflows."
+        },
+        {
+          "name": "compensated_sum",
+          "kind": "fn",
+          "sig": "fn compensated_sum(xs: List[F64]) -> F64",
+          "sig_hash": "4mhdny4ugkc5bz3pmrpf53bhvy",
+          "hash": "o4ebf5mippughxufpxbsv7455knqnlgpgwvkhg2b2xyzlozwxccq",
+          "effects": [],
+          "doc": "The sum of `xs` with Neumaier's compensated summation, which keeps the rounding error of\nlong or cancelling sums near one ulp: `compensated_sum([1e100, 1.0, -1e100]) == 1.0` where\n`sum` gives 0.0. Infinities and NaN give what a plain sum gives. 0.0 for an empty list."
+        },
+        {
+          "name": "product",
+          "kind": "fn",
+          "sig": "fn product(xs: List[F64]) -> F64",
+          "sig_hash": "steaji7h75575ynfavkqo7ym3e",
+          "hash": "h4wkgsdein24dty4esidzsyuk6uu6to573v6vriumg5sr2tdvhrq",
+          "effects": [],
+          "doc": "The product of `xs` (1.0 for an empty list)."
+        },
+        {
+          "name": "cumulative_sum",
+          "kind": "fn",
+          "sig": "fn cumulative_sum(xs: List[F64]) -> List[F64]",
+          "sig_hash": "lfk5j7f4f4br4g5w7ufzzik33y",
+          "hash": "oc5tmkqvh2w5olttkc57ygnb6cqvnu4nmagxupg5s64xrfpc6iwq",
+          "effects": [],
+          "doc": "The running compensated sums: `cumulative_sum([1.0, 2.0, 3.0]) == [1.0, 3.0, 6.0]`."
+        },
+        {
+          "name": "mean",
+          "kind": "fn",
+          "sig": "fn mean(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "hboe53qkzbvjns6b3frzqvflf4",
+          "hash": "djuh7tcyc3m2pm45duyunwutpyq7ih4odmvzst3olxxdjg3rsdxq",
+          "effects": [],
+          "doc": "The arithmetic mean, or `none` for an empty list. Uses the compensated sum, and rescales\nwhen the sum of finite values would overflow, so `mean([1e308, 1e308]) == some(1e308)`."
+        },
+        {
+          "name": "weighted_mean",
+          "kind": "fn",
+          "sig": "fn weighted_mean(xs: List[F64], ws: List[F64]) -> Opt[F64]",
+          "sig_hash": "crskw3tkkm23wfkpu5pq6ibame",
+          "hash": "o4esvwkr6wu3zu5anmbibpbzql5facnfvrehcwvujw6waltcipxq",
+          "effects": [],
+          "doc": "The mean of `xs` weighted by `ws`, or `none` if the lengths differ, the list is empty, a\nweight is negative or the weights sum to 0."
+        },
+        {
+          "name": "geometric_mean",
+          "kind": "fn",
+          "sig": "fn geometric_mean(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "32rzsgklpu7ldme2rr7e2azsja",
+          "hash": "jlh2qp5xdoolum4lp53nbq7p7kwcjqr3dja3hk3zdow4vtqrimka",
+          "effects": [],
+          "doc": "The geometric mean, or `none` for an empty list or a negative value; 0.0 if any value is 0."
+        },
+        {
+          "name": "harmonic_mean",
+          "kind": "fn",
+          "sig": "fn harmonic_mean(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "3uerddok2wbu4mtogpuom7skte",
+          "hash": "m3szbzegkujvb2ovd2ucekuymxmrizoxrfeizotcw4c77gaxwmpa",
+          "effects": [],
+          "doc": "The harmonic mean, or `none` for an empty list or a negative value; 0.0 if any value is 0\n(as Python's `statistics.harmonic_mean`)."
+        },
+        {
+          "name": "median",
+          "kind": "fn",
+          "sig": "fn median(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "hgx7z535zgsjq7sbqzv3cuervi",
+          "hash": "vaejwd3dvupzgtnxexpszdxkuu325ypt64gpq73vl3cd3imkx5ja",
+          "effects": [],
+          "doc": "The median (the mean of the two middle values for an even count), or `none` for an empty list."
+        },
+        {
+          "name": "median_low",
+          "kind": "fn",
+          "sig": "fn median_low(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "oyoqnfr5e3vnvfwpurwkeklwa4",
+          "hash": "7uia2jugpcxr5kwe2kkty6mto2a7nhw6lr5nshvjdsw5pzla2zua",
+          "effects": [],
+          "doc": "The lower of the two middle values (the middle one for an odd count), or `none` if empty."
+        },
+        {
+          "name": "median_high",
+          "kind": "fn",
+          "sig": "fn median_high(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "gjzy3kn6qiesmajezvbfxjasym",
+          "hash": "v2i3n6k3526dad5h6hsxnzyzzwvha6jkauvcqazxuxlma3xneahq",
+          "effects": [],
+          "doc": "The higher of the two middle values (the middle one for an odd count), or `none` if empty."
+        },
+        {
+          "name": "mode",
+          "kind": "fn",
+          "sig": "fn mode[T](xs: List[T]) -> Opt[T]",
+          "sig_hash": "t4j72knq6djj42uvthc74nnnhy",
+          "hash": "tvjuql43z5y373mdziphxiuxgbnnci5rquxydcqsuqvt6ow67b7a",
+          "effects": [],
+          "doc": "The most common value, the first one seen on ties, or `none` for an empty list. Works for any\ntype; values compare with `==` (so NaN counts as equal to NaN)."
+        },
+        {
+          "name": "multimode",
+          "kind": "fn",
+          "sig": "fn multimode[T](xs: List[T]) -> List[T]",
+          "sig_hash": "ul7mlmrh5yagj2knjl6be5q7ym",
+          "hash": "gs5g6ge2tw5h6vjopnxoao4wlgrs4hnwvikoyksmwviacblwdjjq",
+          "effects": [],
+          "doc": "Every most common value, in first-seen order; `[]` for an empty list."
+        },
+        {
+          "name": "pvariance",
+          "kind": "fn",
+          "sig": "fn pvariance(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "bsnfyu5mowockmuznpgwn5ptj4",
+          "hash": "yaqis653xq3esk7vkserw3x4bp6t7kveqe36pfp6onlflc5lwadq",
+          "effects": [],
+          "doc": "The population variance (divided by n), or `none` for an empty list. Welford's algorithm."
+        },
+        {
+          "name": "variance",
+          "kind": "fn",
+          "sig": "fn variance(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "cffuz7dwpfasxyy5ujyn2at3uu",
+          "hash": "byrzdujegdqnuppkc5fg5jkwaf2kz6aqxm6qkwgch3svfh33onfa",
+          "effects": [],
+          "doc": "The sample variance (divided by n - 1), or `none` for fewer than two values."
+        },
+        {
+          "name": "pstdev",
+          "kind": "fn",
+          "sig": "fn pstdev(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "m56qgbx6suskpv7wjo2fen3cra",
+          "hash": "l2eemu2klg6nl2myfw6bod76a3diz3h2rbfwbuyksv7u3yqxyuyq",
+          "effects": [],
+          "doc": "The population standard deviation, or `none` for an empty list."
+        },
+        {
+          "name": "stdev",
+          "kind": "fn",
+          "sig": "fn stdev(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "se5ovs36vq4iz2o7hvds5shmpu",
+          "hash": "chwdpnnryyxkkjbwttgstrfm44mqhwyyxun3cmjt3f6nvdek46oq",
+          "effects": [],
+          "doc": "The sample standard deviation, or `none` for fewer than two values."
+        },
+        {
+          "name": "Quantile",
+          "kind": "type",
+          "sig": "pub type Quantile = Linear | Exclusive | Lower | Higher | Midpoint | Nearest | NearestRank derive Eq, Show",
+          "sig_hash": "h4cjdwsqulkrrw7nahv4oooxga",
+          "hash": "da4rwrvdyk26pze7f3iwqxdhm7yur4h7ixtcbfkhw6awv4j5sg2q",
+          "effects": [],
+          "doc": "How a quantile is read off the sorted data (`h` is the 0-based position `(n - 1) * p`):\n`Linear` interpolates at `h` (R-7, the default of NumPy, Excel PERCENTILE.INC and Python's\n`method=\"inclusive\"`); `Exclusive` interpolates at `(n + 1) * p - 1`, clamped to the data\n(R-6, Python's default `method=\"exclusive\"`, Excel PERCENTILE.EXC); `Lower` and `Higher` take\nthe element at `floor(h)` or `ceil(h)`; `Midpoint` averages those two; `Nearest` takes the\nelement nearest `h`, ties to even (NumPy's \"nearest\"); `NearestRank` takes the element at rank\n`ceil(p * n)` (the classical nearest-rank method, never interpolated)."
+        },
+        {
+          "name": "quantile",
+          "kind": "fn",
+          "sig": "fn quantile(xs: List[F64], p: F64 where _ >= 0.0 and _ <= 1.0, method: Quantile) -> Opt[F64]",
+          "sig_hash": "ilmjbfs2jvlkgtu7tyjep643ye",
+          "hash": "qhrssnsp7zobrjnaidul3rkrg4duaswml2i2djksgvpkv3gar2ga",
+          "effects": [],
+          "doc": "The `p` quantile (0 to 1) of `xs` by `method`, or `none` for an empty list; NaN if `xs`\nholds a NaN. `quantile(xs, 0.5, Linear)` is the median."
+        },
+        {
+          "name": "percentile",
+          "kind": "fn",
+          "sig": "fn percentile(xs: List[F64], p: F64 where _ >= 0.0 and _ <= 100.0) -> Opt[F64]",
+          "sig_hash": "37bmsbc55pluj4da6ozq62alby",
+          "hash": "lpac54ksgoglrc3upcant2igwkallhaki7wa3t4hfdkgtauvt55q",
+          "effects": [],
+          "doc": "The `p` percentile (0 to 100) with linear interpolation (`Linear`), or `none` if empty."
+        },
+        {
+          "name": "quantiles",
+          "kind": "fn",
+          "sig": "fn quantiles(xs: List[F64], n: Int where _ >= 1, method: Quantile) -> Opt[List[F64]]",
+          "sig_hash": "prdsdqp22u7hgya2k4k4eqvylu",
+          "hash": "vwiylbzr3mxpem6owfmtjgwbkkpeh4vnen7a6uqwthadzhb6m3iq",
+          "effects": [],
+          "doc": "The `n - 1` cut points that divide `xs` into `n` groups of equal probability, as Python's\n`statistics.quantiles(xs, n=n, method=...)` (pass `Exclusive` for its default): `n = 4` gives\nthe quartiles. `none` for an empty list."
+        },
+        {
+          "name": "iqr",
+          "kind": "fn",
+          "sig": "fn iqr(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "266zvrbz4zlmmnwnjippsa4sie",
+          "hash": "4crwzazd7snrlhgsohqqbwumasw2lw2n7g236zcyw7jymiz6yicq",
+          "effects": [],
+          "doc": "The interquartile range, Q3 - Q1 with `Linear` quantiles, or `none` for an empty list."
+        },
+        {
+          "name": "value_range",
+          "kind": "fn",
+          "sig": "fn value_range(xs: List[F64]) -> Opt[F64]",
+          "sig_hash": "342veeyl6yf3jmcmvmuzzstlhi",
+          "hash": "spatij62yubtxpj7x5wa5qwe26xv6nb2bhcot7tnfcq2epbqn6la",
+          "effects": [],
+          "doc": "The largest value minus the smallest, or `none` for an empty list."
+        },
+        {
+          "name": "zscores",
+          "kind": "fn",
+          "sig": "fn zscores(xs: List[F64]) -> Opt[List[F64]]",
+          "sig_hash": "4jbehiyao5ex4rgusvqrlutcr4",
+          "hash": "ibaynnx6q6jk2yjp43m3h6bslz24gwzegqs2pbbpgxb2ki5xfd3q",
+          "effects": [],
+          "doc": "The z-score of each value, `(x - mean) / pstdev`, or `none` for an empty list or one whose\nvalues are all equal."
+        },
+        {
+          "name": "min_max_normalize",
+          "kind": "fn",
+          "sig": "fn min_max_normalize(xs: List[F64]) -> Opt[List[F64]]",
+          "sig_hash": "hefmq3l4hznbplabk4wrdkatle",
+          "hash": "xcxjg4nbpy4ofn6vjxht2pqj24jbifjk4zu4mcght4g4tzhj6fqq",
+          "effects": [],
+          "doc": "Each value scaled to `0 .. 1` by `(x - min) / (max - min)`, or `none` for an empty list or\none whose values are all equal."
+        },
+        {
+          "name": "covariance",
+          "kind": "fn",
+          "sig": "fn covariance(xs: List[F64], ys: List[F64]) -> Opt[F64]",
+          "sig_hash": "wgejl7c2lnv2ytehzunfqsft54",
+          "hash": "xtrqsrws5pnqcwoccvrad73tykaordor7ukypg7wz3oiettypssq",
+          "effects": [],
+          "doc": "The sample covariance (divided by n - 1), as Python's `statistics.covariance`, or `none` if\nthe lengths differ or there are fewer than two pairs."
+        },
+        {
+          "name": "correlation",
+          "kind": "fn",
+          "sig": "fn correlation(xs: List[F64], ys: List[F64]) -> Opt[F64]",
+          "sig_hash": "7cr5tc6455eqwwpwfnsndqo2my",
+          "hash": "odib3xskptf332kgbe3gtyv645lxc2yqerjebhgyablarktfaqtq",
+          "effects": [],
+          "doc": "Pearson's correlation coefficient in -1 to 1, or `none` if the lengths differ, there are\nfewer than two pairs, or either series is constant."
+        },
+        {
+          "name": "ranks",
+          "kind": "fn",
+          "sig": "fn ranks(xs: List[F64]) -> List[F64]",
+          "sig_hash": "4olrorpc6qgtn2orjkl2dl3lyu",
+          "hash": "qxfi4t5d7naplaz3jxlfeqjusvfne6qumesm54d5wyyfwstahwla",
+          "effects": [],
+          "doc": "The rank of each value, 1 for the smallest, with ties given the average of their ranks\n(`ranks([10.0, 20.0, 10.0]) == [1.5, 3.0, 1.5]`), as used by Spearman's correlation."
+        },
+        {
+          "name": "spearman",
+          "kind": "fn",
+          "sig": "fn spearman(xs: List[F64], ys: List[F64]) -> Opt[F64]",
+          "sig_hash": "tjthtcvkwsosehobt7gnzkymau",
+          "hash": "3rgamj3peokprchycqzu5ujjygzikoe6bl47xbo3crp62evrwu5q",
+          "effects": [],
+          "doc": "Spearman's rank correlation (Pearson's on the ranks, ties averaged), or `none` as for\n`correlation`."
+        },
+        {
+          "name": "Fit",
+          "kind": "type",
+          "sig": "pub type Fit = {slope: F64, intercept: F64, r_squared: F64} derive Eq, Show",
+          "sig_hash": "msi334qzqynaefgx27rvmy6cwy",
+          "hash": "5nfhx5lerzhio4uymb5ear6dyyds6ht3kntpfxf3p54ivpsn35ka",
+          "effects": [],
+          "doc": "The least squares line through a set of points: `y = slope * x + intercept`, and `r_squared`,\nthe share of the variance in `y` it explains (1.0 when `y` is constant and the fit is exact)."
+        },
+        {
+          "name": "linear_regression",
+          "kind": "fn",
+          "sig": "fn linear_regression(xs: List[F64], ys: List[F64]) -> Opt[Fit]",
+          "sig_hash": "zaddnxcbycxgf3iai3q3c625uq",
+          "hash": "3jyv25gh4ffddhkvaruncltkd7lvbgdlqmibrczxxtol5uxlhjmq",
+          "effects": [],
+          "doc": "Simple linear regression of `ys` on `xs` by ordinary least squares, or `none` if the lengths\ndiffer, there are fewer than two points, or every `x` is the same."
+        },
+        {
+          "name": "Bin",
+          "kind": "type",
+          "sig": "pub type Bin = {lo: F64, hi: F64, count: Int} derive Eq, Show",
+          "sig_hash": "cyibbdriql3tl67xtwmfhnvsii",
+          "hash": "f7zkkbg3y2ps6ezh7vz4zsgmdwdbwrkmxnafiaqa3fmuqyoihleq",
+          "effects": [],
+          "doc": "One histogram bin: the values `v` with `lo <= v < hi` (the last bin also takes `hi`)."
+        },
+        {
+          "name": "histogram_range",
+          "kind": "fn",
+          "sig": "fn histogram_range(xs: List[F64], lo: F64, hi: F64, bins: Int where _ >= 1) -> List[Bin]",
+          "sig_hash": "dfsltweh45ue5kc3wimwzqbncq",
+          "hash": "337zovvc77eicuj3zk54yt2p4equoq73ypy672ra2nt4ofay3qga",
+          "effects": [],
+          "doc": "`bins` equal-width bins from `lo` to `hi`, counting the values of `xs` inside that range;\nvalues outside it and NaN are not counted."
+        },
+        {
+          "name": "histogram",
+          "kind": "fn",
+          "sig": "fn histogram(xs: List[F64], bins: Int where _ >= 1) -> List[Bin]",
+          "sig_hash": "yqeh3hbpotvr2btsv6ycea7w4m",
+          "hash": "vbeblfhk4fvlraukemrlmztavwq3cbvwqbtdzpgp6c7pzozdbxla",
+          "effects": [],
+          "doc": "`bins` equal-width bins spanning the smallest to the largest finite value of `xs`; `[]` when\nthere is none. When every value is the same, one bin `[v, v]` holds them all."
+        },
+        {
+          "name": "moving_average",
+          "kind": "fn",
+          "sig": "fn moving_average(xs: List[F64], window: Int where _ >= 1) -> List[F64]",
+          "sig_hash": "2xyy55wf7txuee7qn2hcdg2slu",
+          "hash": "gqkmsjwl5jy43od733scayuibjwauyira33io7alty2k47ur3rwq",
+          "effects": [],
+          "doc": "The trailing simple moving average over `window` values: one result per full window, so\n`xs.len - window + 1` results (`[]` when `xs` is shorter than the window)."
+        },
+        {
+          "name": "exponential_moving_average",
+          "kind": "fn",
+          "sig": "fn exponential_moving_average(xs: List[F64], alpha: F64 where _ > 0.0 and _ <= 1.0) -> List[F64]",
+          "sig_hash": "jwqysxhxk7ucxasitp2lm7o25a",
+          "hash": "dlhqnjya5lvsv53sdpbler2gl3ycxyznqew64eczg5qoxk6fzjpa",
+          "effects": [],
+          "doc": "The exponential moving average with smoothing factor `alpha` (0 < alpha <= 1), seeded with\nthe first value: `e[0] = x[0]`, `e[i] = alpha * x[i] + (1 - alpha) * e[i - 1]`."
+        }
+      ]
+    }
+  ]
+}
