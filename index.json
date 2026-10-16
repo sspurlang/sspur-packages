@@ -12,6 +12,16 @@
       "deprecated": null
     },
     {
+      "name": "lists",
+      "description": "List utilities beyond the builtins: windows, splits, grouping, zips, set operations, combinatorics, searching and safe index edits",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:01:14Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "pagination",
       "description": "Offset, page-number and keyset pagination: clamped requests, signed cursors, page ranges for UIs, Link headers and JSON envelopes",
       "latest": "0.2.0",
