@@ -1,0 +1,907 @@
+{
+  "schema": 1,
+  "name": "cache",
+  "description": "Caching for services: immutable LRU and TTL caches with stats, a shared SQLite cache with single-flight, and HTTP caching (ETags, conditional requests, Cache-Control)",
+  "repository": "https://github.com/sspurlang/sspur-cache",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-cache.git",
+      "tag": "v0.1.0",
+      "commit": "b1e7e9565e6e63a1bf97f3b4aef5691f0974e1a9",
+      "hash": "nbufy5xk7evxzj6yl34qb5qdjmiqjcmnqb4ohehoktiqycik2uia",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/cache-0.1.0/cache-0.1.0.tar",
+        "sha256": "ee3cafef5fd6f7d8556b6c37341f110da88c3be12f521b127ae66e3d20050ae8",
+        "size": 87552
+      },
+      "effects": [
+        "db"
+      ],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:23:57Z",
+      "publisher": "utkarshavardhana",
+      "request": 41,
+      "api": [
+        {
+          "name": "Config",
+          "kind": "type",
+          "sig": "pub type Config = {capacity: Int where _ >= 1, max_cost: Int where _ >= 0, ttl_ms: Int where _ >= 0, refresh_on_get: Bool} derive Eq, Show",
+          "sig_hash": "n6ko36f2kkh4ui4af45ts7rkm4",
+          "hash": "nrlowmds5dbbbm6xpvybw6x7mrfelqctlq527nsc6j345gjmungq",
+          "effects": [],
+          "doc": "How a cache is bounded: at most `capacity` entries and, when `max_cost` is above 0, a total cost\nof at most `max_cost` (each entry's cost is given when it is put; 1 by default). `ttl_ms` above 0\nis the default time to live; `refresh_on_get` restarts an entry's time to live when it is read\n(expire after access instead of after write)."
+        },
+        {
+          "name": "Stats",
+          "kind": "type",
+          "sig": "pub type Stats = {hits: Int, misses: Int, puts: Int, evictions: Int, expirations: Int} derive Eq, Show, Json",
+          "sig_hash": "i4hj42meumhfirvmf6o4one4ya",
+          "hash": "kwfi7dpgs2bmawo3bmdzla2p7cks5g27sz5ccazmsjnrqvixv6fq",
+          "effects": [],
+          "doc": "Counters of what a cache did: reads that found a live entry and reads that didn't, writes,\nentries evicted for room, and entries dropped because they had expired."
+        },
+        {
+          "name": "Entry",
+          "kind": "type",
+          "sig": "pub type Entry[V] = {value: V, tick: Int, expires_ms: Opt[Int], ttl_ms: Int, cost: Int} derive Eq, Show",
+          "sig_hash": "ytoipo3takdddbljwc2zagr7pa",
+          "hash": "ue4jevt4co3ixw2kbmkgtiigjn5sobrzqesfqb2mnbybazkrwi4q",
+          "effects": [],
+          "doc": "One cached value with its recency tick, its expiry time (none for never), its time to live and\nits cost."
+        },
+        {
+          "name": "Cache",
+          "kind": "type",
+          "sig": "pub type Cache[K, V] = {config: Config, entries: Map[K, Entry[V]], order: Set[(Int, K)], expiry: Set[(Int, Int, K)], tick: Int, cost: Int, stats: Stats} derive Eq, Show",
+          "sig_hash": "tzbljxfaojfsgdufieagsssgka",
+          "hash": "zryvjwpxmsljvr6ktdneq4cw4ras3jszrkixm5cx6s6numyy4rla",
+          "effects": [],
+          "doc": "An immutable LRU cache from K to V. Every operation returns the new cache; reads that change\nrecency or statistics return it too. Operations are O(log n). The least recently used live\nentry is evicted first, after any expired ones."
+        },
+        {
+          "name": "config",
+          "kind": "fn",
+          "sig": "fn config(capacity: Int where _ >= 1) -> Config",
+          "sig_hash": "qaynrir2e576rmqutjjmyhu64e",
+          "hash": "u6ryuar724gtfgyoclhmzrwvjsjmqolysktdpv6hkzbb5yu3djta",
+          "effects": [],
+          "doc": "A configuration bounded by `capacity` entries only."
+        },
+        {
+          "name": "new",
+          "kind": "fn",
+          "sig": "fn new[K, V](cfg: Config) -> Cache[K, V]",
+          "sig_hash": "ndxgeecn2nft6wyrouymyxhaze",
+          "hash": "lfg4shsfl23wcopoxigmrtlsaun27o7b36qhbqnakpi7mbanavaq",
+          "effects": [],
+          "doc": "An empty cache with configuration `cfg`."
+        },
+        {
+          "name": "lru",
+          "kind": "fn",
+          "sig": "fn lru[K, V](capacity: Int where _ >= 1) -> Cache[K, V]",
+          "sig_hash": "bcjolxrzlodtb43k2y2nkmwbta",
+          "hash": "ydq4aqwjui6a7wkshgqu7icisgai2c3fajywqzmzkqrxwa3mh27q",
+          "effects": [],
+          "doc": "An empty LRU cache of at most `capacity` entries."
+        },
+        {
+          "name": "ttl_lru",
+          "kind": "fn",
+          "sig": "fn ttl_lru[K, V](capacity: Int where _ >= 1, ttl_ms: Int where _ >= 1) -> Cache[K, V]",
+          "sig_hash": "6tqzrfzi2umeoofs5fpsjrptfi",
+          "hash": "l4pscz6d5rr326l3erdigmebpvjunia3u6gqjongilvmyieub4da",
+          "effects": [],
+          "doc": "An empty LRU cache of at most `capacity` entries that each live `ttl_ms` after they are written."
+        },
+        {
+          "name": "size",
+          "kind": "fn",
+          "sig": "fn size[K, V](c: Cache[K, V]) -> Int",
+          "sig_hash": "f7heajkjauyem6vi2pce7tiisi",
+          "hash": "j7ytfupdcitt37squlaaphaagtpr6xttvtjgzdb4dd5qxhztg6bq",
+          "effects": [],
+          "doc": "The number of entries, live or expired but not yet dropped."
+        },
+        {
+          "name": "total_cost",
+          "kind": "fn",
+          "sig": "fn total_cost[K, V](c: Cache[K, V]) -> Int",
+          "sig_hash": "537z7c5l4ak6hf6nfhhyep5lzi",
+          "hash": "i7huewq46grbstd6w6rtgrz7v7o6ws5yhedupckzl3mz2y5y6zna",
+          "effects": [],
+          "doc": "The total cost of the entries."
+        },
+        {
+          "name": "hit_rate",
+          "kind": "fn",
+          "sig": "fn hit_rate(s: Stats) -> F64",
+          "sig_hash": "xlpk6gy7sawrw7kyjiix4o3yke",
+          "hash": "kk5vzgs6kn2wtpuq2gq4ike6sezeyo55kcbjso2mwfsvubaxlg7a",
+          "effects": [],
+          "doc": "The fraction of reads that hit, 0.0 before any read."
+        },
+        {
+          "name": "peek",
+          "kind": "fn",
+          "sig": "fn peek[K, V](c: Cache[K, V], k: K, now_ms: Int) -> Opt[V]",
+          "sig_hash": "ggpcu3mzbwvoz4gi6j7iizgjsy",
+          "hash": "tl6gbmy63obqbnbvn7wc3eleuuq6fzozk5n6v5h4b2eooktvn6pq",
+          "effects": [],
+          "doc": "The value for `k` if it is there and live, without touching recency or statistics."
+        },
+        {
+          "name": "has",
+          "kind": "fn",
+          "sig": "fn has[K, V](c: Cache[K, V], k: K, now_ms: Int) -> Bool",
+          "sig_hash": "4ihhtgh76jci4r2ps4rtsel46e",
+          "hash": "2hcfgkqpe5rhwgpwf3tirwen34iaswdnpv6tyf4denylnjenqdha",
+          "effects": [],
+          "doc": "Whether `k` has a live entry."
+        },
+        {
+          "name": "get",
+          "kind": "fn",
+          "sig": "fn get[K, V](c: Cache[K, V], k: K, now_ms: Int) -> (Opt[V], Cache[K, V])",
+          "sig_hash": "7wri3clibiexzm7b5zv7gjoi44",
+          "hash": "ptjkqss6ixhshiloplqqos4x3a3gixfwqjfgbs46ne3xyi7l5zjq",
+          "effects": [],
+          "doc": "Reads `k`: the value of a live entry, which becomes the most recently used (and with\n`refresh_on_get` gets a new expiry), counted as a hit; otherwise none, counted as a miss, and\nan expired entry is dropped."
+        },
+        {
+          "name": "touch",
+          "kind": "fn",
+          "sig": "fn touch[K, V](c: Cache[K, V], k: K, now_ms: Int) -> Cache[K, V]",
+          "sig_hash": "dbzbzu5jz355se7tjo6cnduuoi",
+          "hash": "soxljsnlahqq6vvtbcpczemn35gxj342webbwtdz72p74doefhta",
+          "effects": [],
+          "doc": "Marks `k` as just used and restarts its time to live, without reading it (and without counting\na hit). Missing or expired keys are left alone."
+        },
+        {
+          "name": "put",
+          "kind": "fn",
+          "sig": "fn put[K, V](c: Cache[K, V], k: K, v: V, now_ms: Int) -> Cache[K, V]",
+          "sig_hash": "yp77qwa633dazszv4epybltva4",
+          "hash": "su2nop2lszjlt7jxcarv7ffujnnsts34jk7i7gphfpiof4pwsbza",
+          "effects": [],
+          "doc": "Writes `k` with the default time to live and a cost of 1, evicting what must go."
+        },
+        {
+          "name": "put_ttl",
+          "kind": "fn",
+          "sig": "fn put_ttl[K, V](c: Cache[K, V], k: K, v: V, now_ms: Int, ttl_ms: Int where _ >= 1) -> Cache[K, V]",
+          "sig_hash": "p54m2vvrr5mqjuoyfhjbo62oq4",
+          "hash": "nlvc4pez3lpvfmvt6v435j5jehh5qyzt6n6uglok26zsnoahvasq",
+          "effects": [],
+          "doc": "Writes `k` to live `ttl_ms` milliseconds."
+        },
+        {
+          "name": "insert",
+          "kind": "fn",
+          "sig": "fn insert[K, V](c: Cache[K, V], k: K, v: V, now_ms: Int, ttl_ms: Opt[Int], cost: Int where _ >= 0) -> (Cache[K, V], List[(K, V)])",
+          "sig_hash": "74datybay4x3u74q3g5236i6fy",
+          "hash": "ie7enehcruug5tgubftnto75ryatxpunhwipv5pvzckhxezq3y5a",
+          "effects": [],
+          "doc": "Writes `k` with a time to live (none: it never expires, whatever the default) and a cost, and\nreturns the entries that left to make room or because they had expired, so the caller can\nrelease them. An entry that costs more than `max_cost` is not stored, and an older entry for `k`\nis removed."
+        },
+        {
+          "name": "purge_expired",
+          "kind": "fn",
+          "sig": "fn purge_expired[K, V](c: Cache[K, V], now_ms: Int) -> (Cache[K, V], List[(K, V)])",
+          "sig_hash": "hada5ydf2hym5s3pyx7qbkw2ge",
+          "hash": "qbai3rvt37cbjdcla55no3c5trg5kvihvgynx7u6rfwsfkbir6wa",
+          "effects": [],
+          "doc": "Drops every entry that has expired by `now_ms`; returns the cache and the dropped entries."
+        },
+        {
+          "name": "remove",
+          "kind": "fn",
+          "sig": "fn remove[K, V](c: Cache[K, V], k: K) -> Cache[K, V]",
+          "sig_hash": "apgnj3bziticjsnjngeln5sf2y",
+          "hash": "34ywni3a6vatuzqizhotgd4ps3dbawafkpvehmcze3yw7glyxegq",
+          "effects": [],
+          "doc": "Removes `k` (not counted as an eviction)."
+        },
+        {
+          "name": "take",
+          "kind": "fn",
+          "sig": "fn take[K, V](c: Cache[K, V], k: K, now_ms: Int) -> (Opt[V], Cache[K, V])",
+          "sig_hash": "snnjoffmfqttl4unatc4vdwhri",
+          "hash": "6f5mvsjrvaexlujjt5g27aadftfakenkgkm4amc56caobfolp7mq",
+          "effects": [],
+          "doc": "Removes `k` and returns its value if it was live."
+        },
+        {
+          "name": "clear",
+          "kind": "fn",
+          "sig": "fn clear[K, V](c: Cache[K, V]) -> Cache[K, V]",
+          "sig_hash": "wgjeohdbe2t76vto4lafohmfvq",
+          "hash": "ejk35b5spn5ywz3ypqg5vi4kwwu4g3ntfzpu6zcvssi4qhkiztca",
+          "effects": [],
+          "doc": "Removes every entry, keeping the configuration and the statistics."
+        },
+        {
+          "name": "resize",
+          "kind": "fn",
+          "sig": "fn resize[K, V](c: Cache[K, V], capacity: Int where _ >= 1, max_cost: Int where _ >= 0) -> (Cache[K, V], List[(K, V)])",
+          "sig_hash": "zh7nfrmphacbut3vorq3q7qagi",
+          "hash": "jdmfvimwz6o64qljuvigeq22ihyid4ph2zsu5xsb3aup7ln53pta",
+          "effects": [],
+          "doc": "Changes the bounds, evicting least recently used entries until the cache fits; returns the\nevicted entries too."
+        },
+        {
+          "name": "keys",
+          "kind": "fn",
+          "sig": "fn keys[K, V](c: Cache[K, V]) -> List[K]",
+          "sig_hash": "6efnm5cqlmzoveglfryqqdmi5y",
+          "hash": "gtcpvv6zxymcfioyd72ytxns7pwncmomsxi7i75swqammrll6wga",
+          "effects": [],
+          "doc": "The keys, most recently used first (expired ones not yet dropped included)."
+        },
+        {
+          "name": "items",
+          "kind": "fn",
+          "sig": "fn items[K, V](c: Cache[K, V], now_ms: Int) -> List[(K, V)]",
+          "sig_hash": "vtflebt5ut4hbequnllumbmyim",
+          "hash": "cyojyuswqu77gqkgshola4ymwk5jssg723khjglt6ktlel4tmxhq",
+          "effects": [],
+          "doc": "The live entries at `now_ms`, most recently used first."
+        },
+        {
+          "name": "lru_key",
+          "kind": "fn",
+          "sig": "fn lru_key[K, V](c: Cache[K, V]) -> Opt[K]",
+          "sig_hash": "djhj75jloxhuktlm4yhs5cs2iq",
+          "hash": "eoxss3uynpxw7po5p3hbpa2rxesucbniew4loqkbtbs47jevporq",
+          "effects": [],
+          "doc": "The key that would be evicted next (the least recently used)."
+        },
+        {
+          "name": "mru_key",
+          "kind": "fn",
+          "sig": "fn mru_key[K, V](c: Cache[K, V]) -> Opt[K]",
+          "sig_hash": "rk3uexq3fwk7xxhzkf7vjn3r3m",
+          "hash": "3egumcuudma5yrmu2bgpt3tlstpynf3bgk5lxzpmyllsfc4gjlca",
+          "effects": [],
+          "doc": "The most recently used key."
+        },
+        {
+          "name": "ttl_left",
+          "kind": "fn",
+          "sig": "fn ttl_left[K, V](c: Cache[K, V], k: K, now_ms: Int) -> Opt[Int]",
+          "sig_hash": "255rr3sjcd6d4cuzklpqx7ygxa",
+          "hash": "zsqjdwgvlsmmohr755cxjuhectwqn3ne3ga6mb6pry3wihpvnvla",
+          "effects": [],
+          "doc": "The milliseconds `k` has left to live: none if it is missing, expired or never expires."
+        },
+        {
+          "name": "get_or_compute",
+          "kind": "fn",
+          "sig": "fn get_or_compute[K, V, e](c: Cache[K, V], k: K, now_ms: Int, f: K -> V ! e) -> (V, Cache[K, V]) ! e",
+          "sig_hash": "kcbg3gtqxyl2ecfslrsppriuwe",
+          "hash": "c436bpx2xxspthy2m2jscltnhjbdtacjuzyrqllcrgltmfz2yxqq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The value for `k`, computed by `f` and stored when it is missing or expired."
+        },
+        {
+          "name": "stats",
+          "kind": "fn",
+          "sig": "fn stats[K, V](c: Cache[K, V]) -> Stats",
+          "sig_hash": "qz47nkz5ycgs4ld4rf2n6tmvzi",
+          "hash": "iav3reqgvabplpmmblwbrbsdtexnap7bi34oueqgldpu7ket3ioq",
+          "effects": [],
+          "doc": "The statistics."
+        },
+        {
+          "name": "Shared",
+          "kind": "type",
+          "sig": "pub type Shared = {db: Db, table: Str, capacity: Int} derive Eq, Show",
+          "sig_hash": "ge4ttysrxmdzwkmkb2jupgsqhe",
+          "hash": "4hltzfuj6vzbyu7qy4o74hohadrbtz3gzvqfifhi3ghdwdax6anq",
+          "effects": [],
+          "doc": "A cache of text values in a SQLite table, shared by the concurrent handlers of a server (the\nDb is shared; a \":memory:\" database is one connection) and by processes that open the same\nfile. Every operation is a transaction, so reads and writes from anywhere stay consistent. It\nkeeps at most `capacity` entries, evicting expired ones first and then the least recently used\n(each read records its use, so a read is a small write). Values are `Str`: a library can't decode\nJSON into a type parameter, so store `json.encode(x)` and decode on the way out (`shared_get_as` and\n`shared_put_as` do it with a decoder you pass). Statistics are kept in the database too."
+        },
+        {
+          "name": "Flight",
+          "kind": "type",
+          "sig": "pub type Flight = {lease_ms: Int where _ >= 1, wait_ms: Int where _ >= 0, poll_ms: Int where _ >= 1} derive Eq, Show",
+          "sig_hash": "k4ysqycdwtapxanyzuuke3lk4u",
+          "hash": "wqtuigzcsqoit7dcefxzotwzdxucuf2gfm5j2kl47ghj3ptorisa",
+          "effects": [],
+          "doc": "How `fetch` waits for another caller computing the same key: the lease a computer holds (when\nit crashes or raises, others take over after it), how long a waiter waits before computing the\nvalue itself, and how often it looks."
+        },
+        {
+          "name": "valid_table_name",
+          "kind": "fn",
+          "sig": "fn valid_table_name(s: Str) -> Bool",
+          "sig_hash": "tp7qqw5jkjtbnpacegkbappr3e",
+          "hash": "g2pomwxw3rahl5o3gvx5oous76mex4xnstvnwah26254mfklotva",
+          "effects": [],
+          "doc": "Whether `s` can name the cache's tables: a letter or underscore, then letters, digits and\nunderscores, at most 50 characters (the tables get suffixes)."
+        },
+        {
+          "name": "shared",
+          "kind": "fn",
+          "sig": "fn shared(c: Db, table: Str where valid_table_name(_), capacity: Int where _ >= 1) -> Shared ! db, fail[DbErr]",
+          "sig_hash": "ywdok64euxuzvei4grerkhlaki",
+          "hash": "bhbfk2nnlzwi4jlwvurqh233zuka5j4uvjmjj4k3d45fmtishy6q",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Opens the cache `table` in `c` with room for `capacity` entries, creating its tables when\nmissing (`table`, `table_meta` for the statistics and `table_leases` for single-flight)."
+        },
+        {
+          "name": "flight",
+          "kind": "fn",
+          "sig": "fn flight() -> Flight",
+          "sig_hash": "zmvtbuxjuoae5fttgnf4rflrbq",
+          "hash": "y7c7ccsloupqsb5m5o5bc6khwpdmqqucm7ksjtiukpcn65fhzira",
+          "effects": [],
+          "doc": "The default single-flight settings: 30 s leases, waiters wait up to 30 s, polling every 10 ms."
+        },
+        {
+          "name": "shared_get",
+          "kind": "fn",
+          "sig": "fn shared_get(s: Shared, key: Str, now_ms: Int) -> Opt[Str] ! db, fail[DbErr]",
+          "sig_hash": "ansgnfahoa2jo5v4pxuciiytbq",
+          "hash": "jmnot64znryjucvy62tlj3fbzej7b4y2ovs6ugb2ihgzuhw3awoa",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Reads `key`: its value when it is there and live (now the most recently used), counted as a\nhit; otherwise none, counted as a miss (an expired entry is deleted)."
+        },
+        {
+          "name": "shared_peek",
+          "kind": "fn",
+          "sig": "fn shared_peek(s: Shared, key: Str, now_ms: Int) -> Opt[Str] ! db, fail[DbErr]",
+          "sig_hash": "nvm2xgeejsamqrn3q7mfljsage",
+          "hash": "aqtcch6lrk5tnanro66hu536uesqgx43ya5udjnvanbce5tycfgq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "The value of `key` if it is live, reading only: no recency, no statistics."
+        },
+        {
+          "name": "shared_put",
+          "kind": "fn",
+          "sig": "fn shared_put(s: Shared, key: Str, value: Str, now_ms: Int, ttl_ms: Int where _ >= 0) -> Int ! db, fail[DbErr]",
+          "sig_hash": "7s5alwlhhu54j2bnyizckddps4",
+          "hash": "k3ef2zjop2jiylddhsdbeu3upqzv4r2einlq3wwgfjilrbux6lva",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Writes `key` to live `ttl_ms` milliseconds (0: until evicted); returns how many entries left to\nmake room (expired ones first, then the least recently used)."
+        },
+        {
+          "name": "shared_delete",
+          "kind": "fn",
+          "sig": "fn shared_delete(s: Shared, key: Str) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "bmmobcxo7r7bgwg7jszhkr7c4e",
+          "hash": "44fmsz3z7dvwa2a2yx3bepedeb27zz3ffd5harztopazwdefttaq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Deletes `key`: whether it was there."
+        },
+        {
+          "name": "shared_clear",
+          "kind": "fn",
+          "sig": "fn shared_clear(s: Shared) -> Int ! db, fail[DbErr]",
+          "sig_hash": "qvid4w6uy34lr6lrziv3ufkpee",
+          "hash": "og37lu7xx2m4phtvrxms53klhucazxk43t64z7kw6zxdwe45jdqq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Deletes every entry; returns how many there were. Statistics are kept."
+        },
+        {
+          "name": "shared_purge",
+          "kind": "fn",
+          "sig": "fn shared_purge(s: Shared, now_ms: Int) -> Int ! db, fail[DbErr]",
+          "sig_hash": "5cnf5mmfcduc5ztjolsjdhryvq",
+          "hash": "qtgd4i7l53eyf2qmpwswu4x3exi45kg5hlv3prozibu4bofndojq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Deletes the entries that have expired by `now_ms`; returns how many."
+        },
+        {
+          "name": "shared_count",
+          "kind": "fn",
+          "sig": "fn shared_count(s: Shared) -> Int ! db, fail[DbErr]",
+          "sig_hash": "hpc4twtv2fo234247mgpb72yiq",
+          "hash": "b2cemlpf3yrkqr4brhcdo356gbkg7d2dliyojfxefagmkul5naaa",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "The number of entries, live or expired but not yet deleted."
+        },
+        {
+          "name": "shared_stats",
+          "kind": "fn",
+          "sig": "fn shared_stats(s: Shared) -> Stats ! db, fail[DbErr]",
+          "sig_hash": "ve433ykoglk7m4mm6ynakszxlu",
+          "hash": "223iw7pqfbwlftbk5cbgw7bzp4glcpytuahg5kgzymxzkungyapq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "The statistics of the shared cache, summed over every process that uses it."
+        },
+        {
+          "name": "shared_get_as",
+          "kind": "fn",
+          "sig": "fn shared_get_as[T](s: Shared, key: Str, now_ms: Int, decode: Str -> Opt[T]) -> Opt[T] ! db, fail[DbErr]",
+          "sig_hash": "qgp57vx42lgabiwyxees6fbnwe",
+          "hash": "qqzi6lscdcrsxqxfvzxp2isqgpxwhqrcowp74vv2xlhgyxebyqxq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Reads `key` and decodes it with `decode` (such as `x => json.decode[User](x).map(some).or(none)`);\na value that doesn't decode counts as missing."
+        },
+        {
+          "name": "shared_put_as",
+          "kind": "fn",
+          "sig": "fn shared_put_as[T: Json](s: Shared, key: Str, value: T, now_ms: Int, ttl_ms: Int where _ >= 0) -> Int ! db, fail[DbErr]",
+          "sig_hash": "bwner6qd2xlijwclpyeqkdy5p4",
+          "hash": "uac7bfq4zgp7yyqjmdmbgvfavo3rgazrdwlx6jizg4mz4n3gcftq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Writes `value` as its JSON."
+        },
+        {
+          "name": "shared_computing",
+          "kind": "fn",
+          "sig": "fn shared_computing(s: Shared, key: Str, now_ms: Int) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "theeari7bmzanfv2gj2j2dxh2u",
+          "hash": "kvlyk4u4pk3rymdrueevw5guowopxltkyswpvtgm6jyrn5rw4q3a",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Whether someone holds a live lease on `key`, computing it."
+        },
+        {
+          "name": "fetch",
+          "kind": "fn",
+          "sig": "fn fetch[e](s: Shared, key: Str, ttl_ms: Int, f: Flight, compute: () -> Str ! e) -> Str ! db, fail[DbErr], time, rand, div, e",
+          "sig_hash": "r7lor6zmla7opq2yjkia4ehyim",
+          "hash": "q7gz4ihfp6yxvq3zefmdawj73dzwtdcyutfy5mdyhtckfyd5sbna",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "time",
+            "rand",
+            "div",
+            "e"
+          ],
+          "doc": "The value of `key`, computed by `compute` (and stored for `ttl_ms`, 0 or less for no expiry) when it is\nmissing, with single-flight: of the callers that miss at the same time, in this process or any\nother sharing the database, one takes a lease and computes while the others wait and get its\nresult. A waiter that waits longer than `f.wait_ms` computes the value itself. When a computer\ncrashes or `compute` raises, its lease runs out after `f.lease_ms` and the next caller takes over."
+        },
+        {
+          "name": "fetch_as",
+          "kind": "fn",
+          "sig": "fn fetch_as[T: Json, e](s: Shared, key: Str, ttl_ms: Int, f: Flight, compute: () -> T ! e, decode: Str -> Opt[T]) -> T ! db, fail[DbErr], time, rand, div, e",
+          "sig_hash": "rcxgrt2cr6xnx3jnrullith4oi",
+          "hash": "y24f3bv5awsm6u6snzlzj6mrfxgocpufpezuem6gkg34g7n7wrtq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "time",
+            "rand",
+            "div",
+            "e"
+          ],
+          "doc": "`fetch` for a JSON-encodable type: computes a `T`, stores its JSON, and decodes a cached value\nwith `decode`; a cached value that doesn't decode is computed again."
+        },
+        {
+          "name": "Etag",
+          "kind": "type",
+          "sig": "pub type Etag = {weak: Bool, tag: Str} derive Eq, Show",
+          "sig_hash": "caqzd6y7oclpl352fqwjznjdi4",
+          "hash": "adcwvcnhm4m64dvwlikvapt4doac3sc5enow4w6f4kaxfndp2z7q",
+          "effects": [],
+          "doc": "An entity tag (RFC 9110 8.8.3): its opaque text, without quotes, and whether it is weak."
+        },
+        {
+          "name": "etag_text_ok",
+          "kind": "fn",
+          "sig": "fn etag_text_ok(s: Str) -> Bool",
+          "sig_hash": "nioxcf3fmfzp7zd3c6xkba7dpq",
+          "hash": "bvvihriunotyn3mkzfodhuqc7du7la3m6cgjloksqnzqmzzivloa",
+          "effects": [],
+          "doc": "Whether `s` can be the text of an entity tag: etagc characters only (no spaces, quotes or\ncontrol characters)."
+        },
+        {
+          "name": "strong_etag",
+          "kind": "fn",
+          "sig": "fn strong_etag(tag: Str where etag_text_ok(_)) -> Etag",
+          "sig_hash": "4ujkdionej2cp3a2tisxfk77ae",
+          "hash": "zddg7bf7jy2qsg73qjr2hmtxngx7s5wpg7blnydp6ejdb2ek6kca",
+          "effects": [],
+          "doc": "A strong entity tag with text `tag`."
+        },
+        {
+          "name": "weak_etag",
+          "kind": "fn",
+          "sig": "fn weak_etag(tag: Str where etag_text_ok(_)) -> Etag",
+          "sig_hash": "io2l5aauj3n6rsa3dcto5uf254",
+          "hash": "qrgpvahwitf6seyhhv4qvoumveksawo4aab562uy3yyr3x7yet4q",
+          "effects": [],
+          "doc": "A weak entity tag with text `tag`."
+        },
+        {
+          "name": "etag_str",
+          "kind": "fn",
+          "sig": "fn etag_str(e: Etag) -> Str",
+          "sig_hash": "kbry3f26zcretiv44ceg35kqle",
+          "hash": "7gqdy5tldlk6hmmkaiqsb2qzie767hmvvwyfcfhbc56aqh52u5nq",
+          "effects": [],
+          "doc": "The field value of an entity tag: `\"tag\"` or `W/\"tag\"`."
+        },
+        {
+          "name": "parse_etag",
+          "kind": "fn",
+          "sig": "fn parse_etag(s: Str) -> Opt[Etag]",
+          "sig_hash": "76rldlbrb4pf4s4a7aiocgolw4",
+          "hash": "u2xp3cdvf2qhdmq5sqfsg3cqelei7e2oovhetchcgedodegohuma",
+          "effects": [],
+          "doc": "Parses one entity tag, `\"...\"` or `W/\"...\"`."
+        },
+        {
+          "name": "etag_for",
+          "kind": "fn",
+          "sig": "fn etag_for(body: Str) -> Etag",
+          "sig_hash": "72uyclvj2l7gr7fjhhhx34rpze",
+          "hash": "3zyegg54yahthmnbouagvnedsv5l3pgautkh7y57uz4aznba6h3q",
+          "effects": [],
+          "doc": "A strong entity tag for a body: 128 bits of its SHA-256 in base64url, so the same body always\nhas the same tag. Use it when the bytes sent are the body itself."
+        },
+        {
+          "name": "weak_etag_for",
+          "kind": "fn",
+          "sig": "fn weak_etag_for(body: Str) -> Etag",
+          "sig_hash": "htmgi5swe5joyzftwp4kmirtsu",
+          "hash": "mqdtjebc55tecx4el2zjvamc4nqqu62enpj44s2gy3shbbl4ficq",
+          "effects": [],
+          "doc": "A weak entity tag for a body, for responses the server may compress or otherwise transform\n(the `gzip` server field), whose bytes then differ from the body."
+        },
+        {
+          "name": "strong_match",
+          "kind": "fn",
+          "sig": "fn strong_match(a: Etag, b: Etag) -> Bool",
+          "sig_hash": "ett6qyyltmy7sieeb64bb7hnbe",
+          "hash": "teu53g7jpzcaqbkgn22yyd7dvxjdcvzy2lrjwl5ydc22k2o75cqa",
+          "effects": [],
+          "doc": "Strong comparison (RFC 9110 8.8.3.2): both strong and the same text."
+        },
+        {
+          "name": "weak_match",
+          "kind": "fn",
+          "sig": "fn weak_match(a: Etag, b: Etag) -> Bool",
+          "sig_hash": "hbnbiblc2hbfawas2a4e2shntm",
+          "hash": "gxfzg4fbfymm5wxbt36zl7nb6xf7gpdv3r2rljvka45tzi6ckbwa",
+          "effects": [],
+          "doc": "Weak comparison: the same text, whatever the weakness."
+        },
+        {
+          "name": "Condition",
+          "kind": "type",
+          "sig": "pub type Condition = AnyTag | Tags{tags: List[Etag]} derive Eq, Show",
+          "sig_hash": "ek2qarqarlpqenrumwiyz4clw4",
+          "hash": "2evs5fmebejliegwshju4rhfuc35nrortxngescw2yxf7l7szdwa",
+          "effects": [],
+          "doc": "The value of an If-Match or If-None-Match field: `*` or a list of entity tags."
+        },
+        {
+          "name": "parse_condition",
+          "kind": "fn",
+          "sig": "fn parse_condition(s: Str) -> Opt[Condition]",
+          "sig_hash": "743tcierq7qwv3icsiqrflzj5i",
+          "hash": "ctezqiggzf3n5wdtbrayiesfdxmgoqinofaojilte3yocnosnusa",
+          "effects": [],
+          "doc": "Parses an If-Match or If-None-Match value; none when it is malformed (a `*` mixed with tags,\nor an invalid tag) or empty."
+        },
+        {
+          "name": "format_http_date",
+          "kind": "fn",
+          "sig": "fn format_http_date(t: Time) -> Str",
+          "sig_hash": "mtqvjtxqhcnhei4iadbpqa5h2i",
+          "hash": "dapsnekccsh7pjc6jtcohwowtq4lkg2oymr33hx5bnmh5ac36pea",
+          "effects": [],
+          "doc": "An HTTP date in the preferred IMF-fixdate form, `Sun, 06 Nov 1994 08:49:37 GMT` (RFC 9110 5.6.7).\nMilliseconds are dropped."
+        },
+        {
+          "name": "parse_http_date",
+          "kind": "fn",
+          "sig": "fn parse_http_date(s: Str, now: Time) -> Opt[Time]",
+          "sig_hash": "3zcevzt35qkx6rgunf6handbvq",
+          "hash": "2ykoyvkf57j4wgdmzrtg4nblo7xchepeejusl6mwceyzaj4ztozq",
+          "effects": [],
+          "doc": "Parses an HTTP date in any of the three forms recipients must accept: IMF-fixdate, the obsolete\nRFC 850 form (a two-digit year, read relative to `now`) and asctime. Names are case-sensitive and\nthe time zone must be GMT, as the RFC says; none for anything else."
+        },
+        {
+          "name": "Validators",
+          "kind": "type",
+          "sig": "pub type Validators = {etag: Opt[Etag], last_modified: Opt[Time]} derive Eq, Show",
+          "sig_hash": "2aukb6hfjavgxnyqxl4awrnvde",
+          "hash": "b3mhpkgunnv5ivsrf5znglmhonolskel6oz57sa2hn5vw65fmwfq",
+          "effects": [],
+          "doc": "What the server knows about the current representation: its entity tag and its modification\ntime, either of which may be missing."
+        },
+        {
+          "name": "Outcome",
+          "kind": "type",
+          "sig": "pub type Outcome = Proceed | NotModified | PreconditionFailed derive Eq, Show",
+          "sig_hash": "xjvfpm4kq3xgdwetcy357vj4ey",
+          "hash": "yx4hs6f6swl2ffyehukqyrecozkllf4zwjomgwt4eczib3q5wjzq",
+          "effects": [],
+          "doc": "The result of evaluating a request's preconditions: go on, answer 304 Not Modified, or answer\n412 Precondition Failed."
+        },
+        {
+          "name": "evaluate",
+          "kind": "fn",
+          "sig": "fn evaluate(req: Request, v: Validators, exists: Bool, now: Time) -> Outcome",
+          "sig_hash": "c4cgpsazj3kbozre3pr6tfh4li",
+          "hash": "lwmw2kohcmovt5tfkhcfcpm3j5vok7yocwddccvz5hvyqnc3mpdq",
+          "effects": [],
+          "doc": "Evaluates the preconditions of `req` against the current representation (`exists` is whether\nthere is one) in the order of RFC 9110 13.2.2: If-Match (strong comparison; a malformed value\nfails), else If-Unmodified-Since; then If-None-Match (weak comparison: 304 for GET and HEAD,\n412 otherwise), else If-Modified-Since for GET and HEAD. Dates compare at whole seconds;\nmalformed or repeated dates, and If-Modified-Since dates after `now`, are ignored. Call it\nbefore changing anything for PUT, PATCH and DELETE."
+        },
+        {
+          "name": "validators_of",
+          "kind": "fn",
+          "sig": "fn validators_of(r: Response, now: Time) -> Validators",
+          "sig_hash": "jsqhlwwrfn5q3xxdt662jyyasi",
+          "hash": "7etwom4rysxqhrsytj2b5qjfqzlprvc56lmkytszvzbp4b6xr3ga",
+          "effects": [],
+          "doc": "The validators a response carries: its ETag and Last-Modified fields."
+        },
+        {
+          "name": "not_modified",
+          "kind": "fn",
+          "sig": "fn not_modified(r: Response) -> Response",
+          "sig_hash": "j3i7venzydxyhdv27wr72gvnn4",
+          "hash": "mul6tgnjtuc5igvslckvhnvoly4t3x74u74ng3zrxuyjjb2na6da",
+          "effects": [],
+          "doc": "The 304 Not Modified answer for a 200 response (RFC 9110 15.4.5): no body and no\nrepresentation metadata (Content-*), keeping ETag, Cache-Control, Expires, Vary, Date,\nContent-Location and the other fields; Last-Modified only when there is no ETag."
+        },
+        {
+          "name": "precondition_failed",
+          "kind": "fn",
+          "sig": "fn precondition_failed(v: Validators) -> Response",
+          "sig_hash": "jdr3i4axcilymkvt7cj4xoead4",
+          "hash": "gv4wlqjwsqw73aylrl2lfft3nqrt2dh4x66mueusgh2pyu3rmwqa",
+          "effects": [],
+          "doc": "The 412 Precondition Failed answer, with the current entity tag when there is one."
+        },
+        {
+          "name": "conditional",
+          "kind": "fn",
+          "sig": "fn conditional(req: Request, r: Response, now: Time) -> Response",
+          "sig_hash": "wfkxxvholgz3djdoum6xoeyruq",
+          "hash": "d3i3bcceehjrchavp7c7effcica6qx27k57qpfeek66yr5zahdha",
+          "effects": [],
+          "doc": "Applies conditional GET to a response already made: for a GET or HEAD answered 200, the\nrequest's preconditions are evaluated against the response's own ETag and Last-Modified, giving\n304 or 412 where they say so. Other requests and statuses pass unchanged."
+        },
+        {
+          "name": "set_header",
+          "kind": "fn",
+          "sig": "fn set_header(r: Response, name: Str, value: Str) -> Response",
+          "sig_hash": "4zdygm4iwwsfqj2w4oa67ba77a",
+          "hash": "ysfhwzohxvxjosbwu4d5cz4bpbz7bqqfa2t6jfkxs6sbrrywgtla",
+          "effects": [],
+          "doc": "Sets field `name` (case-insensitively replacing any) on a response."
+        },
+        {
+          "name": "with_etag",
+          "kind": "fn",
+          "sig": "fn with_etag(r: Response, weak: Bool) -> Response",
+          "sig_hash": "zpa5p6qsmhqsiz7rqenwdw3emi",
+          "hash": "i4d4mjjnhih276l5yt7sxhiakdxn6nwcgy5fr3q3pejz6nth4dia",
+          "effects": [],
+          "doc": "Adds an ETag computed from the body (weak with `weak`) to a 200 response that has none."
+        },
+        {
+          "name": "conditional_get",
+          "kind": "fn",
+          "sig": "fn conditional_get[e](weak: Bool, next: Request -> Response ! e) -> Request -> Response ! e, time",
+          "sig_hash": "rau2oltxevybuqo2lydzv2467y",
+          "hash": "syuos56n5rjbvxizds3g3q2o4jyiixedovderbob25fvou6wtw7a",
+          "effects": [],
+          "doc": "Wraps a handler with conditional GET: 200 answers to GET and HEAD get an ETag from their body\n(weak with `weak`, which suits the server's `gzip` field) unless they have one, and the\nrequest's If-None-Match, If-Modified-Since, If-Match and If-Unmodified-Since are applied to them.\nThe handler still runs (this saves bandwidth, not work). Build it inside the handler lambda."
+        },
+        {
+          "name": "CacheControl",
+          "kind": "type",
+          "sig": "pub type CacheControl = {max_age: Opt[Int], s_maxage: Opt[Int], no_cache: Bool, no_cache_fields: List[Str], no_store: Bool, private: Bool, private_fields: List[Str], public: Bool, must_revalidate: Bool, proxy_revalidate: Bool, must_understand: Bool, no_transform: Bool, immutable: Bool, stale_while_revalidate: Opt[Int], stale_if_error: Opt[Int], max_stale: Opt[Int], min_fresh: Opt[Int], only_if_cached: Bool, extensions: List[(Str, Str)]} derive Eq, Show",
+          "sig_hash": "tp73ibe27sfp7g2saj46h33ksi",
+          "hash": "zswju3u25swomyfvuj5rh2tdd7whrh2h2fimfftbrokevshmnn3a",
+          "effects": [],
+          "doc": "The directives of a Cache-Control field (RFC 9111 5.2), for responses and requests. Durations\nare in seconds; `max_stale` without a value is 2147483648. Unknown directives are kept in\n`extensions` with their values (\"\" for none)."
+        },
+        {
+          "name": "cache_control",
+          "kind": "fn",
+          "sig": "fn cache_control() -> CacheControl",
+          "sig_hash": "6a4sjyqaxfke2o7zlym3pgltl4",
+          "hash": "xxtj57hp6dozmve4vigyl3p63mgh7ylwxzspykoszkhp2amymkqa",
+          "effects": [],
+          "doc": "No directives."
+        },
+        {
+          "name": "no_store",
+          "kind": "fn",
+          "sig": "fn no_store() -> CacheControl",
+          "sig_hash": "cf4afvfsfvzxbbcna7v7axjtxa",
+          "hash": "5t2gw5jr5ri27j5f4fsz62f6z5afdilvq4yu6aa3gjwe3bblo7nq",
+          "effects": [],
+          "doc": "`no-store`: for anything personal or secret."
+        },
+        {
+          "name": "revalidate",
+          "kind": "fn",
+          "sig": "fn revalidate() -> CacheControl",
+          "sig_hash": "qv7bwinjoux2ofgx664j375w3y",
+          "hash": "xw42babwdsdhuly5twowk6jhovpo24qayqtosvtqj7xgo33zfbgq",
+          "effects": [],
+          "doc": "`no-cache`: caches may store it but must revalidate every time (pair it with an ETag)."
+        },
+        {
+          "name": "public_for",
+          "kind": "fn",
+          "sig": "fn public_for(secs: Int where _ >= 0) -> CacheControl",
+          "sig_hash": "lbijixmp3au535s6tm7yz6wyf4",
+          "hash": "pbwjfg532mano2scb4zgcpuok46wbtele5bvco7dgma55gbts5ca",
+          "effects": [],
+          "doc": "`public, max-age=secs`."
+        },
+        {
+          "name": "private_for",
+          "kind": "fn",
+          "sig": "fn private_for(secs: Int where _ >= 0) -> CacheControl",
+          "sig_hash": "gxndmqpctwqv2wbezeelwveaoi",
+          "hash": "pk6ljd765d6sttcwbhgy2hpts2v6g4horxscuqaiz6lh4z65sscq",
+          "effects": [],
+          "doc": "`private, max-age=secs`: only the user's own browser may keep it."
+        },
+        {
+          "name": "immutable_for",
+          "kind": "fn",
+          "sig": "fn immutable_for(secs: Int where _ >= 0) -> CacheControl",
+          "sig_hash": "yxgizz43d2postopvpi2fdrvsu",
+          "hash": "jzg3gr3vpopr4e5kmgwua5jn375pjyhbaocu3q72s6b5urafvk2a",
+          "effects": [],
+          "doc": "`public, max-age=secs, immutable`: for assets whose URL changes with their content."
+        },
+        {
+          "name": "render_cache_control",
+          "kind": "fn",
+          "sig": "fn render_cache_control(cc: CacheControl) -> Str",
+          "sig_hash": "k7jjjrqddakkyitjyun6vskj2m",
+          "hash": "5gqu45immqjizecr4l357sucmx35lq5nxl44okv53qmqzx4cdlpa",
+          "effects": [],
+          "doc": "The field value of a Cache-Control, directives in a fixed order."
+        },
+        {
+          "name": "cache_control_header",
+          "kind": "fn",
+          "sig": "fn cache_control_header(cc: CacheControl) -> (Str, Str)",
+          "sig_hash": "6s24atve6ksnfdmbnpdvaeri74",
+          "hash": "ur7ifzznmvrycaasfur7gjrhf3erld45dgdl53k3qr6hag473gra",
+          "effects": [],
+          "doc": "The Cache-Control field for `cc`."
+        },
+        {
+          "name": "with_cache_control",
+          "kind": "fn",
+          "sig": "fn with_cache_control(r: Response, cc: CacheControl) -> Response",
+          "sig_hash": "xlzebkf4klhwrgagchpst2sm5q",
+          "hash": "o2f7ecaw27jis3xqt6tv5gzywrpax3lxd5gykrinudg4be2cygqa",
+          "effects": [],
+          "doc": "Sets the Cache-Control field of a response, replacing any."
+        },
+        {
+          "name": "parse_delta",
+          "kind": "fn",
+          "sig": "fn parse_delta(s: Str) -> Opt[Int]",
+          "sig_hash": "zo7czs4kt6qmyvvybdsuqddqia",
+          "hash": "fc464jwpenckuzmzo23qlopwvgverirgpqshlx2elccfnxe774bq",
+          "effects": [],
+          "doc": "A delta-seconds value: digits only, clamped to 2^31 as RFC 9111 1.2.2 says."
+        },
+        {
+          "name": "parse_cache_control",
+          "kind": "fn",
+          "sig": "fn parse_cache_control(s: Str) -> CacheControl",
+          "sig_hash": "exsoroevywtkrggd6cczowctyq",
+          "hash": "re4w7ghsnrmfprqcwhjlpmoah6zaoh3c52m52myhb42jetq7smka",
+          "effects": [],
+          "doc": "Parses a Cache-Control value: directive names are case-insensitive, values tokens or quoted\nstrings; of a repeated directive the first counts, and a malformed duration is ignored."
+        },
+        {
+          "name": "cache_control_of",
+          "kind": "fn",
+          "sig": "fn cache_control_of(r: Response) -> CacheControl",
+          "sig_hash": "i6lwlyrj4txw4rlbx47jtvkwyq",
+          "hash": "wvzlmuerfxf4q2yatpp2itfhpzlmm5bo32gyk5cw7o4rpztequkq",
+          "effects": [],
+          "doc": "The Cache-Control of a response, every field line together."
+        },
+        {
+          "name": "vary_of",
+          "kind": "fn",
+          "sig": "fn vary_of(r: Response) -> List[Str]",
+          "sig_hash": "vmp53pfq74flt3sxeilzzqjsui",
+          "hash": "4lxumbq5cy5vnqnri3zi6khdoviyb5cm462jqiufa3z6nfzna2yq",
+          "effects": [],
+          "doc": "The field names a response varies on (the Vary field lines together)."
+        },
+        {
+          "name": "add_vary",
+          "kind": "fn",
+          "sig": "fn add_vary(r: Response, names: List[Str]) -> Response",
+          "sig_hash": "vpu4vrlyt66wt5j5ml2p3h72aa",
+          "hash": "cbwa2qrv376lfafz2p2hqptrzhihaidxl2nnby7kfo3jj5uz5bka",
+          "effects": [],
+          "doc": "Adds field names to the response's Vary, once each (case-insensitively), in one field line;\n`*` absorbs everything."
+        },
+        {
+          "name": "freshness_lifetime",
+          "kind": "fn",
+          "sig": "fn freshness_lifetime(cc: CacheControl, shared: Bool, date: Opt[Time], expires: Opt[Str]) -> Opt[Int]",
+          "sig_hash": "fapf5piqxgac7xhuchcnmz3zva",
+          "hash": "gw6qiwlln6brooqwq5uu5s5rdwhxxhoqolpy3j6jv5im3ztehk3q",
+          "effects": [],
+          "doc": "The freshness lifetime of a response in seconds (RFC 9111 4.2.1): s-maxage for a shared cache,\nelse max-age, else Expires minus Date (an invalid Expires means already stale); none when the\nresponse says nothing (a heuristic lifetime is the cache's choice)."
+        },
+        {
+          "name": "current_age",
+          "kind": "fn",
+          "sig": "fn current_age(age_value: Int where _ >= 0, date: Opt[Time], request_time: Time, response_time: Time, now: Time) -> Int",
+          "sig_hash": "o7m272xhgoshufbcbyqdbfhsaq",
+          "hash": "wf3n2yqmyss6x6k33rex44a3gslfwvjkqlvmlaukqpc4i6kjiyja",
+          "effects": [],
+          "doc": "The current age of a stored response in seconds (RFC 9111 4.2.3), from its Age value, its Date,\nwhen the request was sent, when the response arrived, and now."
+        },
+        {
+          "name": "is_fresh",
+          "kind": "fn",
+          "sig": "fn is_fresh(lifetime: Int, age: Int) -> Bool",
+          "sig_hash": "jni5ivygt2jrt7wz2brhftwil4",
+          "hash": "eb3az7ttu5frfi5jwudifn6oscrqkahtmkagkc6juiu355tm2deq",
+          "effects": [],
+          "doc": "Whether a response of `lifetime` seconds and `age` seconds is still fresh."
+        },
+        {
+          "name": "age_header",
+          "kind": "fn",
+          "sig": "fn age_header(secs: Int where _ >= 0) -> (Str, Str)",
+          "sig_hash": "4gtl4s5vmdkkxgynx3v6pipb24",
+          "hash": "pofdcf25lhl6gper3wnvhszuafiuy5se7zvqkkc6kvmc44tnxv6q",
+          "effects": [],
+          "doc": "The Age field for `secs` seconds."
+        }
+      ]
+    }
+  ]
+}
