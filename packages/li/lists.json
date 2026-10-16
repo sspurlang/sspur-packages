@@ -1,0 +1,1301 @@
+{
+  "schema": 1,
+  "name": "lists",
+  "description": "List utilities beyond the builtins: windows, splits, grouping, zips, set operations, combinatorics, searching and safe index edits",
+  "repository": "https://github.com/sspurlang/sspur-lists",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-lists.git",
+      "tag": "v0.1.0",
+      "commit": "357044583c2b2f46ef523e0d8ad2a035511326f7",
+      "hash": "jmzcwoaqzlh5jog3ueaziqijzl35kjn5xxjcve5odrtpdijld4za",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/lists-0.1.0/lists-0.1.0.tar",
+        "sha256": "d564a10929d54044af19a20e02e073ceba27589c60a83b9522cdfa624ea819fb",
+        "size": 70656
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:01:14Z",
+      "publisher": "utkarshavardhana",
+      "request": 16,
+      "api": [
+        {
+          "name": "split_at",
+          "kind": "fn",
+          "sig": "fn split_at[A](xs: List[A], i: Int) -> (List[A], List[A])",
+          "sig_hash": "o3hmrwei3ksdqqszdjerfhkvb4",
+          "hash": "nzgbcreira3yqnq54lumcm6catai3h55pzyjeqnqpbtzfyygnzlq",
+          "effects": [],
+          "doc": "`(xs.take(i), xs.drop(i))` with `i` clamped to `0..=xs.len`: a negative `i` gives `([], xs)`\nand an `i` past the end gives `(xs, [])`."
+        },
+        {
+          "name": "split_while",
+          "kind": "fn",
+          "sig": "fn split_while[A, e](xs: List[A], p: A -> Bool ! e) -> (List[A], List[A]) ! e",
+          "sig_hash": "wrehrkidhs3ygivb6gxummbo4y",
+          "hash": "rgcuh7esz7mftxtwc2cqew5fcqtrgxhgrwkzeobcnqhjncpnnmaa",
+          "effects": [
+            "e"
+          ],
+          "doc": "The longest prefix whose elements all satisfy `p`, and the rest (Haskell's `span`). `p` is\ncalled once per element of the prefix, plus once for the first element that fails."
+        },
+        {
+          "name": "split_until",
+          "kind": "fn",
+          "sig": "fn split_until[A, e](xs: List[A], p: A -> Bool ! e) -> (List[A], List[A]) ! e",
+          "sig_hash": "pvuz2estln2plb7m26nik7weke",
+          "hash": "kdhw7rsuy2rn2arxamveqnzq3jd5n3kgn2banorjnx6olcp4znba",
+          "effects": [
+            "e"
+          ],
+          "doc": "The longest prefix with no element satisfying `p`, and the rest, which starts with the first\nelement that does (Haskell's `break`)."
+        },
+        {
+          "name": "split_when",
+          "kind": "fn",
+          "sig": "fn split_when[A, e](xs: List[A], p: (A, A) -> Bool ! e) -> List[List[A]] ! e",
+          "sig_hash": "a72th2ydy7xo47pwepau6lc3zm",
+          "hash": "a7sqykppt6kr5an274hf3gpmrtlaj6rnnbbg2k3tb3mfxv7sx6na",
+          "effects": [
+            "e"
+          ],
+          "doc": "Splits `xs` between every pair of neighbours `a, b` for which `p(a, b)` holds; no element is\nlost. An empty list gives `[]`. `split_when([1, 2, 4, 5], (a, b) => b != a + 1)` is\n`[[1, 2], [4, 5]]`."
+        },
+        {
+          "name": "split_on",
+          "kind": "fn",
+          "sig": "fn split_on[A](xs: List[A], sep: A) -> List[List[A]]",
+          "sig_hash": "rrgqyt7irtlydjxicjt5wrmvmm",
+          "hash": "leyqvvn2nb5vg2vpjlzvvcbqcuodzgsaoxsirrtanftuqm77x6yq",
+          "effects": [],
+          "doc": "Splits `xs` at every element equal to `sep`, dropping the separators, like `Str.split`:\n`[]` gives `[[]]`, and neighbouring or trailing separators give empty pieces, so the result\nalways has one more piece than there are separators."
+        },
+        {
+          "name": "split_where",
+          "kind": "fn",
+          "sig": "fn split_where[A, e](xs: List[A], p: A -> Bool ! e) -> List[List[A]] ! e",
+          "sig_hash": "vl4d5yzyrn7232osrj2djrhsue",
+          "hash": "egziyfiant3fx2xvzhglaocjthiuckh7k2vrokgsihl4xplpnbhq",
+          "effects": [
+            "e"
+          ],
+          "doc": "`split_on` with a predicate: splits at every element satisfying `p` and drops those elements."
+        },
+        {
+          "name": "split_parts",
+          "kind": "fn",
+          "sig": "fn split_parts[A](xs: List[A], n: Int where _ >= 1) -> List[List[A]]",
+          "sig_hash": "byzt3a3j52ycet5mp67d534hbi",
+          "hash": "x4dhofhjvawlmyuxc5d6jjg3cr4vsptza3n566z7xo4n23iobq6a",
+          "effects": [],
+          "doc": "Exactly `n` consecutive parts whose lengths differ by at most one, the longer parts first\n(more-itertools' `divide`). With fewer than `n` elements the last parts are empty."
+        },
+        {
+          "name": "sliding",
+          "kind": "fn",
+          "sig": "fn sliding[A](xs: List[A], size: Int where _ >= 1, step: Int where _ >= 1, partial: Bool) -> List[List[A]]",
+          "sig_hash": "xs765kunfl4ayf5fk2zukx4c4i",
+          "hash": "sdmrf63ddyhs3g3byy3n7vtkz4ysvqxbvjl6zghhsxtr3hpn3ijq",
+          "effects": [],
+          "doc": "Windows of `size` elements starting every `step` elements (Kotlin's `windowed`). With\n`partial` false only full windows are returned; with `partial` true the windows that start\nbefore the end but run past it are kept, shortened. `sliding(xs, n, 1, false)` is\n`xs.windows(n)` and `sliding(xs, n, n, true)` is `xs.chunks(n)`."
+        },
+        {
+          "name": "chunks_padded",
+          "kind": "fn",
+          "sig": "fn chunks_padded[A](xs: List[A], n: Int where _ >= 1, fill: A) -> List[List[A]]",
+          "sig_hash": "xvxxs4qhrfn4p2l2tf2d523e6a",
+          "hash": "fb2keeevoklefzlsayv2dc25hjfan2lblivqmqbgrmprzpl57phq",
+          "effects": [],
+          "doc": "`xs.chunks(n)` with the last chunk padded with `fill` to `n` elements. An empty list gives `[]`."
+        },
+        {
+          "name": "chunk_by",
+          "kind": "fn",
+          "sig": "fn chunk_by[A, K, e](xs: List[A], key: A -> K ! e) -> List[(K, List[A])] ! e",
+          "sig_hash": "v4wxyczf2gwyvr6gstmww3uj4a",
+          "hash": "zg5tekf3uer7zs4dim6ikgyugui6c5sicj5t4hx7i5eh63fufq2a",
+          "effects": [
+            "e"
+          ],
+          "doc": "Groups runs of consecutive elements with the same key, each with its key (Python's\n`itertools.groupby`, Rust's `chunk_by`). `key` is called once per element. Equal keys that\nare not adjacent make separate runs; use `group_into` to group them all."
+        },
+        {
+          "name": "rle",
+          "kind": "fn",
+          "sig": "fn rle[A](xs: List[A]) -> List[(A, Int)]",
+          "sig_hash": "zo4up55plx7ytpcte5qgbr4oxu",
+          "hash": "k6cd6ibskwpkwysq7dcdokyudh6o3sy63hxi3ouvq6wpz4jf66kq",
+          "effects": [],
+          "doc": "Run-length encoding: each run of equal neighbours as `(value, length)`."
+        },
+        {
+          "name": "rle_decode",
+          "kind": "fn",
+          "sig": "fn rle_decode[A](runs: List[(A, Int)]) -> List[A]",
+          "sig_hash": "ctcarc3ajkcbxh527jfm3lqjpe",
+          "hash": "v4keaev4dlnf3wk6l6zd2trm4fhlztdh6q5757mgwfbrdps4ooua",
+          "effects": [],
+          "doc": "The inverse of `rle`; counts below 1 contribute nothing."
+        },
+        {
+          "name": "tails",
+          "kind": "fn",
+          "sig": "fn tails[A](xs: List[A]) -> List[List[A]]",
+          "sig_hash": "lperp5pbka4ezxvyxbcxuq6t4u",
+          "hash": "uoz2lq7ho5m2e4v6oqntqaycogadgj4647n66zs56su53cdrvwoq",
+          "effects": [],
+          "doc": "Every suffix of `xs`, longest first, ending with `[]`: `xs.len + 1` lists."
+        },
+        {
+          "name": "inits",
+          "kind": "fn",
+          "sig": "fn inits[A](xs: List[A]) -> List[List[A]]",
+          "sig_hash": "4oa47ooodm5m2kdyuyp7avwer4",
+          "hash": "mgxisj7l6jdmwuysrds4jm2n2tc2cmc7uvn27afw4qwz7qjfjisa",
+          "effects": [],
+          "doc": "Every prefix of `xs`, shortest first, starting with `[]`: `xs.len + 1` lists."
+        },
+        {
+          "name": "take_last",
+          "kind": "fn",
+          "sig": "fn take_last[A](xs: List[A], n: Int) -> List[A]",
+          "sig_hash": "pp3x54pkyyjqlpe53zvtc7bl6y",
+          "hash": "rllb6frigv2qr67a6jtqoyv26awkczkd4zfiweoa2bhyxmzzupuq",
+          "effects": [],
+          "doc": "The last `n` elements (all of them when `n >= xs.len`, none when `n <= 0`)."
+        },
+        {
+          "name": "drop_last",
+          "kind": "fn",
+          "sig": "fn drop_last[A](xs: List[A], n: Int) -> List[A]",
+          "sig_hash": "x6fxvtzuyr3z4hc3adc76jf6ka",
+          "hash": "xspxkzohqpwyqizjwyetuwhzgqeb2rc3qqbf34zjwm36hb2evxeq",
+          "effects": [],
+          "doc": "`xs` without its last `n` elements (`[]` when `n >= xs.len`, `xs` when `n <= 0`)."
+        },
+        {
+          "name": "take_last_while",
+          "kind": "fn",
+          "sig": "fn take_last_while[A, e](xs: List[A], p: A -> Bool ! e) -> List[A] ! e",
+          "sig_hash": "7ragqjvkonxijgdhktccodqa4a",
+          "hash": "ir6b4gwycmfbgpw7cknitu4uyr4piuhuxaz2wzfkul6go6glp5hq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The longest suffix whose elements all satisfy `p`, tested from the end."
+        },
+        {
+          "name": "drop_last_while",
+          "kind": "fn",
+          "sig": "fn drop_last_while[A, e](xs: List[A], p: A -> Bool ! e) -> List[A] ! e",
+          "sig_hash": "zz72dyaxwd5ajmo6z3hlm4rpoe",
+          "hash": "6nruzzqc3svvrc72ca5mqjnyqyeak2dzwugltxo2o2zpn2ptmjfa",
+          "effects": [
+            "e"
+          ],
+          "doc": "`xs` without the longest suffix whose elements all satisfy `p` (an `rstrip` for lists)."
+        },
+        {
+          "name": "pad_to",
+          "kind": "fn",
+          "sig": "fn pad_to[A](xs: List[A], n: Int, fill: A) -> List[A]",
+          "sig_hash": "p5b7qe2kjp4m4ah373ze7itflm",
+          "hash": "s6mrzqwmzuj5stluxqpigeevacqbn2a3bdgbya6plws3gftrxxsa",
+          "effects": [],
+          "doc": "`xs` padded at the end with `fill` to at least `n` elements; longer lists are unchanged."
+        },
+        {
+          "name": "pad_front_to",
+          "kind": "fn",
+          "sig": "fn pad_front_to[A](xs: List[A], n: Int, fill: A) -> List[A]",
+          "sig_hash": "mc4c66paoxegjwyusuf2w5el3i",
+          "hash": "2xa2thqei4uky64g5ilscxmvngkulkuoj62uch4cerzxd6342jra",
+          "effects": [],
+          "doc": "`xs` padded at the front with `fill` to at least `n` elements; longer lists are unchanged."
+        },
+        {
+          "name": "dedup",
+          "kind": "fn",
+          "sig": "fn dedup[A](xs: List[A]) -> List[A]",
+          "sig_hash": "bav75focvwsvzfwhazod6vlqou",
+          "hash": "24ei72heaif3aopjkyy3yrhqmmomzqkhpbvphm4q6ljba3xwkkga",
+          "effects": [],
+          "doc": "`xs` with runs of equal neighbours collapsed to their first element (Unix `uniq`). Use the\nbuiltin `unique` to drop every repeat."
+        },
+        {
+          "name": "dedup_by",
+          "kind": "fn",
+          "sig": "fn dedup_by[A, K, e](xs: List[A], key: A -> K ! e) -> List[A] ! e",
+          "sig_hash": "jr66yc7ob6kfor5kz464bpq3ba",
+          "hash": "slzzrcm3jk3alj4we4uczz3z4hnawtvpozdhufs7xsnlt4fez5pq",
+          "effects": [
+            "e"
+          ],
+          "doc": "`dedup` comparing keys: keeps the first element of each run of neighbours with equal keys."
+        },
+        {
+          "name": "distinct_by",
+          "kind": "fn",
+          "sig": "fn distinct_by[A, K, e](xs: List[A], key: A -> K ! e) -> List[A] ! e",
+          "sig_hash": "3uyevhob7nvktys6kbyxwybzt4",
+          "hash": "a5p2knh6toy7vmcj77hrmngbmmcy7rhr4l76ifvijayjzdm4mtia",
+          "effects": [
+            "e"
+          ],
+          "doc": "The first element for each distinct key, in input order (lodash's `uniqBy`). `key` is called\nonce per element."
+        },
+        {
+          "name": "duplicates",
+          "kind": "fn",
+          "sig": "fn duplicates[A](xs: List[A]) -> List[A]",
+          "sig_hash": "aw4caagwuz7cuiincuhp2ortkq",
+          "hash": "u4lckowi6ht6jlfurju4f46ddclb2zcxifnu24uknkfl6iauupba",
+          "effects": [],
+          "doc": "The values that occur more than once, each once, in the order of their first occurrence."
+        },
+        {
+          "name": "all_equal",
+          "kind": "fn",
+          "sig": "fn all_equal[A](xs: List[A]) -> Bool",
+          "sig_hash": "e3gzedl76pmyjzeom2qougm62e",
+          "hash": "nzugn65ss3gegdtbzltibuqxapydkllukhip62py6wm7pu2cjddq",
+          "effects": [],
+          "doc": "Whether every element equals the first (true for an empty list)."
+        },
+        {
+          "name": "all_distinct",
+          "kind": "fn",
+          "sig": "fn all_distinct[A](xs: List[A]) -> Bool",
+          "sig_hash": "wpk23f6gomor2bxnmoal7c6ela",
+          "hash": "ilwg2r2cg57xygrsdnkexv6opbbth5yghjdjq2ujtgpwavqujfdq",
+          "effects": [],
+          "doc": "Whether no two elements are equal (true for an empty list)."
+        },
+        {
+          "name": "single",
+          "kind": "fn",
+          "sig": "fn single[A](xs: List[A]) -> Opt[A]",
+          "sig_hash": "py5hgi3t6o2wlqsensmddaglky",
+          "hash": "g7u3tuhrtzer7rdykcyc65ielom2swjnjhbu4kvssy6zrwagkmwa",
+          "effects": [],
+          "doc": "The only element of `xs`, or `none` when it has zero or several."
+        },
+        {
+          "name": "frequencies",
+          "kind": "fn",
+          "sig": "fn frequencies[A](xs: List[A]) -> Map[A, Int]",
+          "sig_hash": "c4vm7vekstlgfvxpxk6tndna4i",
+          "hash": "mvqghbf6t2ppdwtlfrwip6psfze5b46xdux2onyrhzh63ynxmo5q",
+          "effects": [],
+          "doc": "How many times each value occurs (Python's `Counter`). The builtin `counts` gives the same\nnumbers as a list in first-seen order."
+        },
+        {
+          "name": "count_by",
+          "kind": "fn",
+          "sig": "fn count_by[A, K, e](xs: List[A], key: A -> K ! e) -> Map[K, Int] ! e",
+          "sig_hash": "qfnsocix5xjn5cgz2f4wtsahdu",
+          "hash": "yz2ljompgurpahridv7d7l2ffvmkpo32sve5ea4qmglfyaddtrra",
+          "effects": [
+            "e"
+          ],
+          "doc": "How many elements have each key (lodash's `countBy`)."
+        },
+        {
+          "name": "count_where",
+          "kind": "fn",
+          "sig": "fn count_where[A, e](xs: List[A], p: A -> Bool ! e) -> Int ! e",
+          "sig_hash": "ljjwyasxeykedegv4njwgcbbs4",
+          "hash": "j5r7hdyqxtj7xolnf2ygj7hr3q55ark6f3vr2jjllutrlxvoqk7q",
+          "effects": [
+            "e"
+          ],
+          "doc": "How many elements satisfy `p`."
+        },
+        {
+          "name": "index_by",
+          "kind": "fn",
+          "sig": "fn index_by[A, K, e](xs: List[A], key: A -> K ! e) -> Map[K, A] ! e",
+          "sig_hash": "dimw2qvkvf5xjxmrcwab2jsqii",
+          "hash": "dabd7hq4zzgmsxixmjvasjxppd3ztt7is3cwrcl54znf2lwkjxqa",
+          "effects": [
+            "e"
+          ],
+          "doc": "A map from each element's key to the element (lodash's `keyBy`). When several elements share\na key the last one wins; use `group_into` to keep them all."
+        },
+        {
+          "name": "associate",
+          "kind": "fn",
+          "sig": "fn associate[A, K, V, e](xs: List[A], f: A -> (K, V) ! e) -> Map[K, V] ! e",
+          "sig_hash": "w7ppbtho7fgnrps4lgodnukjyu",
+          "hash": "4sbtjj7646t2q72ynk5ewrkyrmz6fy2twogdkx45aw7bbyyffmsa",
+          "effects": [
+            "e"
+          ],
+          "doc": "A map built from the `(key, value)` pair `f` gives for each element (Kotlin's `associate`).\nWhen keys repeat the last pair wins."
+        },
+        {
+          "name": "group_into",
+          "kind": "fn",
+          "sig": "fn group_into[A, K, e](xs: List[A], key: A -> K ! e) -> Map[K, List[A]] ! e",
+          "sig_hash": "or2jgxbuhe53kpezof6ieczhke",
+          "hash": "lxa7s7kutbb6lgwy6vxmbsmdl6j64vleearhcpocdhnr75ibgu6a",
+          "effects": [
+            "e"
+          ],
+          "doc": "The elements grouped by key into a map; each group keeps input order. The builtin `group_by`\ngives the same groups as a list in first-seen key order."
+        },
+        {
+          "name": "sum_by",
+          "kind": "fn",
+          "sig": "fn sum_by[A, e](xs: List[A], f: A -> Int ! e) -> Int ! e",
+          "sig_hash": "kua4ubnb2a4wag2qx37ucjx2vm",
+          "hash": "6mrgyy2tyji4vzwyztokz6nibs4dn6nxb5o3b56kcujpneqcwwka",
+          "effects": [
+            "e"
+          ],
+          "doc": "The sum of `f` over the elements (0 for an empty list); overflow traps like `+`."
+        },
+        {
+          "name": "sum_by_f64",
+          "kind": "fn",
+          "sig": "fn sum_by_f64[A, e](xs: List[A], f: A -> F64 ! e) -> F64 ! e",
+          "sig_hash": "jnsssifzlo35pzvvkifgnrylum",
+          "hash": "qdjg5qpoc3rkqqmlesmdcmah2zqzxvcqxajfwenkactq5ygofojq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The sum of `f` over the elements as floats (0.0 for an empty list), with Kahan-Babuska\ncompensation, so long sums of small terms lose no precision to a large running total."
+        },
+        {
+          "name": "min_by",
+          "kind": "fn",
+          "sig": "fn min_by[A, K: Ord, e](xs: List[A], key: A -> K ! e) -> Opt[A] ! e",
+          "sig_hash": "opkpdiq4vq722h4zis3fo2qbzq",
+          "hash": "z74eyoxaydn2z56ejpgronop5pamuv7prj32bkqu5gbhtjgaeqta",
+          "effects": [
+            "e"
+          ],
+          "doc": "The first element with the smallest key, or `none` for an empty list. `key` is called once\nper element."
+        },
+        {
+          "name": "max_by",
+          "kind": "fn",
+          "sig": "fn max_by[A, K: Ord, e](xs: List[A], key: A -> K ! e) -> Opt[A] ! e",
+          "sig_hash": "pcipcykiqtn7ssdb77ltjt2mmm",
+          "hash": "ib5dnljejx2uftmizlariecg2cxkanhqz5y45o25amb7jgyesomq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The first element with the largest key, or `none` for an empty list. `key` is called once per\nelement."
+        },
+        {
+          "name": "min_max",
+          "kind": "fn",
+          "sig": "fn min_max[T: Ord](xs: List[T]) -> Opt[(T, T)]",
+          "sig_hash": "lxdwjnj4vijpth5xgxl4hsaorq",
+          "hash": "ahbecbr3qdceof3ofcobcwmdq7utrfympmmjnbeddjfpjhgdgjta",
+          "effects": [],
+          "doc": "The smallest and the largest element in one pass (the first of each among equals), or\n`none` for an empty list."
+        },
+        {
+          "name": "min_max_by",
+          "kind": "fn",
+          "sig": "fn min_max_by[A, K: Ord, e](xs: List[A], key: A -> K ! e) -> Opt[(A, A)] ! e",
+          "sig_hash": "c67gjxjuragijoexq6wzsg2oje",
+          "hash": "vrxefq4ncfbajqbmiefxbs5sriofngle3q72iknb4moun7by5ikq",
+          "effects": [
+            "e"
+          ],
+          "doc": "`min_by` and `max_by` in one pass: the first element with the smallest key and the first with\nthe largest, or `none` for an empty list."
+        },
+        {
+          "name": "top_k",
+          "kind": "fn",
+          "sig": "fn top_k[A, K: Ord, e](xs: List[A], k: Int, key: A -> K ! e) -> List[A] ! e",
+          "sig_hash": "qykoaxp2r6l4o77v26nvgseb2i",
+          "hash": "7j5xnlr7j67tvfypi4q6knmnnh3wa7jy5o7fuq6tq3ioctilapva",
+          "effects": [
+            "e"
+          ],
+          "doc": "The `k` elements with the largest keys, largest first; equal keys keep input order, so the\nresult is stable. `k <= 0` gives `[]` and `k >= xs.len` sorts the whole list."
+        },
+        {
+          "name": "bottom_k",
+          "kind": "fn",
+          "sig": "fn bottom_k[A, K: Ord, e](xs: List[A], k: Int, key: A -> K ! e) -> List[A] ! e",
+          "sig_hash": "todxaqs43nfsylkyjgmssdriwq",
+          "hash": "b6jowptknqjoqdt2navuusdmq6fv3mv73y6eeh747fmdkaonza6q",
+          "effects": [
+            "e"
+          ],
+          "doc": "The `k` elements with the smallest keys, smallest first, stable like `top_k`."
+        },
+        {
+          "name": "largest",
+          "kind": "fn",
+          "sig": "fn largest[T: Ord](xs: List[T], k: Int) -> List[T]",
+          "sig_hash": "vy7mlzievqkpjw42tsrtfp6eua",
+          "hash": "cgilvb6h7zexs6mktj3gnv2jyju3b76vgcd4qi7xsr3752h5bpwq",
+          "effects": [],
+          "doc": "The `k` largest elements, largest first (Python's `heapq.nlargest`)."
+        },
+        {
+          "name": "smallest",
+          "kind": "fn",
+          "sig": "fn smallest[T: Ord](xs: List[T], k: Int) -> List[T]",
+          "sig_hash": "hw6wxoqwu5hood2fwhdxmisp4q",
+          "hash": "b4kqpahrv2sp36kxcwpsxz4kgurpwrzdh4ylzdzlbi3sw6riejeq",
+          "effects": [],
+          "doc": "The `k` smallest elements, smallest first (Python's `heapq.nsmallest`)."
+        },
+        {
+          "name": "interleave",
+          "kind": "fn",
+          "sig": "fn interleave[A](xs: List[A], ys: List[A]) -> List[A]",
+          "sig_hash": "d6xbbjm76tmumlbqsfwa3lgwx4",
+          "hash": "pf5dwmlf4me67o6eo6ed5vr7yzon3iyh67p73doixoafjml44bkq",
+          "effects": [],
+          "doc": "Alternates elements of `xs` and `ys`, starting with `xs`; the rest of the longer list follows."
+        },
+        {
+          "name": "interleave_all",
+          "kind": "fn",
+          "sig": "fn interleave_all[A](xss: List[List[A]]) -> List[A]",
+          "sig_hash": "whry5sazbb5kysuaq36gsdgvce",
+          "hash": "da6k2lakn4u7xh4imvmklxfkrpmbgu5vd35n6ii5to2qwtzlsx7a",
+          "effects": [],
+          "doc": "Round-robin over any number of lists: the first element of each, then the second of each,\nskipping lists that have run out (more-itertools' `interleave_longest`)."
+        },
+        {
+          "name": "intersperse",
+          "kind": "fn",
+          "sig": "fn intersperse[A](xs: List[A], sep: A) -> List[A]",
+          "sig_hash": "tybt5coxg73qqm6uh5rwvol5nm",
+          "hash": "slk5t5255bfmb27tnji33y7xwvalnd3cc4huyf4jmfyf3qjkdjdq",
+          "effects": [],
+          "doc": "`sep` between every two elements: `[a, sep, b, sep, c]`."
+        },
+        {
+          "name": "intercalate",
+          "kind": "fn",
+          "sig": "fn intercalate[A](xss: List[List[A]], sep: List[A]) -> List[A]",
+          "sig_hash": "j6dmrkxnxbgjmpisn34tndme2e",
+          "hash": "sa7yq4rulxud77k44xww2wdxazqevtw6njca3qrrvits7ddiuiwa",
+          "effects": [],
+          "doc": "The lists of `xss` joined with `sep` between every two (`join` for lists of lists)."
+        },
+        {
+          "name": "zip3",
+          "kind": "fn",
+          "sig": "fn zip3[A, B, C](xs: List[A], ys: List[B], zs: List[C]) -> List[(A, B, C)]",
+          "sig_hash": "o5rhwdouxqruxaxnzguvldjqse",
+          "hash": "kcgvwcts6c3pgibsekhkmvhbnxxev4wzsxbqqw5gcrvhp7nuxqzq",
+          "effects": [],
+          "doc": "Triples of the elements at the same index, as long as the shortest list."
+        },
+        {
+          "name": "zip_with",
+          "kind": "fn",
+          "sig": "fn zip_with[A, B, C, e](xs: List[A], ys: List[B], f: (A, B) -> C ! e) -> List[C] ! e",
+          "sig_hash": "h54qobz5vjn4loroptpx7um6bm",
+          "hash": "njhmrmchplymuxhsvqhhxlygnisl5yk2b5vvzraecdmsn3ajtgsq",
+          "effects": [
+            "e"
+          ],
+          "doc": "`f` applied to the elements at the same index, as long as the shorter list."
+        },
+        {
+          "name": "zip_longest",
+          "kind": "fn",
+          "sig": "fn zip_longest[A, B](xs: List[A], ys: List[B], fill_a: A, fill_b: B) -> List[(A, B)]",
+          "sig_hash": "krdedey3nb5i6u4dpt35rs3udm",
+          "hash": "wglzrtg4afb57wtp6eal5rj2ka3zwpkirghbg4vq3pzzhjlevpea",
+          "effects": [],
+          "doc": "Pairs as long as the longer list, the shorter one padded with its fill value (Python's\n`zip_longest`)."
+        },
+        {
+          "name": "zip_longest_opt",
+          "kind": "fn",
+          "sig": "fn zip_longest_opt[A, B](xs: List[A], ys: List[B]) -> List[(Opt[A], Opt[B])]",
+          "sig_hash": "a3xihfkxe4kuy3s35foho4gwm4",
+          "hash": "k6dpwqu4iri3c6t7hi2vmxhq35447z2vf3on7hnp6ocfhwai2j7q",
+          "effects": [],
+          "doc": "Pairs as long as the longer list, with `none` where a list has run out."
+        },
+        {
+          "name": "unzip",
+          "kind": "fn",
+          "sig": "fn unzip[A, B](ps: List[(A, B)]) -> (List[A], List[B])",
+          "sig_hash": "d2favjmhgqsadrp55mtlsnyna4",
+          "hash": "irz7f5gcf5h7aqd7ty4pyl7pfl6r4p74ydvua7o6fd45wh46xdlq",
+          "effects": [],
+          "doc": "The firsts and the seconds of a list of pairs."
+        },
+        {
+          "name": "unzip3",
+          "kind": "fn",
+          "sig": "fn unzip3[A, B, C](ts: List[(A, B, C)]) -> (List[A], List[B], List[C])",
+          "sig_hash": "ew2xd4syjyj34pqrp7thfcnshm",
+          "hash": "rfmpxcmp5aikrfhvyqkmtyn7otp3dhvxcai7llfrib4565xzfyua",
+          "effects": [],
+          "doc": "The three components of a list of triples."
+        },
+        {
+          "name": "transpose",
+          "kind": "fn",
+          "sig": "fn transpose[A](rows: List[List[A]]) -> List[List[A]]",
+          "sig_hash": "7xe33bhfzsw7wnusftf54b45hy",
+          "hash": "c25iueg3v2lg7xh7m7rbseqrahws2a3goqho7uikwkoalj2zd5fq",
+          "effects": [],
+          "doc": "Rows become columns. Ragged input is allowed: column `i` holds element `i` of every row that\nhas one, in row order, so it is shorter than the row count when some rows are short, and there\nare as many columns as the longest row has elements. `[]` gives `[]`."
+        },
+        {
+          "name": "pairwise",
+          "kind": "fn",
+          "sig": "fn pairwise[A](xs: List[A]) -> List[(A, A)]",
+          "sig_hash": "vs5laltyu7en2xpz5xihvrvwni",
+          "hash": "bawgwvbjtyjkuop5adz375urym2s4si2yqkzgxpm4ik7mnct2asq",
+          "effects": [],
+          "doc": "Adjacent pairs: `[(x0, x1), (x1, x2), ...]`, empty for fewer than two elements."
+        },
+        {
+          "name": "combinatorics_limit",
+          "kind": "fn",
+          "sig": "fn combinatorics_limit() -> Int",
+          "sig_hash": "wtzdguveonjoksce6buddngyiu",
+          "hash": "4uhhyhjph5mqf5js5zuxchwzelsxc7uaqnxigbnr4ygeokpvicya",
+          "effects": [],
+          "doc": "The most lists or pairs the combinatoric functions return: 1,000,000. Their `pre` clauses\nreject inputs whose output would be larger, so a typo can't ask for a trillion permutations."
+        },
+        {
+          "name": "cartesian",
+          "kind": "fn",
+          "sig": "fn cartesian[A, B](xs: List[A], ys: List[B]) -> List[(A, B)]",
+          "sig_hash": "mlz63roce4cmbcc7usjpm7wgka",
+          "hash": "ncw7ap473a35wkkolyypscfrui2npibj3opvc2jykhxuv5w6bh2q",
+          "effects": [],
+          "doc": "Every pair `(x, y)` with `x` from `xs` and `y` from `ys`, `x` varying slowest. At most\n`combinatorics_limit()` pairs."
+        },
+        {
+          "name": "cartesian_all",
+          "kind": "fn",
+          "sig": "fn cartesian_all[A](xss: List[List[A]]) -> List[List[A]]",
+          "sig_hash": "va3hd4z4dobgutylsyyi5eq3bq",
+          "hash": "7gmyehqqcsrpbclhxa5sywrfjoisnipqr2z5mst4aqnsnljuoqja",
+          "effects": [],
+          "doc": "The n-ary cartesian product (Python's `itertools.product`): every list taking one element from\neach list of `xss`, the last varying fastest. `[]` gives `[[]]`, and any empty list gives `[]`.\nAt most `combinatorics_limit()` lists."
+        },
+        {
+          "name": "permutations",
+          "kind": "fn",
+          "sig": "fn permutations[A](xs: List[A], k: Int where _ >= 0) -> List[List[A]]",
+          "sig_hash": "cpimewb73zyhzt6pdro7vnhjyq",
+          "hash": "gtxs3fz3ebev63nnnc66uxjbnsodhnupejek57rerx2pfjosxsua",
+          "effects": [],
+          "doc": "The `k`-permutations of `xs` by position, in lexicographic order of positions (Python's\n`itertools.permutations(xs, k)`): `n! / (n - k)!` lists, `[[]]` for `k == 0` and `[]` for\n`k > xs.len`. Equal elements are treated as distinct. At most `combinatorics_limit()` lists."
+        },
+        {
+          "name": "combinations",
+          "kind": "fn",
+          "sig": "fn combinations[A](xs: List[A], k: Int where _ >= 0) -> List[List[A]]",
+          "sig_hash": "yfrrjcbdo4zwkx7dyrq2nhmty4",
+          "hash": "jphtq3xmv2xhylotzrpfdgkpwqrmlom33p6yn5hbpywkulf3sdsa",
+          "effects": [],
+          "doc": "The `k`-combinations of `xs` by position, in lexicographic order of positions, each in input\norder (Python's `itertools.combinations`): `C(n, k)` lists, `[[]]` for `k == 0` and `[]` for\n`k > xs.len`. At most `combinatorics_limit()` lists."
+        },
+        {
+          "name": "combinations_with_replacement",
+          "kind": "fn",
+          "sig": "fn combinations_with_replacement[A](xs: List[A], k: Int where _ >= 0) -> List[List[A]]",
+          "sig_hash": "czu5hfk6vbhh3yfdqfz6wveovq",
+          "hash": "fat7ah7saww6lh6mulxodrsbex4s3dafldfmjil4rvqk42subtoa",
+          "effects": [],
+          "doc": "The `k`-combinations with repetition (Python's `combinations_with_replacement`): `C(n + k - 1,\nk)` lists in lexicographic order of positions; `[[]]` for `k == 0`, `[]` for an empty `xs`\nand `k > 0`. At most `combinatorics_limit()` lists."
+        },
+        {
+          "name": "power_set",
+          "kind": "fn",
+          "sig": "fn power_set[A](xs: List[A]) -> List[List[A]]",
+          "sig_hash": "drle2mezxngnui2ae7szyi6s6y",
+          "hash": "iuzoame2s4uis7o6t2h7luvn63hc7a2fi3lg74zmpm3tao543gfa",
+          "effects": [],
+          "doc": "Every sublist of `xs` (keeping input order), by size and then lexicographically by position:\n`2 ** xs.len` lists, starting with `[]`. At most 20 elements (1,048,576 lists)."
+        },
+        {
+          "name": "count_permutations",
+          "kind": "fn",
+          "sig": "fn count_permutations(n: Int, k: Int) -> Opt[Int]",
+          "sig_hash": "gokt5fo65c33f32xg5odv4htde",
+          "hash": "q4nbbvkzuvuvseobs7nplywbcewyegarpm33en4n5rkoy3l2ikba",
+          "effects": [],
+          "doc": "The number of `k`-permutations of `n` items, `n! / (n - k)!` (0 when `k > n`), or `none` when\nit doesn't fit in an `Int` or an argument is negative."
+        },
+        {
+          "name": "count_combinations",
+          "kind": "fn",
+          "sig": "fn count_combinations(n: Int, k: Int) -> Opt[Int]",
+          "sig_hash": "jti2g3q7klfv3bhdxve722jva4",
+          "hash": "dkmlsrnuppcgc73o325ugpqquklshsfatwuwgytgsagmcmogmnuq",
+          "effects": [],
+          "doc": "The number of `k`-combinations of `n` items, the binomial coefficient (0 when `k > n`), or\n`none` when it doesn't fit in an `Int` or an argument is negative."
+        },
+        {
+          "name": "replicate",
+          "kind": "fn",
+          "sig": "fn replicate[A](x: A, n: Int) -> List[A]",
+          "sig_hash": "hd7by3xlykg3eiixksiqbwu65e",
+          "hash": "uhawttzt5fqarwv3ao6lv2xq4y35bzrbc6u4ufkohxtcc75gnwyq",
+          "effects": [],
+          "doc": "A list of `n` copies of `x` (`[]` when `n <= 0`)."
+        },
+        {
+          "name": "cycle",
+          "kind": "fn",
+          "sig": "fn cycle[A](xs: List[A], n: Int) -> List[A]",
+          "sig_hash": "tlt7o7xfm2hwmyeybwzlrm33qq",
+          "hash": "jxduel5sk7f2mh7mhmhlipirdteqyea64tmjlq5mmkwp5nufepiq",
+          "effects": [],
+          "doc": "`xs` repeated `n` times (`[]` when `n <= 0`)."
+        },
+        {
+          "name": "cycle_take",
+          "kind": "fn",
+          "sig": "fn cycle_take[A](xs: List[A], n: Int) -> List[A]",
+          "sig_hash": "fckehfbhp77o3j6tlnd227agne",
+          "hash": "dulygvfceu37oimr5j34l6ew2zjfj5bbmcwvsbtp22jj2rq7delq",
+          "effects": [],
+          "doc": "The first `n` elements of `xs` repeated forever (`[]` when `xs` is empty or `n <= 0`)."
+        },
+        {
+          "name": "map_indexed",
+          "kind": "fn",
+          "sig": "fn map_indexed[A, B, e](xs: List[A], f: (Int, A) -> B ! e) -> List[B] ! e",
+          "sig_hash": "2hxjdtznjcvoucok3y2tod4wn4",
+          "hash": "hpuinqhsmwd7t7655mwqsqdqipteicqcm5u6mj4av6jaclcjaula",
+          "effects": [
+            "e"
+          ],
+          "doc": "`f(i, x)` for each element and its index."
+        },
+        {
+          "name": "filter_indexed",
+          "kind": "fn",
+          "sig": "fn filter_indexed[A, e](xs: List[A], p: (Int, A) -> Bool ! e) -> List[A] ! e",
+          "sig_hash": "soz674hlpc7ykeitube2fszrem",
+          "hash": "2doweyqm4s76faikmywzxoudncylji2w6fdsnacld32hgvi64yxa",
+          "effects": [
+            "e"
+          ],
+          "doc": "The elements for which `p(i, x)` holds, with `i` the index."
+        },
+        {
+          "name": "filter_map",
+          "kind": "fn",
+          "sig": "fn filter_map[A, B, e](xs: List[A], f: A -> Opt[B] ! e) -> List[B] ! e",
+          "sig_hash": "ryfpv62dpvshgagk2kmexnbopq",
+          "hash": "gli4btivvfuauz3e6n5omhzicndqumtxorj5kfdd4vhmaz7mzxdq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The values of `f` that are `some`, in order (Rust's `filter_map`)."
+        },
+        {
+          "name": "compact",
+          "kind": "fn",
+          "sig": "fn compact[A](xs: List[Opt[A]]) -> List[A]",
+          "sig_hash": "2gz5nif5csfmsssnk2hznxjrqa",
+          "hash": "nd73n4dth72k5f7phcn2bk7c2terxkshge6oe2bo6uvcnjpsciwq",
+          "effects": [],
+          "doc": "The values inside the `some`s, in order."
+        },
+        {
+          "name": "find_map",
+          "kind": "fn",
+          "sig": "fn find_map[A, B, e](xs: List[A], f: A -> Opt[B] ! e) -> Opt[B] ! e",
+          "sig_hash": "mz4yzoper6vymchvtgez3ojhcm",
+          "hash": "aovg4aby4rlgqcnql6jxbudqye3gt7o6zg5csjh3nyx6uwxhgtoq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The first `some` that `f` gives, calling `f` only until then (Rust's `find_map`)."
+        },
+        {
+          "name": "partition_map",
+          "kind": "fn",
+          "sig": "fn partition_map[A, B, C, e](xs: List[A], f: A -> Res[B, C] ! e) -> (List[B], List[C]) ! e",
+          "sig_hash": "nnpearm2kehqagvb2of74cndgi",
+          "hash": "sevafpqyqdpzmhwdxgkf5nwd2tzhkcnvi5wm4cdvt7xslyve2gsq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The `ok` values and the `err` values of `f`, each in order."
+        },
+        {
+          "name": "partition_results",
+          "kind": "fn",
+          "sig": "fn partition_results[B, C](rs: List[Res[B, C]]) -> (List[B], List[C])",
+          "sig_hash": "um2ozus7ofzl37jqt3gg4oopki",
+          "hash": "i6klluevrys3koxtemx4wts7ckq2bicqszos5awo66pyebfnh4pq",
+          "effects": [],
+          "doc": "The `ok` values and the `err` values, each in order."
+        },
+        {
+          "name": "sequence_opt",
+          "kind": "fn",
+          "sig": "fn sequence_opt[A](xs: List[Opt[A]]) -> Opt[List[A]]",
+          "sig_hash": "c5fddnetbd7ib7766xa7rb5aim",
+          "hash": "7thzdtcqe6fansbhyfxaxmwjhr27skjsuvgys3k73tafmopgqcsa",
+          "effects": [],
+          "doc": "`some` of every value when all are `some`, else `none`."
+        },
+        {
+          "name": "sequence_res",
+          "kind": "fn",
+          "sig": "fn sequence_res[A, E](rs: List[Res[A, E]]) -> Res[List[A], E]",
+          "sig_hash": "4gd4kldflwgfpx7nvno23tyjcq",
+          "hash": "gwsqtyk7ypv3zwmyspiuzrfobepx3owry5g2lj5z4yf2dmuq3wiq",
+          "effects": [],
+          "doc": "`ok` of every value when all are `ok`, else the first `err`."
+        },
+        {
+          "name": "at",
+          "kind": "fn",
+          "sig": "fn at[A](xs: List[A], i: Int) -> Opt[A]",
+          "sig_hash": "2oud5fx35qzn5w7vwivoxeqvne",
+          "hash": "qhmuigx2xjjpbfpk5bvyn52yszu45nifbtwg3acabn2trgtmyicq",
+          "effects": [],
+          "doc": "The element at `i`, counting from the end when `i` is negative (`-1` is the last), or `none`\nwhen out of range."
+        },
+        {
+          "name": "insert_at",
+          "kind": "fn",
+          "sig": "fn insert_at[A](xs: List[A], i: Int, x: A) -> List[A]",
+          "sig_hash": "2tbrt2kvcd4lzcuvv3vpvcg2ia",
+          "hash": "zg36fbdyu35vhh5t6t3yrelaa7onb2tt5l4o7rlo6pgdkwadxt4a",
+          "effects": [],
+          "doc": "`xs` with `x` inserted before index `i`; `i` is clamped to `0..=xs.len`, so a negative `i`\ninserts at the front and one past the end appends."
+        },
+        {
+          "name": "insert_all_at",
+          "kind": "fn",
+          "sig": "fn insert_all_at[A](xs: List[A], i: Int, ys: List[A]) -> List[A]",
+          "sig_hash": "uduhkbi5c4eqq3wwv2z6xnhlhq",
+          "hash": "wqewn2zblihvobhuwchfex47pqmcvpspso7p4qgm4326issrljja",
+          "effects": [],
+          "doc": "`xs` with all of `ys` inserted before index `i`, clamped like `insert_at`."
+        },
+        {
+          "name": "remove_at",
+          "kind": "fn",
+          "sig": "fn remove_at[A](xs: List[A], i: Int) -> List[A]",
+          "sig_hash": "g4zu6jgq7ggen6rf2lvoouzfc4",
+          "hash": "ebhu3yo2z3rt2oc7ttrhmgx4hhvzcb25oco2d7pkyorv5glnybka",
+          "effects": [],
+          "doc": "`xs` without the element at `i`; an out-of-range `i` (negative included) leaves it unchanged."
+        },
+        {
+          "name": "remove_first",
+          "kind": "fn",
+          "sig": "fn remove_first[A](xs: List[A], x: A) -> List[A]",
+          "sig_hash": "v66zfdpnjo25a5zaqlkegjx5qe",
+          "hash": "j2rr24ejt5iqqlo3sqss5ypjhmikxagruuz5kiy5sz2ktzcdg4ya",
+          "effects": [],
+          "doc": "`xs` without the first element equal to `x` (unchanged when there is none). The builtin\n`filter` removes them all."
+        },
+        {
+          "name": "set_at",
+          "kind": "fn",
+          "sig": "fn set_at[A](xs: List[A], i: Int, x: A) -> List[A]",
+          "sig_hash": "6zm2rajo43nee6kkgad3bfpinq",
+          "hash": "njvrna6u4qapydola52ntgbyku6biaj6klcukg4iqcvm6iilzzca",
+          "effects": [],
+          "doc": "`xs` with the element at `i` replaced by `x`; out of range leaves it unchanged."
+        },
+        {
+          "name": "update_at",
+          "kind": "fn",
+          "sig": "fn update_at[A, e](xs: List[A], i: Int, f: A -> A ! e) -> List[A] ! e",
+          "sig_hash": "grysgfangprbgc4kyer5nluppu",
+          "hash": "2rvz4rmce6tba5om4hfhiz4waihwjkhgrohj2s5rhrugxnszwp2a",
+          "effects": [
+            "e"
+          ],
+          "doc": "`xs` with the element at `i` replaced by `f` of it; out of range leaves it unchanged and\ndoesn't call `f`."
+        },
+        {
+          "name": "swap",
+          "kind": "fn",
+          "sig": "fn swap[A](xs: List[A], i: Int, j: Int) -> List[A]",
+          "sig_hash": "ucpjynekgmbvmjfpmq77rt6a2a",
+          "hash": "wablairoisa5mlprkv3j5tqqqvtrxuv25nnwfm6o4uegsaiugo4q",
+          "effects": [],
+          "doc": "`xs` with the elements at `i` and `j` exchanged; unchanged when either is out of range."
+        },
+        {
+          "name": "move_item",
+          "kind": "fn",
+          "sig": "fn move_item[A](xs: List[A], from: Int, to: Int) -> List[A]",
+          "sig_hash": "hcnmv52zagbkcmuivnotsvghla",
+          "hash": "2rrtn5h6322znseyadhsrbvbjbz7jqxx5w42ygqgmmudsvntdcga",
+          "effects": [],
+          "doc": "`xs` with the element at `from` moved so that it ends at index `to` (clamped to the valid\nrange); unchanged when `from` is out of range."
+        },
+        {
+          "name": "find_last",
+          "kind": "fn",
+          "sig": "fn find_last[A, e](xs: List[A], p: A -> Bool ! e) -> Opt[A] ! e",
+          "sig_hash": "ow2bzuksmcia4em54ghcaov7fu",
+          "hash": "kp5iauatdyofswasfknzn3ofz7mcn47mzenam7vyaf6tkux3dpda",
+          "effects": [
+            "e"
+          ],
+          "doc": "The last element satisfying `p`, testing from the end."
+        },
+        {
+          "name": "find_last_index",
+          "kind": "fn",
+          "sig": "fn find_last_index[A, e](xs: List[A], p: A -> Bool ! e) -> Opt[Int] ! e",
+          "sig_hash": "4w4a6rq6o7qtnyh2mys5uayzbi",
+          "hash": "lc7k2jvfkhs64iygofczuqam5n5uvlc6u5fuceq7b7ekxsbnydca",
+          "effects": [
+            "e"
+          ],
+          "doc": "The index of the last element satisfying `p`, testing from the end."
+        },
+        {
+          "name": "last_index_of",
+          "kind": "fn",
+          "sig": "fn last_index_of[A](xs: List[A], x: A) -> Opt[Int]",
+          "sig_hash": "6trjypptvswazlg7u6zpdgxski",
+          "hash": "2ji5xiicg4ogyumsiv2nln2ouxoy7xfjqpcmo2jjlp5tskzhay7q",
+          "effects": [],
+          "doc": "The index of the last element equal to `x`."
+        },
+        {
+          "name": "indices_where",
+          "kind": "fn",
+          "sig": "fn indices_where[A, e](xs: List[A], p: A -> Bool ! e) -> List[Int] ! e",
+          "sig_hash": "qgp6i4pyvxfkaraeeuhod3ex3q",
+          "hash": "gwwzfchokwpvtkywrqtc63lbprtli6cmu52swx46r3cdh4ntdbqa",
+          "effects": [
+            "e"
+          ],
+          "doc": "The indexes of every element satisfying `p`, ascending."
+        },
+        {
+          "name": "indices_of",
+          "kind": "fn",
+          "sig": "fn indices_of[A](xs: List[A], x: A) -> List[Int]",
+          "sig_hash": "erdaiv4g2s76gd3x7lq2pwo2dq",
+          "hash": "zkiqxm7opsofjtex2dmundrozyfllkzz5mjj35jc4hxpn3nuts2a",
+          "effects": [],
+          "doc": "The indexes of every element equal to `x`, ascending."
+        },
+        {
+          "name": "partition_point",
+          "kind": "fn",
+          "sig": "fn partition_point[A, e](xs: List[A], p: A -> Bool ! e) -> Int ! e",
+          "sig_hash": "p6dnstxdckqg2ucwdjhq73bmku",
+          "hash": "g35nbp5aokdifwr53v4t3s2fqrvatzmm44b3ayt4wjp7exn7urra",
+          "effects": [
+            "e"
+          ],
+          "doc": "The first index at which `p` is false, for a list that is partitioned (every element\nsatisfying `p` comes before every one that doesn't); `xs.len` when `p` holds everywhere.\nBinary search: `p` is called O(log n) times."
+        },
+        {
+          "name": "lower_bound_by",
+          "kind": "fn",
+          "sig": "fn lower_bound_by[A, K: Ord, e](xs: List[A], key: A -> K ! e, target: K) -> Int ! e",
+          "sig_hash": "n6yqdnzalyefimbqay4caeanfe",
+          "hash": "ksf2o56pluze5kmlk75g7lcqhcjlflpikrvmpa3rlhp4hiy7vica",
+          "effects": [
+            "e"
+          ],
+          "doc": "The first index whose key is at least `target`, in a list sorted by `key` (`xs.len` if none)."
+        },
+        {
+          "name": "upper_bound_by",
+          "kind": "fn",
+          "sig": "fn upper_bound_by[A, K: Ord, e](xs: List[A], key: A -> K ! e, target: K) -> Int ! e",
+          "sig_hash": "ksn7haagk2g4q5yqxuev6pwgby",
+          "hash": "kty52eusjagt4iec4yznznr6tia642p6dljraglbcx7nm6c45f7q",
+          "effects": [
+            "e"
+          ],
+          "doc": "The first index whose key is greater than `target`, in a list sorted by `key` (`xs.len` if\nnone)."
+        },
+        {
+          "name": "binary_search_by",
+          "kind": "fn",
+          "sig": "fn binary_search_by[A, K: Ord, e](xs: List[A], key: A -> K ! e, target: K) -> Opt[Int] ! e",
+          "sig_hash": "vuyahg5iistvrjeduptmqxefky",
+          "hash": "l4xdtf3mr3dleuylqflvi2oueyzutig5elv2iqwycvtlf2wulcea",
+          "effects": [
+            "e"
+          ],
+          "doc": "The first index whose key equals `target` in a list sorted by `key`, or `none`."
+        },
+        {
+          "name": "insert_sorted",
+          "kind": "fn",
+          "sig": "fn insert_sorted[T: Ord](xs: List[T], x: T) -> List[T]",
+          "sig_hash": "vna6ic4f2kx277gaeiivrprtxm",
+          "hash": "nsx6cz36szprpoujr2bb2i2h4jgjnbf527scxefr5sy4prnmqvyq",
+          "effects": [],
+          "doc": "`x` inserted into the sorted list `xs` after any equal elements, so the list stays sorted and\ninsertion is stable."
+        },
+        {
+          "name": "insert_sorted_by",
+          "kind": "fn",
+          "sig": "fn insert_sorted_by[A, K: Ord, e](xs: List[A], x: A, key: A -> K ! e) -> List[A] ! e",
+          "sig_hash": "7n3ixkk6mcj4myfv4to3aeyp3y",
+          "hash": "yqtenwxvf7qbiqywlq2tblmjo7ow36e2765eyvu3jvru6asljn2q",
+          "effects": [
+            "e"
+          ],
+          "doc": "`x` inserted into `xs`, sorted by `key`, after any elements with an equal key."
+        },
+        {
+          "name": "index_of_sublist",
+          "kind": "fn",
+          "sig": "fn index_of_sublist[A](xs: List[A], sub: List[A]) -> Opt[Int]",
+          "sig_hash": "kqmvxnnoag5apa7jknw6qmw344",
+          "hash": "xep62pcjifiy7ojm7fwe2cz6zvd6ssyalxbc6gfc7wwtecmieumq",
+          "effects": [],
+          "doc": "The first index at which `sub` occurs in `xs` as a contiguous run; `some(0)` for an empty\n`sub`. Worst case O(xs.len * sub.len)."
+        },
+        {
+          "name": "last_index_of_sublist",
+          "kind": "fn",
+          "sig": "fn last_index_of_sublist[A](xs: List[A], sub: List[A]) -> Opt[Int]",
+          "sig_hash": "aiew2q7hdr7vjehvwjp775w7lu",
+          "hash": "okb2ci3g6rho2qssihxsklm4geagmpi2tf6m4p7h2aebktgk2gqq",
+          "effects": [],
+          "doc": "The last index at which `sub` occurs in `xs`; `some(xs.len)` for an empty `sub`."
+        },
+        {
+          "name": "contains_sublist",
+          "kind": "fn",
+          "sig": "fn contains_sublist[A](xs: List[A], sub: List[A]) -> Bool",
+          "sig_hash": "vpu7sahxiaxfwm63fshgqxkkje",
+          "hash": "7ohkosdmn2hbfsj54yarof5pm6hdvkmnzeopu3abhopnvnieomcq",
+          "effects": [],
+          "doc": "Whether `sub` occurs in `xs` as a contiguous run (always for an empty `sub`)."
+        },
+        {
+          "name": "has_prefix",
+          "kind": "fn",
+          "sig": "fn has_prefix[A](xs: List[A], prefix: List[A]) -> Bool",
+          "sig_hash": "scs6x6eq7gamiygfemokxrrqyy",
+          "hash": "dhhczlactmzvknndsccfs6bjz3e2onhv7rcwy6fzqv6ddvj6izqa",
+          "effects": [],
+          "doc": "Whether `xs` starts with `prefix`."
+        },
+        {
+          "name": "has_suffix",
+          "kind": "fn",
+          "sig": "fn has_suffix[A](xs: List[A], suffix: List[A]) -> Bool",
+          "sig_hash": "dqyifvclmbqpaxkc5wfbnyz4vm",
+          "hash": "4r7qkfslwjk7ux2ikntutvrgehr6iowj4oxoq2xohgdjsqujsxia",
+          "effects": [],
+          "doc": "Whether `xs` ends with `suffix`."
+        },
+        {
+          "name": "count_sublist",
+          "kind": "fn",
+          "sig": "fn count_sublist[A](xs: List[A], sub: List[A]) -> Int",
+          "sig_hash": "6prqw5svwhj6l6mznmng4mv3se",
+          "hash": "wtcaco23jknnmuf5uowbwdxsajh3sfslqannftwgsty4ygycxdla",
+          "effects": [],
+          "doc": "How many times `sub` occurs in `xs` without overlapping, scanning left to right (like\n`Str.count` in Python). An empty `sub` counts `xs.len + 1` times."
+        },
+        {
+          "name": "replace_sublist",
+          "kind": "fn",
+          "sig": "fn replace_sublist[A](xs: List[A], sub: List[A], by: List[A]) -> List[A]",
+          "sig_hash": "j63wtu22uczs6fnn6otpicws3m",
+          "hash": "odxgbhhm7dthttk6pdm5zzobczuyxceqh5jlqmmudjrcatn7bahq",
+          "effects": [],
+          "doc": "`xs` with every non-overlapping occurrence of `sub` (left to right) replaced by `by`. An empty\n`sub` leaves `xs` unchanged."
+        },
+        {
+          "name": "fold_right",
+          "kind": "fn",
+          "sig": "fn fold_right[A, B, e](xs: List[A], init: B, f: (A, B) -> B ! e) -> B ! e",
+          "sig_hash": "uy6xbfrittav6fpevc7fjm4sta",
+          "hash": "fktgo7vs2kujau2xu3xryovmvzx6dxmgaxqsbrpcg7xikacfi35a",
+          "effects": [
+            "e"
+          ],
+          "doc": "Folds from the right: `f(x0, f(x1, ... f(xn, init)))`."
+        },
+        {
+          "name": "reduce",
+          "kind": "fn",
+          "sig": "fn reduce[A, e](xs: List[A], f: (A, A) -> A ! e) -> Opt[A] ! e",
+          "sig_hash": "ubuzcif3xmt7zxgkoks2jpmdnq",
+          "hash": "6pddgs7eh44s5yk7fgkzxds4hqytyedrvkjqvip5thu7npdmfoma",
+          "effects": [
+            "e"
+          ],
+          "doc": "Folds from the left with the first element as the start, or `none` for an empty list."
+        },
+        {
+          "name": "reduce_right",
+          "kind": "fn",
+          "sig": "fn reduce_right[A, e](xs: List[A], f: (A, A) -> A ! e) -> Opt[A] ! e",
+          "sig_hash": "2rbtey3smle7tabttoad5bcrma",
+          "hash": "hydpinohp4rb3bjn7h6t5e3h5eni5olxurxqq4yy5b7tygtsuhgq",
+          "effects": [
+            "e"
+          ],
+          "doc": "Folds from the right with the last element as the start, or `none` for an empty list."
+        },
+        {
+          "name": "scan_right",
+          "kind": "fn",
+          "sig": "fn scan_right[A, B, e](xs: List[A], init: B, f: (A, B) -> B ! e) -> List[B] ! e",
+          "sig_hash": "u6evlprhtssul2xyyrpl7dtq5m",
+          "hash": "5ahkvqjd5eg4k5yhobmk7ufyynnsx5b3tluyjb4hvsccuclldrqq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The accumulators of `fold_right`, aligned with the elements: element `i` of the result is\n`f(xs[i], result[i + 1])`, the last one `f(xs[n - 1], init)`. Same length as `xs`, like the\nbuiltin `scan`."
+        },
+        {
+          "name": "is_sorted",
+          "kind": "fn",
+          "sig": "fn is_sorted[T: Ord](xs: List[T]) -> Bool",
+          "sig_hash": "fzo4ylk6yeyoasz5xh3uayanwy",
+          "hash": "zikqipk44ecb6bk3n5eh4d2cautq4sbq7bjstabkdskqejauki5a",
+          "effects": [],
+          "doc": "Whether every element is at most the next one."
+        },
+        {
+          "name": "is_strictly_sorted",
+          "kind": "fn",
+          "sig": "fn is_strictly_sorted[T: Ord](xs: List[T]) -> Bool",
+          "sig_hash": "bgnj2kteqp5a3ih4vhh3ljk42a",
+          "hash": "uotq65u5fi3ggvv5q7cjy4c7gze7kes2hcwguzslouzqhua7eeua",
+          "effects": [],
+          "doc": "Whether every element is less than the next one (sorted, no repeats)."
+        },
+        {
+          "name": "is_sorted_by",
+          "kind": "fn",
+          "sig": "fn is_sorted_by[A, K: Ord, e](xs: List[A], key: A -> K ! e) -> Bool ! e",
+          "sig_hash": "n5fn76miqhhfnealfvqfa67osa",
+          "hash": "sqktnrzrn2xh4yfggvi5c42skghhvrl7gj5qe43qasrw5ic4jpvq",
+          "effects": [
+            "e"
+          ],
+          "doc": "Whether the keys never decrease. `key` is called once per element."
+        },
+        {
+          "name": "is_sorted_with",
+          "kind": "fn",
+          "sig": "fn is_sorted_with[A, e](xs: List[A], cmp: (A, A) -> Int ! e) -> Bool ! e",
+          "sig_hash": "wd77ehmsifaulgo557utam5x3e",
+          "hash": "xnoclqcuyxlt5dlogqkkjavm57girpuxpvm4s57yzvpgbxutc73q",
+          "effects": [
+            "e"
+          ],
+          "doc": "Whether `cmp(a, b) <= 0` for every pair of neighbours, with a comparator like `sort_with`'s."
+        },
+        {
+          "name": "argsort",
+          "kind": "fn",
+          "sig": "fn argsort[T: Ord](xs: List[T]) -> List[Int]",
+          "sig_hash": "i2oujlqz3ag5m6bt6ejmr55ore",
+          "hash": "q5neqxqatlhpzzsjwn4cq3khlzp2cy5entxxfcaoypj2dutiggma",
+          "effects": [],
+          "doc": "The indexes that sort `xs` (stable: equal elements keep input order), NumPy's `argsort`.\n`argsort(xs).map(i => xs[i])` is `xs` sorted."
+        },
+        {
+          "name": "argsort_by",
+          "kind": "fn",
+          "sig": "fn argsort_by[A, K: Ord, e](xs: List[A], key: A -> K ! e) -> List[Int] ! e",
+          "sig_hash": "2bcyxprd7d242vhtlf2syg2ymi",
+          "hash": "cz65hcpzwoml2ypgmmjnbrlr3qqaxhnyaznqtdv5fuyw5ucrbgtq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The indexes that sort `xs` by `key`, stable. `key` is called once per element."
+        },
+        {
+          "name": "ranks",
+          "kind": "fn",
+          "sig": "fn ranks[T: Ord](xs: List[T]) -> List[Int]",
+          "sig_hash": "i6ofrxbdfpamzm5jimhvylm6gm",
+          "hash": "5ltkexgx6cmhf3yjdjwcx7ypshd5quhq7zln6kyfp33uh363slhq",
+          "effects": [],
+          "doc": "The 0-based position of each element in the stable sort (ordinal ranks: ties get consecutive\nranks in input order). The inverse permutation of `argsort`."
+        },
+        {
+          "name": "dense_ranks",
+          "kind": "fn",
+          "sig": "fn dense_ranks[T: Ord](xs: List[T]) -> List[Int]",
+          "sig_hash": "46bus7cjyofvgggrctg73s75ve",
+          "hash": "ksw57qvxmjqjh73clwttjzuurm3yvm27tjjmleyoon6g6szzs2ta",
+          "effects": [],
+          "doc": "Dense ranks: 0 for the smallest value, and one more for each larger distinct value; equal\nelements share a rank."
+        },
+        {
+          "name": "compare_lists",
+          "kind": "fn",
+          "sig": "fn compare_lists[T: Ord](xs: List[T], ys: List[T]) -> Int",
+          "sig_hash": "fue24ebrummavmzflaug54yiue",
+          "hash": "tum2smimelhs6fyxoju3n6zzmibn7mubr3kslpm5kt5h7i34auua",
+          "effects": [],
+          "doc": "Lexicographic comparison by the elements' `Ord`: -1, 0 or 1. A proper prefix comes first."
+        },
+        {
+          "name": "merge_by",
+          "kind": "fn",
+          "sig": "fn merge_by[A, K: Ord, e](xs: List[A], ys: List[A], key: A -> K ! e) -> List[A] ! e",
+          "sig_hash": "kzgnozlh2mfa7uvoqcmfwxifxu",
+          "hash": "wbttmqvslrgdci3uqh6chlofozvslhrlloyjoljqltdrwc2uqgcq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The elements of the sorted lists `xs` and `ys` in one sorted list, by `key`; on equal keys\nelements of `xs` come first. The builtin `merge` does this for the elements themselves."
+        },
+        {
+          "name": "merge_all",
+          "kind": "fn",
+          "sig": "fn merge_all[T: Ord](xss: List[List[T]]) -> List[T]",
+          "sig_hash": "vtggri2hhtr7b4uydaqauea5oq",
+          "hash": "dv6ln547dobm5exboohzlckmrm5qwyspetg7cjbsoayi45mis7wa",
+          "effects": [],
+          "doc": "A k-way merge: every element of the lists in one sorted list, stable (on equals, earlier\nlists first). With sorted inputs this is the merge; any input gives a sorted result."
+        },
+        {
+          "name": "union",
+          "kind": "fn",
+          "sig": "fn union[A](xs: List[A], ys: List[A]) -> List[A]",
+          "sig_hash": "z53y2iz4embkvmrs5rseq5vkme",
+          "hash": "7g2wpajtiwmfrihk53lkjrnazyy4242eidraroeekft3muxfyxaa",
+          "effects": [],
+          "doc": "The distinct elements of `xs` and then of `ys` that are not in `xs`, each once, in first-seen\norder."
+        },
+        {
+          "name": "intersect",
+          "kind": "fn",
+          "sig": "fn intersect[A](xs: List[A], ys: List[A]) -> List[A]",
+          "sig_hash": "7ynbi5nnhkto43lyoadcdfaugy",
+          "hash": "74sdv4sa4ey7grrwhiotyapcc6sv6dzu55dw5c7qgaiftzn2rmpa",
+          "effects": [],
+          "doc": "The distinct elements of `xs` that also occur in `ys`, in `xs` order."
+        },
+        {
+          "name": "difference",
+          "kind": "fn",
+          "sig": "fn difference[A](xs: List[A], ys: List[A]) -> List[A]",
+          "sig_hash": "mkcbcasstvmpqzaxwllctkrbdm",
+          "hash": "or6solmxim7eyi5pjp4kk56h5jovltexgptjtgm6oumgcnqf6qba",
+          "effects": [],
+          "doc": "The distinct elements of `xs` that don't occur in `ys`, in `xs` order."
+        },
+        {
+          "name": "sym_difference",
+          "kind": "fn",
+          "sig": "fn sym_difference[A](xs: List[A], ys: List[A]) -> List[A]",
+          "sig_hash": "cnrsrrjp5svfm7tktjm672wvqi",
+          "hash": "cgc23jlaacutpqy37w3bbpocqv7opjbijcmqsahyqllyuxufsgva",
+          "effects": [],
+          "doc": "The distinct elements in exactly one of the lists: those of `xs` first, then those of `ys`."
+        },
+        {
+          "name": "contains_all",
+          "kind": "fn",
+          "sig": "fn contains_all[A](xs: List[A], ys: List[A]) -> Bool",
+          "sig_hash": "eyscxfzo2c4qvrbs7ri2x5tz4m",
+          "hash": "vlinj2tlzrl5jpi3oxxldorsieqwgkobncvr44gcjvqmklnx5vfa",
+          "effects": [],
+          "doc": "Whether every element of `ys` occurs in `xs` (true for an empty `ys`)."
+        },
+        {
+          "name": "contains_any",
+          "kind": "fn",
+          "sig": "fn contains_any[A](xs: List[A], ys: List[A]) -> Bool",
+          "sig_hash": "ymrdohq3dnirm6jk5bueuaurie",
+          "hash": "duyp6xyjxfede62ofan5kulqqzz4ny5g6ngnxwh7qklcwxbotidq",
+          "effects": [],
+          "doc": "Whether some element of `ys` occurs in `xs` (false for an empty `ys`)."
+        },
+        {
+          "name": "is_disjoint",
+          "kind": "fn",
+          "sig": "fn is_disjoint[A](xs: List[A], ys: List[A]) -> Bool",
+          "sig_hash": "ykmsfyu3bayfpt6e4ugnhszqqu",
+          "hash": "rzvjsxpmxxi6ri7ly4g4bz5sr4zuty3dfvstvvytanjapgcjkyyq",
+          "effects": [],
+          "doc": "Whether the lists have no element in common."
+        },
+        {
+          "name": "multi_intersect",
+          "kind": "fn",
+          "sig": "fn multi_intersect[A](xs: List[A], ys: List[A]) -> List[A]",
+          "sig_hash": "aotdkb655ghbyy576er7flq5ia",
+          "hash": "unpp5wmxhvfmalt2viqbg4s7kkk2n2zmvc2gt2qjri6vvw6wirxa",
+          "effects": [],
+          "doc": "The multiset intersection, keeping duplicates: each value as many times as it occurs in both\nlists (the smaller count), in `xs` order."
+        },
+        {
+          "name": "multi_difference",
+          "kind": "fn",
+          "sig": "fn multi_difference[A](xs: List[A], ys: List[A]) -> List[A]",
+          "sig_hash": "q2p4tnhaete4veyh2hdqyer6iq",
+          "hash": "6usvjbtrm7ghjqtof2scmp7ijkqo2s2o43ocyw5d6of7jqearmbq",
+          "effects": [],
+          "doc": "The multiset difference: `xs` with one occurrence removed for each occurrence in `ys`, the\nearliest first (Python's `Counter` subtraction, keeping order)."
+        },
+        {
+          "name": "multi_union",
+          "kind": "fn",
+          "sig": "fn multi_union[A](xs: List[A], ys: List[A]) -> List[A]",
+          "sig_hash": "rgkhurhsfvtekdp7i3oriyidqa",
+          "hash": "bdi65upzfetcurqolercrjjlgbssijmapsndd5lzf7r4pcea3w6a",
+          "effects": [],
+          "doc": "The multiset union: all of `xs`, then the occurrences in `ys` beyond those in `xs` (each value\nas many times as the larger count)."
+        },
+        {
+          "name": "is_permutation",
+          "kind": "fn",
+          "sig": "fn is_permutation[A](xs: List[A], ys: List[A]) -> Bool",
+          "sig_hash": "2h6ywbcqqbljqnlgfu7otmykgq",
+          "hash": "qapoi6nud4iigybkphe5pxzlvmjn7eyuhktpu3vyem3oz2mvug6a",
+          "effects": [],
+          "doc": "Whether `ys` is a permutation of `xs`: the same elements with the same counts."
+        },
+        {
+          "name": "sample",
+          "kind": "fn",
+          "sig": "fn sample[A](xs: List[A], k: Int, seed: Int) -> List[A]",
+          "sig_hash": "vyo5xpiftzs3a44cridk5lxv4m",
+          "hash": "wgoksaopeoahq6kwzav7zbipciqc46rqxreqqlx23ooyg7nryjda",
+          "effects": [],
+          "doc": "`k` distinct positions of `xs` chosen uniformly at random, in random order (Python's\n`random.sample`), as a pure function of `seed` like the builtin `shuffle`. `k` is clamped to\n`0..=xs.len`."
+        },
+        {
+          "name": "sample_ordered",
+          "kind": "fn",
+          "sig": "fn sample_ordered[A](xs: List[A], k: Int, seed: Int) -> List[A]",
+          "sig_hash": "wlat4tyk7v3mamm7y74kvmwcv4",
+          "hash": "dsgh2ycgzmjduwylsvdbiqmn43wniwxz2p4ssmp3wlgc5nc36iwq",
+          "effects": [],
+          "doc": "`sample`, with the chosen elements in their input order."
+        }
+      ]
+    }
+  ]
+}
