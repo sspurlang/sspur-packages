@@ -1,0 +1,751 @@
+{
+  "schema": 1,
+  "name": "ratelimit",
+  "description": "Rate limiting for HTTP services: token bucket, GCRA, fixed and sliding windows, a lock-free in-memory table, a SQLite store, RateLimit headers and a handler wrapper",
+  "repository": "https://github.com/sspurlang/sspur-ratelimit",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-ratelimit.git",
+      "tag": "v0.1.0",
+      "commit": "711e3355cb6091ac8c80dc5d3550035ef89c7764",
+      "hash": "u6hcz5v6zqkht2fziadhg7fn73rvym26adogllor7lfvo5irtvpq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/ratelimit-0.1.0/ratelimit-0.1.0.tar",
+        "sha256": "8fb859b12cd66a2bed687f29bff76ef073e6c650739950192fc1a1ff159cf061",
+        "size": 91648
+      },
+      "effects": [
+        "db"
+      ],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:21:47Z",
+      "publisher": "utkarshavardhana",
+      "request": 39,
+      "api": [
+        {
+          "name": "TokenBucket",
+          "kind": "type",
+          "sig": "pub type TokenBucket = {rate: Int where _ >= 1 and _ <= 1000000000, period_ms: Int where _ >= 1 and _ <= 1000000000000, burst: Int where _ >= 1 and _ <= 1000000000} derive Eq, Show",
+          "sig_hash": "7olnova67nb7ysiod6pbiharu4",
+          "hash": "swlfhfwk26by7kmzm2av47cvg36de4omp5paa2dzzvhn54nwhioq",
+          "effects": [],
+          "doc": "A token bucket that holds at most `burst` tokens and refills continuously at `rate` tokens per\n`period_ms` (as golang.org/x/time/rate with a limit of rate / period and a burst). A request of\ncost n takes n tokens. Build it with `token_bucket`, which checks that the arithmetic is exact."
+        },
+        {
+          "name": "Gcra",
+          "kind": "type",
+          "sig": "pub type Gcra = {limit: Int where _ >= 1 and _ <= 1000000000, period_ms: Int where _ >= 1 and _ <= 1000000000000, burst: Int where _ >= 1 and _ <= 1000000000} derive Eq, Show",
+          "sig_hash": "ggunwfzbjnsmd6bmjmvjfae2fi",
+          "hash": "mtou4jhpnvnchhx25zgc6bzyybmn3rwundflekdoa4gh72ri24aq",
+          "effects": [],
+          "doc": "The generic cell rate algorithm (as redis-cell): `limit` requests per `period_ms`, at most\n`burst` of them at once. Its state is one number, the theoretical arrival time, kept in\nmicroseconds. It allows the same requests as a token bucket with the same numbers. Build it\nwith `gcra`."
+        },
+        {
+          "name": "Window",
+          "kind": "type",
+          "sig": "pub type Window = {limit: Int where _ >= 1 and _ <= 1000000000, window_ms: Int where _ >= 1 and _ <= 1000000000000} derive Eq, Show",
+          "sig_hash": "mise7xvykddgusciwpsvvkcwha",
+          "hash": "kiok3h5u3xnoeb2ho6jtrpsqlqo5rr2x3wh5mobidtiqckduqqha",
+          "effects": [],
+          "doc": "A window of `window_ms` milliseconds in which at most `limit` cost units are allowed, for the\nfixed and sliding window algorithms."
+        },
+        {
+          "name": "Policy",
+          "kind": "type",
+          "sig": "pub type Policy = BucketPolicy{bucket: TokenBucket} | GcraPolicy{gcra: Gcra} | FixedWindow{window: Window} | SlidingLog{window: Window} | SlidingCounter{window: Window} derive Eq, Show",
+          "sig_hash": "envw4qmrmc3cfl2ynnnt6nay5e",
+          "hash": "fdwbvzrhwiv7azld73m6jwqt5d2yplvgr7lay5ou25zwh56riika",
+          "effects": [],
+          "doc": "The algorithm a limiter runs. `FixedWindow` counts per calendar window (cheap, but allows up to\ntwice the limit across a boundary), `SlidingLog` keeps every request in the window (exact, memory\ngrows with the limit), `SlidingCounter` weighs the previous window's count by how much of it\nstill overlaps (Cloudflare's approximation, two numbers of state; it assumes the previous\nwindow's requests were spread evenly, rounds the weighted count up, and can allow more than the\nlimit in a sliding window only when they clustered at its end)."
+        },
+        {
+          "name": "Hit",
+          "kind": "type",
+          "sig": "pub type Hit = {at_ms: Int, cost: Int} derive Eq, Show, Json",
+          "sig_hash": "boztqlfstdb4mbzvn4cdzykva4",
+          "hash": "zwrtq5kpasgtfhxozxyemkbzuampdc3gnchpc7vl4kqungb3hdmq",
+          "effects": [],
+          "doc": "One allowed request in a sliding log."
+        },
+        {
+          "name": "State",
+          "kind": "type",
+          "sig": "pub type State = BucketState{level: Int, at_ms: Int} | GcraState{tat_us: Int} | WindowState{start_ms: Int, count: Int} | LogState{hits: List[Hit]} | CounterState{start_ms: Int, prev: Int, curr: Int} derive Eq, Show, Json",
+          "sig_hash": "di2raph47mn2f3efvdh6kan4pa",
+          "hash": "k3ncdwex74rltseblfllyn2t7nl5pxa7m3onk2ten37mej6dyq4q",
+          "effects": [],
+          "doc": "The state a policy keeps per key. `fresh` makes the initial one; a state of another policy's\nshape counts as fresh, so changing a key's policy starts it over."
+        },
+        {
+          "name": "Decision",
+          "kind": "type",
+          "sig": "pub type Decision = {allowed: Bool, limit: Int, remaining: Int, reset_ms: Int, retry_after_ms: Int} derive Eq, Show",
+          "sig_hash": "swwo7fbuztvuenudvuof6thly4",
+          "hash": "puo6rnk42qqkjfetielnsndyki4xam6muzviy24uag5ytydo5nva",
+          "effects": [],
+          "doc": "The answer for one request. `limit` is the quota (the burst of a bucket), `remaining` what is\nleft of it after this request, `reset_ms` the time until the quota is whole again,\n`retry_after_ms` 0 when allowed, the wait before a request of the same cost can succeed when\ndenied, or -1 when the cost is larger than the quota and can never succeed."
+        },
+        {
+          "name": "token_bucket",
+          "kind": "fn",
+          "sig": "fn token_bucket(rate: Int where _ >= 1 and _ <= 1000000000, period_ms: Int where _ >= 1 and _ <= 1000000000000, burst: Int where _ >= 1 and _ <= 1000000000) -> TokenBucket",
+          "sig_hash": "gucvevpd2y5bgxsoppftn6tvnu",
+          "hash": "sphcijwa242vpafpim2vknknlrbi7xrslc3jfvqxinnu5xuqpoya",
+          "effects": [],
+          "doc": "A token bucket after the x/time/rate convention: `rate` tokens per `period_ms`, `burst` at most."
+        },
+        {
+          "name": "gcra",
+          "kind": "fn",
+          "sig": "fn gcra(limit: Int where _ >= 1 and _ <= 1000000000, period_ms: Int where _ >= 1 and _ <= 1000000000000, burst: Int where _ >= 1 and _ <= 1000000000) -> Gcra",
+          "sig_hash": "qgvhcfjtizdn2ktoha7mz5mgve",
+          "hash": "ezo27mdkeq6m34gs6eqwvla3k74czs37jrlwdlka5a3rit5frerq",
+          "effects": [],
+          "doc": "A GCRA policy: `limit` requests per `period_ms`, `burst` at once. The emission interval must be\nat least a microsecond and the burst tolerance must fit in 2^62 microseconds."
+        },
+        {
+          "name": "window",
+          "kind": "fn",
+          "sig": "fn window(limit: Int where _ >= 1 and _ <= 1000000000, window_ms: Int where _ >= 1 and _ <= 1000000000000) -> Window",
+          "sig_hash": "7rhq7wqfxj2oxmfhef3fnlncam",
+          "hash": "z26ouhxt4mq6lgyeth2vv4x75sy4f47e6gh2hyemrapbaxczwftq",
+          "effects": [],
+          "doc": "`limit` per `window_ms`, for the window policies."
+        },
+        {
+          "name": "per_second",
+          "kind": "fn",
+          "sig": "fn per_second(n: Int where _ >= 1 and _ <= 1000000000) -> Policy",
+          "sig_hash": "f67kxfck46kxghwtdkkqhqgece",
+          "hash": "mg3d4zhcz7mpq5iiwximqegst4dqxaxljeljyv4wxd7ug6ece25q",
+          "effects": [],
+          "doc": "`n` requests per second, with a burst of `n`, as a token bucket."
+        },
+        {
+          "name": "per_minute",
+          "kind": "fn",
+          "sig": "fn per_minute(n: Int where _ >= 1 and _ <= 1000000000) -> Policy",
+          "sig_hash": "yn6xonmw65i6lsmpavh3s6o7v4",
+          "hash": "6x76vkxdfbnbaizjjoglhpvzhwc5lvbkr6mczysuqmrqwssqf6la",
+          "effects": [],
+          "doc": "`n` requests per minute, with a burst of `n`, as a token bucket."
+        },
+        {
+          "name": "per_hour",
+          "kind": "fn",
+          "sig": "fn per_hour(n: Int where _ >= 1 and _ <= 1000000000) -> Policy",
+          "sig_hash": "6eyofm2zqb3idbjwg7bcghnuce",
+          "hash": "ixw2qetaewdwzwgd3jyp26szsznrw2fsata7lvfyqlbrlrbbonuq",
+          "effects": [],
+          "doc": "`n` requests per hour, with a burst of `n`, as a token bucket."
+        },
+        {
+          "name": "quota",
+          "kind": "fn",
+          "sig": "fn quota(p: Policy) -> Int",
+          "sig_hash": "t2bqrzpjr6fyytc5wvdu4cipwm",
+          "hash": "gtlstjetrs2l74z5euxth7i6rdictxhhiqejtusxvp7icmso7qfa",
+          "effects": [],
+          "doc": "The quota of a policy: the burst of a bucket or GCRA, the limit of a window."
+        },
+        {
+          "name": "window_ms",
+          "kind": "fn",
+          "sig": "fn window_ms(p: Policy) -> Int",
+          "sig_hash": "ga32u2ymaprr7qtk5u5g63m3yq",
+          "hash": "bglx75ialklidxaktzu6c665joj5axpb6iyxv3q7d5evkzhjgwdq",
+          "effects": [],
+          "doc": "The time in milliseconds over which the whole quota is granted: the window, or the time a\nbucket takes to refill from empty (rounded up)."
+        },
+        {
+          "name": "fresh",
+          "kind": "fn",
+          "sig": "fn fresh(p: Policy, now_ms: Int) -> State",
+          "sig_hash": "swnhjmritx63yb5e3ucj3l7fia",
+          "hash": "mnudeyv3ocio6ihccvrpgnzej4thxrqroe4zsfh24s2dqawv7eda",
+          "effects": [],
+          "doc": "The state of a key that has not been seen, at `now_ms`."
+        },
+        {
+          "name": "decide",
+          "kind": "fn",
+          "sig": "fn decide(p: Policy, s: Opt[State], now_ms: Int, cost: Int where _ >= 0) -> (Decision, State)",
+          "sig_hash": "nfr7prajdtfmdfbnryxzj4tlre",
+          "hash": "3qzxlhpd3i2waaq3kww6q5vjvferbqzggjffav4d5swz6rtybtba",
+          "effects": [],
+          "doc": "Decides a request of `cost` units for a key in state `s` (none for a new key) at `now_ms`, and\nreturns the decision and the key's next state. A cost of 0 only reports the current status. A\nclock that goes backwards never grants more: the state's own time is used instead."
+        },
+        {
+          "name": "simulate",
+          "kind": "fn",
+          "sig": "fn simulate(p: Policy, requests: List[(Int, Int)]) -> List[Decision]",
+          "sig_hash": "ejymqvq57k7zm5et274zbtsm6i",
+          "hash": "k4y6vz7hetlp2olbzqzjdwupy6am3z7cqk3ad7ptkdo4hnzfnvnq",
+          "effects": [],
+          "doc": "Decides a whole sequence of requests `(now_ms, cost)` for one key from a fresh state; handy in\ntests and simulations."
+        },
+        {
+          "name": "expires_at",
+          "kind": "fn",
+          "sig": "fn expires_at(p: Policy, s: State) -> Int",
+          "sig_hash": "u6szqul2rvdtog4e4ou3ttag7q",
+          "hash": "z6sulxz6duyvyafqg24f6j7ljln63oo53c2obdiya3n3f73zgu7q",
+          "effects": [],
+          "doc": "The absolute time in milliseconds after which `s` is the same as a fresh state, so a store may\nforget the key."
+        },
+        {
+          "name": "Reservation",
+          "kind": "type",
+          "sig": "pub type Reservation = {ok: Bool, cost: Int, delay_ms: Int, act_at_ms: Int} derive Eq, Show",
+          "sig_hash": "g3kr2ryt3sypktzwcq7bxnb32a",
+          "hash": "t2imekfeniayxfo2hltt4l6khcsmwphkhtiv3j27vpb3swhifdmq",
+          "effects": [],
+          "doc": "A reservation of `cost` tokens: `ok` when it was granted, and then the request may act\n`delay_ms` later, at `act_at_ms`."
+        },
+        {
+          "name": "tokens",
+          "kind": "fn",
+          "sig": "fn tokens(b: TokenBucket, s: Opt[State], now_ms: Int) -> Int",
+          "sig_hash": "z2okgikaiqbrdms5meqea7vkxm",
+          "hash": "civh7kgq6cngkybru4z4wjeiwjg4tgslyaffrixfpzfnhj55vkda",
+          "effects": [],
+          "doc": "The tokens in the bucket at `now_ms` (negative while reservations owe tokens), rounded down."
+        },
+        {
+          "name": "wait_ms",
+          "kind": "fn",
+          "sig": "fn wait_ms(b: TokenBucket, s: Opt[State], now_ms: Int, cost: Int where _ >= 0) -> Int",
+          "sig_hash": "5mfa4kfmykv5hptdbqs4xou45m",
+          "hash": "yndtik52catbthu2nq6rsmr5bj5ghrtajpxuzfsc2gsv2ea55p3q",
+          "effects": [],
+          "doc": "The wait in milliseconds until `cost` tokens are there, without taking them: 0 now, -1 if\n`cost` is more than the burst."
+        },
+        {
+          "name": "reserve",
+          "kind": "fn",
+          "sig": "fn reserve(b: TokenBucket, s: Opt[State], now_ms: Int, cost: Int where _ >= 0, max_wait_ms: Int where _ >= 0) -> (Reservation, State)",
+          "sig_hash": "5m7cp4hjm6r3qr5zc4ngghhkt4",
+          "hash": "xez35b3wm44onr7xngecvoqmmahmtnkwweb4cgyxqjorhg5qz6vq",
+          "effects": [],
+          "doc": "Reserves `cost` tokens, letting the bucket go into debt, when they will be there within\n`max_wait_ms`; the caller waits `delay_ms` and then acts. Otherwise nothing is reserved. As\nx/time/rate's ReserveN with a deadline."
+        },
+        {
+          "name": "cancel",
+          "kind": "fn",
+          "sig": "fn cancel(b: TokenBucket, s: State, r: Reservation, now_ms: Int) -> State",
+          "sig_hash": "3hctlgxemovedbhrkbrkccdche",
+          "hash": "pkztfg7q5cggy4reuakiflim2h7u7cq2sv5u4a7gsveyr6hllwwq",
+          "effects": [],
+          "doc": "Gives back the tokens of a granted reservation that has not acted yet (its time is after\n`now_ms`), up to a full bucket. Unlike x/time/rate it does not subtract tokens later\nreservations took, so a cancel may restore slightly more than a perfect ledger would."
+        },
+        {
+          "name": "Table",
+          "kind": "type",
+          "sig": "pub type Table = new Slots",
+          "sig_hash": "goxpgescm2zq4fvizzsc35dvya",
+          "hash": "cc75rmeu5nu2iqhhl7trlape6h3xvsbwb37xjvoifa6xfhapcxfq",
+          "effects": [],
+          "doc": "A fixed-size, lock-free table for the policies `memory_supported` accepts, shared by the\nhandlers of one process (they may share only atomics). Each slot is a pair of Atomic[Int]: the\nkey's 64-bit fingerprint and its packed state, updated with compare-and-swap, so a decision is\nexact under any contention. A key is looked up in `probes` consecutive slots from the one its\nhash names, claiming an empty one or one whose state has fully recovered (an idle key, whose\nstate equals a fresh one). When every probed slot is busy with other keys, the key shares its\nhome slot with them: sharing only ever denies earlier, never allows more. Size it at about\ntwice the number of keys active within one window; `used` shows the occupancy. It is opaque and\nhas no Eq or Show, because it holds atomics."
+        },
+        {
+          "name": "table",
+          "kind": "fn",
+          "sig": "fn table(slots: Int where _ >= 1 and _ <= 16777216, probes: Int where _ >= 1 and _ <= 64) -> Table ! conc",
+          "sig_hash": "skb7nidbohuret7fthrh2mnnkm",
+          "hash": "2u2g32cnbppxyo4jsn5qoxevpu2c7ulq3vutrau44qvbedzwavuq",
+          "effects": [
+            "conc"
+          ],
+          "doc": "A table of `slots` slots probing `probes` of them per key."
+        },
+        {
+          "name": "memory_supported",
+          "kind": "fn",
+          "sig": "fn memory_supported(p: Policy) -> Bool",
+          "sig_hash": "rae5lnbtsdp6j4fiiumcmq5vzi",
+          "hash": "vhqfmm3qhu5hr6bq43dtjqaekd2docqda5bsxkoinkvl3fovhtua",
+          "effects": [],
+          "doc": "Whether the in-memory table can run `p`: token buckets and GCRA (as GCRA) and fixed windows,\nwhose state fits in one 64-bit word. Sliding windows need the SQLite store."
+        },
+        {
+          "name": "as_gcra",
+          "kind": "fn",
+          "sig": "fn as_gcra(b: TokenBucket) -> Gcra",
+          "sig_hash": "i6svuxw6vk74q3gqztkykr42ca",
+          "hash": "c7dalq7ksu5x67taqkv2nwxn4lm5gaw2qnaqtkivr767oin4olda",
+          "effects": [],
+          "doc": "The GCRA with the same numbers as a token bucket; both allow the same requests."
+        },
+        {
+          "name": "take",
+          "kind": "fn",
+          "sig": "fn take(t: Table, p: Policy, key: Str, now_ms: Int, cost: Int where _ >= 0) -> Decision ! conc, div",
+          "sig_hash": "ycqdn24nss6tldv3q2vb3fwsba",
+          "hash": "bppuvicqt3jryzww3hctsy6cvqzr62jamvi5a6oha3u536rcihkq",
+          "effects": [
+            "conc",
+            "div"
+          ],
+          "doc": "Decides a request of `cost` for `key` in the table at `now_ms`. Exact under concurrent calls:\nthe update is a compare-and-swap loop on the key's slot."
+        },
+        {
+          "name": "peek",
+          "kind": "fn",
+          "sig": "fn peek(t: Table, p: Policy, key: Str, now_ms: Int) -> Decision ! conc",
+          "sig_hash": "pxawesnluhvlv7dqhin5shsyya",
+          "hash": "2geldrfkkcf2o2zsqc75ktwxsuimeinnog7rk6gtskruwx42fh2q",
+          "effects": [
+            "conc"
+          ],
+          "doc": "The status of `key` without taking anything (a cost of 0)."
+        },
+        {
+          "name": "reset",
+          "kind": "fn",
+          "sig": "fn reset(t: Table, key: Str) -> Bool ! conc",
+          "sig_hash": "rt75mwkqkoiwsb7vvvadcgejg4",
+          "hash": "jzzguzjrn2cuhqyhrdc5xxvpjhmia2zuqedf63bi4x6w7u7kyjbq",
+          "effects": [
+            "conc"
+          ],
+          "doc": "Forgets `key`'s state, as if it had never been seen: whether it was in the table."
+        },
+        {
+          "name": "used",
+          "kind": "fn",
+          "sig": "fn used(t: Table) -> Int ! conc",
+          "sig_hash": "rxnzinkntdxyhk3zddqi7ynv2a",
+          "hash": "yw65wzbbiyo2ikg4dmfjr4ots7mh2hrimozr2la6uelczze7uhoa",
+          "effects": [
+            "conc"
+          ],
+          "doc": "How many slots hold a key."
+        },
+        {
+          "name": "SqlStore",
+          "kind": "type",
+          "sig": "pub type SqlStore = {db: Db, table: Str} derive Eq, Show",
+          "sig_hash": "hi4vaapstzcuxw4pqyrlji3zfy",
+          "hash": "zijxtd2rcxdardm4zxsnzfewp2hqaknuj3ktxreqomnf4t567yta",
+          "effects": [],
+          "doc": "A SQLite table of states, one row per key with its JSON state and the time it expires. Every\ndecision is a transaction (BEGIN IMMEDIATE), so processes sharing the database file, and the\nhandlers of one process sharing the Db, never lose an update. Works with every policy."
+        },
+        {
+          "name": "valid_table_name",
+          "kind": "fn",
+          "sig": "fn valid_table_name(s: Str) -> Bool",
+          "sig_hash": "tp7qqw5jkjtbnpacegkbappr3e",
+          "hash": "rdnnax62wm2rbrpvl6ezhjyxx6ctpajzxdbmxs7iuwvgeyt4skza",
+          "effects": [],
+          "doc": "Whether `s` can name the store's table: a letter or underscore, then letters, digits and\nunderscores, at most 63 characters."
+        },
+        {
+          "name": "sql_store",
+          "kind": "fn",
+          "sig": "fn sql_store(c: Db, table: Str where valid_table_name(_)) -> SqlStore ! db, fail[DbErr]",
+          "sig_hash": "lm35vbdfp43cc2ezihjevuudvy",
+          "hash": "fplkxkgfg6lke2mbspazo5gwdqhqweq2g7akhytdtk5cyrqkbk7a",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Opens the store in `c`, creating the table `table` (and its expiry index) when missing."
+        },
+        {
+          "name": "sql_take",
+          "kind": "fn",
+          "sig": "fn sql_take(s: SqlStore, p: Policy, key: Str, now_ms: Int, cost: Int where _ >= 0) -> Decision ! db, fail[DbErr]",
+          "sig_hash": "djyfmvdlevlmp36xiq7kjowpsm",
+          "hash": "kcww6m32ihbb3txfywugod4sovaouqmny4mh2w4yhlww7zh2l7ea",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Decides a request of `cost` for `key` at `now_ms` in one transaction, and stores the new state\nwhen the request is allowed."
+        },
+        {
+          "name": "sql_peek",
+          "kind": "fn",
+          "sig": "fn sql_peek(s: SqlStore, p: Policy, key: Str, now_ms: Int) -> Decision ! db, fail[DbErr]",
+          "sig_hash": "g2hskocdpdooqn5adtnezoy6ci",
+          "hash": "lufmeuqebpcetri5bspawlzijgouncuepdzjmqicw6b7emqixhhq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "The status of `key` without taking anything; reads only."
+        },
+        {
+          "name": "sql_reset",
+          "kind": "fn",
+          "sig": "fn sql_reset(s: SqlStore, key: Str) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "47ksgavm5n6q6fjyg354oqhdwu",
+          "hash": "zzeybwa5vudoxzzayb2bkam6lugb7mdnvg2o2v4qw6zqxzcaalnq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Forgets `key`: whether it had a row."
+        },
+        {
+          "name": "sql_purge",
+          "kind": "fn",
+          "sig": "fn sql_purge(s: SqlStore, now_ms: Int) -> Int ! db, fail[DbErr]",
+          "sig_hash": "6eeuvl27buig3zbuu4ewtndlvy",
+          "hash": "lztmdfyjuodh2lw4kmrrtp3ixni2thpgd4f2qpnyycenc5ho5knq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Deletes the rows of keys whose state has fully recovered by `now_ms`; the number deleted.\nRun it now and then (each decision only touches its own key)."
+        },
+        {
+          "name": "sql_count",
+          "kind": "fn",
+          "sig": "fn sql_count(s: SqlStore) -> Int ! db, fail[DbErr]",
+          "sig_hash": "i3xitpog2hrx6p7jgyi5ipvtma",
+          "hash": "cjyf67voekdt3j7zwhgqrvvk7xvirs6egoikovomfxn7oxs7vmwq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "How many keys have a row."
+        },
+        {
+          "name": "Ip",
+          "kind": "type",
+          "sig": "pub type Ip = V4{n: Int} | V6{hi: Int, lo: Int} derive Eq, Show",
+          "sig_hash": "k5alyx3ihc3dqrpdy5zvurdlju",
+          "hash": "hka6tp2ok22zvrhdekbws4cpldrjzfd5yn4yg2tgltlwzbaiofea",
+          "effects": [],
+          "doc": "An IP address: IPv4 as a 32-bit number, IPv6 as two 64-bit halves."
+        },
+        {
+          "name": "Cidr",
+          "kind": "type",
+          "sig": "pub type Cidr = {ip: Ip, bits: Int} derive Eq, Show",
+          "sig_hash": "tk2egbszmoxoxrqv7wndkc3eum",
+          "hash": "46zr54flagqvrrl4o3a6oykcvkgijincmaca56wtzhuacm2i4h4q",
+          "effects": [],
+          "doc": "A network: an address and a prefix length."
+        },
+        {
+          "name": "parse_ip",
+          "kind": "fn",
+          "sig": "fn parse_ip(s: Str) -> Opt[Ip]",
+          "sig_hash": "mr5k2d73penuev46hpep4ltvwy",
+          "hash": "dhed4rsn2mpdcmmbkiuyu2dxk7n7yxs274i73wp46yxu5phtjs5q",
+          "effects": [],
+          "doc": "Parses an IPv4 address in dotted decimal (no leading zeros, which some parsers read as octal) or\nan IPv6 address in any RFC 4291 text form, including `::` and a dotted IPv4 tail. Zone ids and\nbrackets are not accepted."
+        },
+        {
+          "name": "normalize",
+          "kind": "fn",
+          "sig": "fn normalize(ip: Ip) -> Ip",
+          "sig_hash": "h3df4sjavol3yev2cgle7e4kwi",
+          "hash": "izjlm2ljf7ezvuphv3rgokp7nfisjhbe7eksxctgh6ooy5bx7p2q",
+          "effects": [],
+          "doc": "An IPv4-mapped IPv6 address (`::ffff:192.0.2.1`) as the IPv4 address it maps; others unchanged."
+        },
+        {
+          "name": "ip_str",
+          "kind": "fn",
+          "sig": "fn ip_str(ip: Ip) -> Str",
+          "sig_hash": "xksrhdrzybkxdu6sgbfuhny2vi",
+          "hash": "t6urk4cqlk33xvhsaojabdbdrp7q76i3pzmfiao2ihtqaz6cyyuq",
+          "effects": [],
+          "doc": "The text of an address: dotted decimal, or the RFC 5952 form of IPv6 (lower case, no leading\nzeros, the longest run of zero groups as `::`)."
+        },
+        {
+          "name": "parse_cidr",
+          "kind": "fn",
+          "sig": "fn parse_cidr(s: Str) -> Opt[Cidr]",
+          "sig_hash": "dz6xnor5v535pz6qbhjrprs6rm",
+          "hash": "4vi7xfcwydfe2k6j4opi3ji57qybxz7ozq4hst5sure2uvt2zr2q",
+          "effects": [],
+          "doc": "Parses `addr/bits`, or a bare address as a single-address network. Host bits may be set; they\nare ignored when matching."
+        },
+        {
+          "name": "cidr_contains",
+          "kind": "fn",
+          "sig": "fn cidr_contains(c: Cidr, ip: Ip) -> Bool",
+          "sig_hash": "q3ovh4tz7ywwzgbnxdrhnxogyu",
+          "hash": "3u3s4khkotiag4ntqjiu7ipx4264pkyfu2d2cwkvyemt7jcylf5q",
+          "effects": [],
+          "doc": "Whether `ip` is in the network `c`. IPv4-mapped IPv6 addresses match IPv4 networks."
+        },
+        {
+          "name": "parse_cidrs",
+          "kind": "fn",
+          "sig": "fn parse_cidrs(xs: List[Str]) -> Opt[List[Cidr]]",
+          "sig_hash": "jryejqjkgiptepwzbtwcz7fmuq",
+          "hash": "giolh76vgynerw7ok7eamiiow7codys2ev7nwwswxf3xvyk3o2ka",
+          "effects": [],
+          "doc": "Parses a list of networks, skipping none: none if any entry is not a network."
+        },
+        {
+          "name": "private_networks",
+          "kind": "fn",
+          "sig": "fn private_networks() -> List[Cidr]",
+          "sig_hash": "kpp3l27a7p3wmcjbnweub5tzeq",
+          "hash": "blmkjt7ytig7w3gx54yphzquu5e6xebp54bgymxioghpaom73jba",
+          "effects": [],
+          "doc": "Loopback, private (RFC 1918, RFC 4193), link-local and carrier-grade NAT networks: the usual\naddresses of proxies inside a deployment, to pass as `trusted`."
+        },
+        {
+          "name": "ip_from_xff",
+          "kind": "fn",
+          "sig": "fn ip_from_xff(req: Request, trusted: List[Cidr]) -> Opt[Ip]",
+          "sig_hash": "se6becfhxbz2svcrljyl62uxuq",
+          "hash": "qnsqql4llnusa42izgqkxovms7vendyjymdxas2nahc755azvj6a",
+          "effects": [],
+          "doc": "The client address from X-Forwarded-For by the rightmost-untrusted rule: the nearest address\nthat isn't one of the `trusted` proxies. Only meaningful behind a proxy that appends to the\nheader; sspur's server does not expose the peer address, so the nearest hop must be a proxy."
+        },
+        {
+          "name": "ip_from_hops",
+          "kind": "fn",
+          "sig": "fn ip_from_hops(req: Request, hops: Int where _ >= 1) -> Opt[Ip]",
+          "sig_hash": "ofpuu5rfgmlkhgnd6t4lckxzum",
+          "hash": "i6iafdjywwj73c5e5kvn7hiyskr2jbqmwybjqjpuduuu4rjldreq",
+          "effects": [],
+          "doc": "The client address `hops` entries from the right of X-Forwarded-For, for a fixed number of\nproxies (express's `trust proxy = n`); the leftmost entry when there are fewer."
+        },
+        {
+          "name": "ip_from_header",
+          "kind": "fn",
+          "sig": "fn ip_from_header(req: Request, name: Str) -> Opt[Ip]",
+          "sig_hash": "ntcsxwqjcacuqbc5tx23rwczyq",
+          "hash": "hvtbe2gnyjrhsfl5uiaiinv22d2ebgckstnw45siwvjkdpksq2ia",
+          "effects": [],
+          "doc": "The address in a single-valued header such as X-Real-IP, CF-Connecting-IP or Fly-Client-IP.\nTrust it only when the proxy in front always overwrites it."
+        },
+        {
+          "name": "Forwarded",
+          "kind": "type",
+          "sig": "pub type Forwarded = {for_node: Opt[Str], by_node: Opt[Str], host: Opt[Str], proto: Opt[Str]} derive Eq, Show",
+          "sig_hash": "im4zj3cam7rwmbluauqdz5xnwy",
+          "hash": "badxpz23ls5ejx45foaonvqcqlfwotxqtyxs66mnanrppulwnnyq",
+          "effects": [],
+          "doc": "One element of a Forwarded header (RFC 7239): the `for`, `by`, `host` and `proto` parameters,\nunquoted."
+        },
+        {
+          "name": "forwarded",
+          "kind": "fn",
+          "sig": "fn forwarded(req: Request) -> List[Forwarded]",
+          "sig_hash": "64f5hgl24xqe6i7ieyqofjswfa",
+          "hash": "6pf6vo4ifdmfkiyhaqqip7wt7aea5rhfvtsp2bweiv57a2viftoq",
+          "effects": [],
+          "doc": "The elements of every Forwarded header of `req`, in order (nearest proxy last)."
+        },
+        {
+          "name": "ip_from_forwarded",
+          "kind": "fn",
+          "sig": "fn ip_from_forwarded(req: Request, trusted: List[Cidr]) -> Opt[Ip]",
+          "sig_hash": "iozfjeeove52bzu73fvattgg4a",
+          "hash": "kc7s2ryisvqei7luddanniemqrckt5ga25yfpchb5cuzxxbwysya",
+          "effects": [],
+          "doc": "The client address from Forwarded `for=` values by the rightmost-untrusted rule. `unknown`\nand obfuscated identifiers (`_hidden`) are not addresses and stop the walk."
+        },
+        {
+          "name": "ip_key",
+          "kind": "fn",
+          "sig": "fn ip_key(ip: Ip) -> Str",
+          "sig_hash": "ximeultodjaj6y55ztxql7i3pm",
+          "hash": "clbanjm2qyqqncbsvpibn3w62stv3hgadacksq6rxqlmta7eavka",
+          "effects": [],
+          "doc": "The key for one address: `ip:` and its canonical text (IPv4-mapped addresses as IPv4)."
+        },
+        {
+          "name": "network_key",
+          "kind": "fn",
+          "sig": "fn network_key(ip: Ip, v4_bits: Int where _ >= 0 and _ <= 32, v6_bits: Int where _ >= 0 and _ <= 128) -> Str",
+          "sig_hash": "rvdll42pxxa4vjsh4cjvidytt4",
+          "hash": "gdt4dfzgb7fh5nzd3w2jtphsu52sp4e2li67jxf5coppwaeglpzq",
+          "effects": [],
+          "doc": "The key for the network of an address, so that one client can't escape the limit by rotating\naddresses within its allocation: the first `v4_bits` of IPv4, `v6_bits` of IPv6 (often 64)."
+        },
+        {
+          "name": "route_key",
+          "kind": "fn",
+          "sig": "fn route_key(req: Request) -> Str",
+          "sig_hash": "6vpe4hwm7pinywlgf6wsai5pla",
+          "hash": "zpi4hidj3mee63t7qlpvwxzebgqaeah34shggxjfziovaysufzrq",
+          "effects": [],
+          "doc": "The key of a route: the method and the path without the query."
+        },
+        {
+          "name": "compose_key",
+          "kind": "fn",
+          "sig": "fn compose_key(parts: List[Str]) -> Str",
+          "sig_hash": "bo3q7vheyiry4nrubchledjyey",
+          "hash": "vbymrlpzwqpw5mzfjepyadtxhpnf2fdns3z5bhxy3mel3eylusxa",
+          "effects": [],
+          "doc": "One key from several parts (a user, a route, an address), unambiguously: each part is prefixed\nwith its length, so `[\"a|b\", \"c\"]` and `[\"a\", \"b|c\"]` differ."
+        },
+        {
+          "name": "valid_policy_name",
+          "kind": "fn",
+          "sig": "fn valid_policy_name(s: Str) -> Bool",
+          "sig_hash": "v57bcmnqxznqhiorm6douiqtl4",
+          "hash": "kemt4pr6ogf7xuxqmhhvz4j5sm5xx4d7kzet2ga6fatznvhkvera",
+          "effects": [],
+          "doc": "Whether `s` can name a policy in the RateLimit headers: 1 to 64 printable ASCII characters."
+        },
+        {
+          "name": "policy_header",
+          "kind": "fn",
+          "sig": "fn policy_header(name: Str where valid_policy_name(_), p: Policy) -> (Str, Str)",
+          "sig_hash": "jpzvrtoe2xnfk7dnmwdief75pa",
+          "hash": "7kzojrzk75b7h6kimp5fb2scc7hkxfyuzjvzlr2nkr4egfjf66tq",
+          "effects": [],
+          "doc": "The `RateLimit-Policy` field of draft-ietf-httpapi-ratelimit-headers for one policy: its name,\n`q` the quota and `w` the window in seconds."
+        },
+        {
+          "name": "policies_header",
+          "kind": "fn",
+          "sig": "fn policies_header(ps: List[(Str, Policy)]) -> (Str, Str)",
+          "sig_hash": "d6jwqprb7tawn7ih5euaxluqne",
+          "hash": "poievss7dlcegifnq2iwc7qnolgkpsoe7ql6f3vjaswn56rtiugq",
+          "effects": [],
+          "doc": "The `RateLimit-Policy` field listing several policies that apply to a request."
+        },
+        {
+          "name": "ratelimit_header",
+          "kind": "fn",
+          "sig": "fn ratelimit_header(name: Str where valid_policy_name(_), d: Decision) -> (Str, Str)",
+          "sig_hash": "pjzatvij2vfwgtuhaox3dhocrm",
+          "hash": "o2q4pficyzcg5bbgiowkchnhlqabxaqrirah5zgi6gvgclpb2tua",
+          "effects": [],
+          "doc": "The `RateLimit` field for a decision under the policy `name`: `r` the remaining quota and `t`\nthe seconds until it resets."
+        },
+        {
+          "name": "with_partition",
+          "kind": "fn",
+          "sig": "fn with_partition(h: (Str, Str), key: Str) -> (Str, Str)",
+          "sig_hash": "vdu6yj5omajdf26t7ivtns2abm",
+          "hash": "mnicixxbhjti2ghe45vyflsohgewmxwgm42f5rdkfch5xbvgfrca",
+          "effects": [],
+          "doc": "Adds the partition key parameter `pk` (an sf-binary of the key's bytes) to a RateLimit or\nRateLimit-Policy field, for clients that share a quota with others."
+        },
+        {
+          "name": "legacy_headers",
+          "kind": "fn",
+          "sig": "fn legacy_headers(d: Decision, now_ms: Int) -> List[(Str, Str)]",
+          "sig_hash": "ec7oylhq6fd2hdac5lhzbuo5r4",
+          "hash": "x5gaovgdlba25bqd7x7ssan4xh264n5jpdl4mxa2gc7lkcalp2la",
+          "effects": [],
+          "doc": "The legacy fields many clients read (GitHub, express-rate-limit): X-RateLimit-Limit,\nX-RateLimit-Remaining and X-RateLimit-Reset, the last as Unix seconds of the reset."
+        },
+        {
+          "name": "retry_after_secs",
+          "kind": "fn",
+          "sig": "fn retry_after_secs(d: Decision) -> Int",
+          "sig_hash": "ljfzpnxg6dvxjgdpuizaecihy4",
+          "hash": "eiv42bcwoxitn6ioanutcgbf3gulfvg5yqbktxhw3n2lwz2smata",
+          "effects": [],
+          "doc": "The seconds a denied client should wait, rounded up and at least 1; 0 when allowed or when the\nrequest can never succeed."
+        },
+        {
+          "name": "retry_after",
+          "kind": "fn",
+          "sig": "fn retry_after(d: Decision) -> Opt[(Str, Str)]",
+          "sig_hash": "2anhluejuyarqbkxgnhs6okucq",
+          "hash": "apdhchb4ioinu275u4uit5by3hm4vqb4qnoe63gb5idz7jvmn3tq",
+          "effects": [],
+          "doc": "The Retry-After field (RFC 9110 10.2.3, delay-seconds) of a denied decision."
+        },
+        {
+          "name": "HeaderStyle",
+          "kind": "type",
+          "sig": "pub type HeaderStyle = DraftHeaders | LegacyHeaders | BothHeaders | NoHeaders derive Eq, Show",
+          "sig_hash": "dxd6icrvqg4qwsdo4aplunjmqe",
+          "hash": "vzxj3bho2wfhvdhpeh4u7urnz64jmdtkumobjr3iodvnlkbovczq",
+          "effects": [],
+          "doc": "Which rate limit fields a response carries."
+        },
+        {
+          "name": "headers",
+          "kind": "fn",
+          "sig": "fn headers(style: HeaderStyle, name: Str where valid_policy_name(_), p: Policy, d: Decision, now_ms: Int) -> List[(Str, Str)]",
+          "sig_hash": "73kw36fv64vgbzqyzpbux24m6a",
+          "hash": "zeatdam7n6dj62zcps4g7xf7uocq53it4tiaqiakgt3fk6yynnyq",
+          "effects": [],
+          "doc": "The fields for a decision in a style: the draft's RateLimit-Policy and RateLimit, the legacy\nX-RateLimit fields, both, or none; Retry-After is added by `too_many`."
+        },
+        {
+          "name": "too_many",
+          "kind": "fn",
+          "sig": "fn too_many(style: HeaderStyle, name: Str where valid_policy_name(_), p: Policy, d: Decision, now_ms: Int, problem: Bool) -> Response",
+          "sig_hash": "po7ohyi7m4tegldcwmxwt26uyy",
+          "hash": "hfpheg7xcpoi4bd4c7rkdxok3bfwdyhh2lctuw4prl2ax5axxqxa",
+          "effects": [],
+          "doc": "A 429 Too Many Requests response (RFC 6585) with Retry-After, the rate limit fields of\n`style`, `cache-control: no-store`, and a text body, or with `problem` an RFC 9457\napplication/problem+json body."
+        },
+        {
+          "name": "Guard",
+          "kind": "type",
+          "sig": "pub type Guard = {name: Str where valid_policy_name(_), policy: Policy, cost: Int where _ >= 1, style: HeaderStyle, skip_paths: List[Str], skip_methods: List[Str], allow_keys: List[Str], problem: Bool, fail_open: Bool} derive Eq, Show",
+          "sig_hash": "wcbapgy2vj5czp5cxmw6rlkp7u",
+          "hash": "zwvzldayxiahsauvdyzbry5utcajrhn2avfhunh4vi4x33gjlzaa",
+          "effects": [],
+          "doc": "How a wrapper limits requests: the policy and its name in the headers, the cost of a request,\nthe header style, requests that are not limited (paths starting with one of `skip_paths`,\nmethods in `skip_methods`, keys in `allow_keys`), whether 429s are problem+json, and whether a\nstore failure lets the request through (`fail_open`) or answers 503."
+        },
+        {
+          "name": "guard",
+          "kind": "fn",
+          "sig": "fn guard(name: Str where valid_policy_name(_), p: Policy) -> Guard",
+          "sig_hash": "ixn7pyikxvllebres6euslbph4",
+          "hash": "bzo4x2qzcoxxd654dtzrwqh3hy3gde7sxrc2kfy6uvrvctejt7ua",
+          "effects": [],
+          "doc": "A guard with the defaults: cost 1, draft headers, CORS preflights (OPTIONS) not limited, text\n429s, and fail closed."
+        },
+        {
+          "name": "skipped",
+          "kind": "fn",
+          "sig": "fn skipped(g: Guard, req: Request, key: Str) -> Bool",
+          "sig_hash": "admpt4hilibzjcoc2k2a42jaqm",
+          "hash": "fp4jjeqbhxjrirzjzovettvdf4dgp3y2dfazlfq4yuk6bk2aqmbq",
+          "effects": [],
+          "doc": "Whether `g` leaves the request with key `key` alone."
+        },
+        {
+          "name": "enforce",
+          "kind": "fn",
+          "sig": "fn enforce[e](g: Guard, d: Decision, now_ms: Int, req: Request, next: Request -> Response ! e) -> Response ! e",
+          "sig_hash": "ty7cfscoxayjw65m7rsn32owqm",
+          "hash": "rxv5na7gjd3x4hnemr73lkel4ohmiwlydi3azkjncrjz32spgheq",
+          "effects": [
+            "e"
+          ],
+          "doc": "Applies a decision: an allowed request goes to `next` and its response gets the rate limit\nfields; a denied one gets `too_many`. This is the core the wrappers share, for limiters of\nyour own."
+        },
+        {
+          "name": "limit_memory",
+          "kind": "fn",
+          "sig": "fn limit_memory[e](t: Table, g: Guard, key: Request -> Str, next: Request -> Response ! e) -> Request -> Response ! e, conc, div, time",
+          "sig_hash": "7vkxsz6dxbljo3orntj7tf7pga",
+          "hash": "a52mqpsaxvfviwayalxdoz36s4s5bki7uo4pymnckehbfdl3yjiq",
+          "effects": [],
+          "doc": "Wraps `next` with a limit kept in the in-memory table `t`, per key that `key` gives for a\nrequest. Build it inside the handler (`req => ratelimit.limit_memory(t, g, ratelimit.route_key,\napi)(req)`): handlers may not share function values."
+        },
+        {
+          "name": "limit_sql",
+          "kind": "fn",
+          "sig": "fn limit_sql[e](s: SqlStore, g: Guard, key: Request -> Str, next: Request -> Response ! e) -> Request -> Response ! e, db, time",
+          "sig_hash": "lhrdo6ahwkp3wxtgcubaqabt2m",
+          "hash": "ajtcriie24cldipdu3k5riskhuubrdsa3yd55xrinnox5wtd2gmq",
+          "effects": [],
+          "doc": "Wraps `next` with a limit kept in the SQLite store `s`. A database error answers 503, or with\n`fail_open` passes the request through unlimited."
+        }
+      ]
+    }
+  ]
+}
