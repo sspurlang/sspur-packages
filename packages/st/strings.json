@@ -1,0 +1,1510 @@
+{
+  "schema": 1,
+  "name": "strings",
+  "description": "String utilities in the spirit of Apache Commons StringUtils: case, padding, graphemes, distances, wrapping, slugs, escaping",
+  "repository": "https://github.com/sspurlang/sspur-strings",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-strings.git",
+      "tag": "v0.1.0",
+      "commit": "2a0ba8acf7c68fe64ba1386cd8ea402e25a877bb",
+      "hash": "64fg47n234563pkctsphys5driidjynqfwsn7vvlubgp6yaw4frq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/strings-0.1.0/strings-0.1.0.tar",
+        "sha256": "3da5894ce2809afd715de827b680b2e1c5c78b2b44f803eedaff33af59cbec1b",
+        "size": 133120
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T19:57:58Z",
+      "publisher": "utkarshavardhana",
+      "request": 15,
+      "api": [
+        {
+          "name": "SlugOptions",
+          "kind": "type",
+          "sig": "pub type SlugOptions = {sep: Str, max_len: Int where _ >= 0, lowercase: Bool} derive Eq, Show",
+          "sig_hash": "uqelg6e2n7b7wm7nw7ptwbsawi",
+          "hash": "4ipnlbtn5oobbl5axme4n3fhrxe4efwadamjs76yxqkh7hjr4m4q",
+          "effects": [],
+          "doc": "Options for `slugify_with`: `sep` goes between words, `max_len` caps the length in characters\n(0 means no limit), and `lowercase` lowercases the result."
+        },
+        {
+          "name": "is_blank",
+          "kind": "fn",
+          "sig": "fn is_blank(s: Str) -> Bool",
+          "sig_hash": "ttjx47pdynjqhrhi2mdgzh5kbe",
+          "hash": "zdjud7bbf44u7tw7j5btwi34dvgo73wnnlnzya2hijpvirn4ayjq",
+          "effects": [],
+          "doc": "Whether `s` is empty or only whitespace. Whitespace is the Unicode White_Space set: ASCII\ntab, line feed, vertical tab, form feed, carriage return and space, NEL, NBSP, U+1680,\nU+2000 to U+200A, the line and paragraph separators, U+202F, U+205F and U+3000."
+        },
+        {
+          "name": "is_whitespace",
+          "kind": "fn",
+          "sig": "fn is_whitespace(s: Str) -> Bool",
+          "sig_hash": "6zklszgbhf2tikeanh4trb3jzm",
+          "hash": "4oqq3m5cizkjbmgzpzdmksenuuczpwexktnuz3q55fczyc3jduxq",
+          "effects": [],
+          "doc": "Whether `s` is non-empty and only whitespace (see `is_blank` for the set); `\"\"` is not."
+        },
+        {
+          "name": "contains_whitespace",
+          "kind": "fn",
+          "sig": "fn contains_whitespace(s: Str) -> Bool",
+          "sig_hash": "esqebyvetxcljoalbphvfg67wu",
+          "hash": "wf2uxp45cmcu6ocfwby3wicdanicz5fuaapn3r44pli6lwr4u5rq",
+          "effects": [],
+          "doc": "Whether `s` contains at least one whitespace character."
+        },
+        {
+          "name": "is_any_blank",
+          "kind": "fn",
+          "sig": "fn is_any_blank(xs: List[Str]) -> Bool",
+          "sig_hash": "uozrbfhfet6iklr6oyphb7yy64",
+          "hash": "qefroee4wjsxxv4td4k7rmxrhek7dxwzfvu4fwflbi3n36o7ti6q",
+          "effects": [],
+          "doc": "Whether any string in `xs` is blank; false for an empty list."
+        },
+        {
+          "name": "is_all_blank",
+          "kind": "fn",
+          "sig": "fn is_all_blank(xs: List[Str]) -> Bool",
+          "sig_hash": "7jilkenwblgk33mgle3omahaiu",
+          "hash": "abobsucmbzulnxkzvulrumux5mjlqnftiyp4amki72svfciveyfq",
+          "effects": [],
+          "doc": "Whether every string in `xs` is blank; true for an empty list."
+        },
+        {
+          "name": "is_any_empty",
+          "kind": "fn",
+          "sig": "fn is_any_empty(xs: List[Str]) -> Bool",
+          "sig_hash": "m5v5m27kyjlbbe7odkwtatthru",
+          "hash": "77jq433bkicdjj6pajelja4c5pparhh6fwe3qtwvx2kpc4npoppq",
+          "effects": [],
+          "doc": "Whether any string in `xs` is empty; false for an empty list."
+        },
+        {
+          "name": "default_if_empty",
+          "kind": "fn",
+          "sig": "fn default_if_empty(s: Str, d: Str) -> Str",
+          "sig_hash": "3lznpbmuep2wlmmfxzohmxljra",
+          "hash": "uwrnd7ximrjgtycuofc6k3p6jige6naioihpr5m26umuszch5zzq",
+          "effects": [],
+          "doc": "`s`, or `d` when `s` is empty."
+        },
+        {
+          "name": "default_if_blank",
+          "kind": "fn",
+          "sig": "fn default_if_blank(s: Str, d: Str) -> Str",
+          "sig_hash": "sfgp3u6zp56asv3cfwxe7qm6z4",
+          "hash": "32ndezgmtjhwokgios5yw4e6tobdksoy7hsprwfc65bz5xq2ftna",
+          "effects": [],
+          "doc": "`s`, or `d` when `s` is blank."
+        },
+        {
+          "name": "first_non_blank",
+          "kind": "fn",
+          "sig": "fn first_non_blank(xs: List[Str]) -> Opt[Str]",
+          "sig_hash": "5wiayowlhhbf3uzbukcegzok4m",
+          "hash": "bvjuujss5ras4xvx6zemulmropfjdugjzzs7gcwju5cykjhwcuoq",
+          "effects": [],
+          "doc": "The first string in `xs` that is not blank."
+        },
+        {
+          "name": "first_non_empty",
+          "kind": "fn",
+          "sig": "fn first_non_empty(xs: List[Str]) -> Opt[Str]",
+          "sig_hash": "jiftwqsyclkzjz5hcjvryjo4bm",
+          "hash": "wmibao5is4k54trtxvbnjbxoxbux6y6k2kbu5ssesn4xgyjagygq",
+          "effects": [],
+          "doc": "The first string in `xs` that is not empty."
+        },
+        {
+          "name": "trim_to_none",
+          "kind": "fn",
+          "sig": "fn trim_to_none(s: Str) -> Opt[Str]",
+          "sig_hash": "4j3vtfjfuth56no5sf45izkyve",
+          "hash": "3yqtf7alp2medwlki5nsc3husgmenxv7ec6d4n4vsxcwx6ufskta",
+          "effects": [],
+          "doc": "`s` trimmed (builtin `trim`, which strips Unicode whitespace), or `none` when nothing is left."
+        },
+        {
+          "name": "none_if_empty",
+          "kind": "fn",
+          "sig": "fn none_if_empty(s: Str) -> Opt[Str]",
+          "sig_hash": "2qjge5aso2pd3teyjag4divxta",
+          "hash": "xegraio4tzzz4h67nvzr2j73ptft6o6k3jdzkopeg2xfozkcjlma",
+          "effects": [],
+          "doc": "`some(s)`, or `none` when `s` is empty."
+        },
+        {
+          "name": "is_numeric",
+          "kind": "fn",
+          "sig": "fn is_numeric(s: Str) -> Bool",
+          "sig_hash": "ncx4sordgoab43h2l4rbgowz34",
+          "hash": "avnqktf3gm6jfvdmfzmt3e6zfu7zcajovoifmlkygpfme3o4mhgq",
+          "effects": [],
+          "doc": "Whether `s` is non-empty and every character is a Unicode decimal digit (ASCII `0-9`, Arabic-\nIndic, Devanagari and the other Nd blocks of the BMP, and fullwidth digits). Signs, points\nand exponents are not digits, so `\"-1\"` and `\"1.5\"` are not numeric."
+        },
+        {
+          "name": "is_ascii_digits",
+          "kind": "fn",
+          "sig": "fn is_ascii_digits(s: Str) -> Bool",
+          "sig_hash": "wzzmbimnevuoa5koebxpd6j6vm",
+          "hash": "mr225xtkp74b4yjz3cqxcisivmpx2s762pda3ihf2qbhbih6rgha",
+          "effects": [],
+          "doc": "Whether `s` is non-empty and only ASCII digits `0-9`."
+        },
+        {
+          "name": "is_alphanumeric",
+          "kind": "fn",
+          "sig": "fn is_alphanumeric(s: Str) -> Bool",
+          "sig_hash": "pg574ww7s6bf6fqysdvsi3zsvq",
+          "hash": "bqvbsmlmsedym3a22ev44cfquoihqpmchorijz7ny2vw6w7csnsa",
+          "effects": [],
+          "doc": "Whether `s` is non-empty and every character is a letter (builtin `is_alpha`) or a decimal\ndigit (as `is_numeric`)."
+        },
+        {
+          "name": "is_alpha_space",
+          "kind": "fn",
+          "sig": "fn is_alpha_space(s: Str) -> Bool",
+          "sig_hash": "bhrsc5ubqinzu66e6v5mq46xc4",
+          "hash": "lbjd6aefrpu4w3zdpbw3sqvfoaeir67qhyry6xqqdjhm77ynuvda",
+          "effects": [],
+          "doc": "Whether every character of `s` is a letter or the space `\" \"`; true for `\"\"`, as in Commons."
+        },
+        {
+          "name": "is_alphanumeric_space",
+          "kind": "fn",
+          "sig": "fn is_alphanumeric_space(s: Str) -> Bool",
+          "sig_hash": "5waydifbg5n2glnw6lqx2c22ti",
+          "hash": "byqgqb75korucjjmj7qxdiflvrfwsjmbn6byid6q7tltdiy444eq",
+          "effects": [],
+          "doc": "Whether every character of `s` is a letter, a decimal digit or the space `\" \"`; true for `\"\"`."
+        },
+        {
+          "name": "is_ascii",
+          "kind": "fn",
+          "sig": "fn is_ascii(s: Str) -> Bool",
+          "sig_hash": "yskgi2kwcrr6nsukv7eokdlgzq",
+          "hash": "ozobv7x34beanzlmpkirnxfxpui5xxj22n4bpmgh2r4a2zjsnfda",
+          "effects": [],
+          "doc": "Whether every character of `s` is ASCII (below U+0080); true for `\"\"`."
+        },
+        {
+          "name": "is_ascii_printable",
+          "kind": "fn",
+          "sig": "fn is_ascii_printable(s: Str) -> Bool",
+          "sig_hash": "e642olodddopiktkxx4lzbrjcu",
+          "hash": "fdbpg4y2oul2g762dsoajokkpwxqmxz5ondzvwebdu3sjsxijolq",
+          "effects": [],
+          "doc": "Whether every character of `s` is printable ASCII, U+0020 to U+007E; true for `\"\"`."
+        },
+        {
+          "name": "is_all_upper",
+          "kind": "fn",
+          "sig": "fn is_all_upper(s: Str) -> Bool",
+          "sig_hash": "h3ooscigju7pkldxwntsdsrfkm",
+          "hash": "tqap254uktjzndaib4cq7mby4kjrqz2ajbfojss5p7dmvh5plniq",
+          "effects": [],
+          "doc": "Whether `s` is non-empty and every character is an uppercase letter (a character that has a\nlowercase mapping and is its own uppercase); digits, spaces and uncased letters make it false."
+        },
+        {
+          "name": "is_all_lower",
+          "kind": "fn",
+          "sig": "fn is_all_lower(s: Str) -> Bool",
+          "sig_hash": "54bhgruwdileaczyp73y27jrre",
+          "hash": "ilxycd7t3oygz42i76zlcep6fqyqzvhdhm5w3l7bhkbuglmocsda",
+          "effects": [],
+          "doc": "Whether `s` is non-empty and every character is a lowercase letter; the mirror of `is_all_upper`."
+        },
+        {
+          "name": "is_mixed_case",
+          "kind": "fn",
+          "sig": "fn is_mixed_case(s: Str) -> Bool",
+          "sig_hash": "3yqedv6xu7gc7gmkri4kr76zcm",
+          "hash": "s76okucgtrze7b5zdg2kb6u24qliiizxko5wvbskbf3aw6yvpl6a",
+          "effects": [],
+          "doc": "Whether `s` contains both an uppercase and a lowercase letter."
+        },
+        {
+          "name": "graphemes",
+          "kind": "fn",
+          "sig": "fn graphemes(s: Str) -> List[Str]",
+          "sig_hash": "nohdwq2vznwukwhrr3fsjwt6ie",
+          "hash": "nyjd263ef6ggl4wphuwmvdmv644usjuemtbhxygk5zakyshq6sha",
+          "effects": [],
+          "doc": "The grapheme clusters of `s`, an approximation of Unicode extended grapheme clusters (UAX 29):\na cluster is a base character followed by combining marks (U+0300 to U+036F and the other\ncommon mark blocks, Hebrew, Arabic, Devanagari, Bengali and Thai marks, kana voicing marks),\nvariation selectors, emoji modifiers, tags and ZWJ; ZWJ joins two pictographs; regional\nindicators pair into flags; CR LF is one cluster; Hangul jamo join into syllables. Prepend\ncharacters and the full Indic conjunct rules are not modelled."
+        },
+        {
+          "name": "grapheme_count",
+          "kind": "fn",
+          "sig": "fn grapheme_count(s: Str) -> Int",
+          "sig_hash": "vxybyd3hplxzyq3glvexohcrrm",
+          "hash": "plkqh4gci4r7e7ez7y3r4puokjl22ldbsuntg6fhae43he2y6fjq",
+          "effects": [],
+          "doc": "The number of grapheme clusters in `s` (see `graphemes`)."
+        },
+        {
+          "name": "reverse_graphemes",
+          "kind": "fn",
+          "sig": "fn reverse_graphemes(s: Str) -> Str",
+          "sig_hash": "nt4hrv3e3xgk52yopng53ud3ue",
+          "hash": "rhbfiqwzeeuongxiczwyxmyiqufns3lxqecy4jo7vv7tved2rdta",
+          "effects": [],
+          "doc": "`s` with its grapheme clusters in reverse order, so accents stay on their letters and flags and\nemoji sequences stay whole (builtin `reverse` reverses code points)."
+        },
+        {
+          "name": "take_graphemes",
+          "kind": "fn",
+          "sig": "fn take_graphemes(s: Str, n: Int) -> Str",
+          "sig_hash": "75omue73sjgfqrqnjtyqu25hkq",
+          "hash": "ijlmcegrziidls7ln5wwvjhzu3izhtkhodsu2h7rvp3zaenr6yra",
+          "effects": [],
+          "doc": "The first `n` grapheme clusters of `s`; all of `s` when it has fewer, `\"\"` when `n <= 0`."
+        },
+        {
+          "name": "drop_graphemes",
+          "kind": "fn",
+          "sig": "fn drop_graphemes(s: Str, n: Int) -> Str",
+          "sig_hash": "rezkfmuy447cg3mhg7h4upzise",
+          "hash": "j6oijnsknezm3vcxbhynmbjooc2azdf24gw5xgfl5gu2vwb2h7oq",
+          "effects": [],
+          "doc": "`s` without its first `n` grapheme clusters; `s` when `n <= 0`."
+        },
+        {
+          "name": "display_width",
+          "kind": "fn",
+          "sig": "fn display_width(s: Str) -> Int",
+          "sig_hash": "miv7uzehj53m33aydi3tcec2bu",
+          "hash": "ri22rn7x667twvmwzdmbyv5ecs3wlcflhuvhd2sp35va7gsvazgq",
+          "effects": [],
+          "doc": "The width of `s` in terminal columns, per grapheme cluster: 0 for control characters,\nzero-width characters and lone combining marks; 2 for East Asian wide and fullwidth\ncharacters (Hangul, CJK, kana, fullwidth forms), emoji and flags; 1 for everything else. A\ncluster takes the width of its base character. Ambiguous-width characters count 1."
+        },
+        {
+          "name": "pad_left_width",
+          "kind": "fn",
+          "sig": "fn pad_left_width(s: Str, width: Int, fill: Str) -> Str",
+          "sig_hash": "oj2svwhv33eds5gzfyz3etymxa",
+          "hash": "itm76vo5ojsxitxzz77x5zkwuibgherksonjyon7zyovi3r3t63q",
+          "effects": [],
+          "doc": "`s` padded on the left with `fill` to `width` display columns (see `display_width`), so CJK\nand emoji line up in a terminal. `fill` repeats; a fill character too wide for the last\ncolumn is replaced by a space, and an empty or zero-width `fill` pads with spaces. `s` is\nreturned unchanged when it is already at least `width` columns wide."
+        },
+        {
+          "name": "pad_right_width",
+          "kind": "fn",
+          "sig": "fn pad_right_width(s: Str, width: Int, fill: Str) -> Str",
+          "sig_hash": "2koc4dof4gcwd6jumw6rtr3dmq",
+          "hash": "u5aj3tdamebw6irqoho7c4jct3q2wmg2ubnk7bkfuji5lmp5ngiq",
+          "effects": [],
+          "doc": "`s` padded on the right with `fill` to `width` display columns; see `pad_left_width`."
+        },
+        {
+          "name": "center",
+          "kind": "fn",
+          "sig": "fn center(s: Str, width: Int, fill: Str) -> Str",
+          "sig_hash": "gt6ezoxj6wzdg6rzjcu4wnkrwy",
+          "hash": "dy675oq7f2gtkfje24tpxrmvkym4x5zzn6u63ro7axrnmnnjkoda",
+          "effects": [],
+          "doc": "`s` centred in `width` display columns with `fill` on both sides; an odd remainder goes on the\nright, as in Commons `center`. See `pad_left_width` for how `fill` is used."
+        },
+        {
+          "name": "abbreviate",
+          "kind": "fn",
+          "sig": "fn abbreviate(s: Str, width: Int where _ >= 0) -> Str",
+          "sig_hash": "7gazcxiz3qabaazrxhsaqhvkha",
+          "hash": "pppknqvxvhxc6mkorcwgbkv7anupxovhhnjhikesl5q244ys44va",
+          "effects": [],
+          "doc": "`s` cut to at most `width` grapheme clusters, ending in `\"...\"` when it was cut: `abbreviate(\n\"abcdefg\", 6)` is `\"abc...\"`. When `width` is too small for the marker the result is the first\n`width` clusters without one."
+        },
+        {
+          "name": "abbreviate_with",
+          "kind": "fn",
+          "sig": "fn abbreviate_with(s: Str, width: Int where _ >= 0, marker: Str) -> Str",
+          "sig_hash": "wndlmbbb5ttm6z5fpjqrurpkee",
+          "hash": "zppoyqdyytotmai65nk5dv4nrpfi2hkjucm2qsw5lpksomuenjhq",
+          "effects": [],
+          "doc": "`s` cut to at most `width` grapheme clusters, the last ones being `marker` when it was cut; when\n`width` is not longer than `marker`, the first `width` clusters of `s` without a marker."
+        },
+        {
+          "name": "abbreviate_middle",
+          "kind": "fn",
+          "sig": "fn abbreviate_middle(s: Str, width: Int where _ >= 0, marker: Str) -> Str",
+          "sig_hash": "ik46dfcnduskfva32twurtpkvq",
+          "hash": "xr2zpibh62daiksjy4q7ufygr3fafd2sqgmtuoheh7nemdwrxfya",
+          "effects": [],
+          "doc": "`s` cut to at most `width` grapheme clusters by replacing its middle with `marker`, keeping one\nmore cluster at the front than at the back when the split is uneven: `abbreviate_middle(\n\"abcdef\", 4, \".\")` is `\"ab.f\"`. When `width` is not longer than `marker`, the first `width` clusters."
+        },
+        {
+          "name": "abbreviate_words",
+          "kind": "fn",
+          "sig": "fn abbreviate_words(s: Str, width: Int where _ >= 0, marker: Str) -> Str",
+          "sig_hash": "cx4tc5isivadezy3nj3w4hlvaq",
+          "hash": "nttir5vxipkhnmfloy7bl3dpjasddrwqihvksjbp5zzwanaybqoa",
+          "effects": [],
+          "doc": "`s` cut at a word boundary to at most `width` characters including `marker`, which is added when\nit was cut: the cut falls at the last whitespace that fits, or inside the first word when no\nwhitespace does (as WordUtils `abbreviate`). Trailing whitespace before the marker is dropped."
+        },
+        {
+          "name": "truncate_bytes",
+          "kind": "fn",
+          "sig": "fn truncate_bytes(s: Str, limit: Int where _ >= 0) -> Str",
+          "sig_hash": "ezyn7zcuownwby5cobtbgwe3yy",
+          "hash": "5bnqbkxlcni223gqsorktwk4mdw5reillb7uuuyp4idkhrsngkoq",
+          "effects": [],
+          "doc": "The longest prefix of `s` whose UTF-8 encoding fits in `limit` bytes, never splitting a\ncharacter (a grapheme cluster may be split)."
+        },
+        {
+          "name": "repeat_sep",
+          "kind": "fn",
+          "sig": "fn repeat_sep(s: Str, sep: Str, n: Int where _ >= 0) -> Str",
+          "sig_hash": "5lna6mdtc3bedamrmnby5uxkci",
+          "hash": "vgk4vagbit3rmipn2tsuwktdjvmkrpawfzliifceu65blcoyblza",
+          "effects": [],
+          "doc": "`s` repeated `n` times with `sep` between the copies; `\"\"` when `n` is 0."
+        },
+        {
+          "name": "mask",
+          "kind": "fn",
+          "sig": "fn mask(s: Str, keep_start: Int where _ >= 0, keep_end: Int where _ >= 0, mask_char: Str) -> Str",
+          "sig_hash": "quiiwdag6oqfw56igjqp7c33e4",
+          "hash": "vtmvm7hwuzyu7sqj6tri3mnx5klkb5pi6axh6tp7pyeim76owqxq",
+          "effects": [],
+          "doc": "`s` with every character but the first `keep_start` and the last `keep_end` replaced by\n`mask_char`: `mask(\"4111111111111111\", 0, 4, \"*\")` is `\"************1111\"`. When the kept parts\nwould cover the whole string every character is masked, so nothing is revealed by accident."
+        },
+        {
+          "name": "rotate_chars",
+          "kind": "fn",
+          "sig": "fn rotate_chars(s: Str, k: Int) -> Str",
+          "sig_hash": "w4bcr7dnbgumv6sslb7nwkm33m",
+          "hash": "xwz4jq2grimict5akaunahngntlhcrfnfm4nci56m43zo3xm4j3q",
+          "effects": [],
+          "doc": "`s` rotated right by `k` characters (left when `k` is negative), as Commons `rotate`:\n`rotate_chars(\"abcdefg\", 2)` is `\"fgabcde\"`."
+        },
+        {
+          "name": "reverse_delimited",
+          "kind": "fn",
+          "sig": "fn reverse_delimited(s: Str, sep: Str) -> Str",
+          "sig_hash": "43ex2mccetqojmcm4jtofcdcli",
+          "hash": "77d7v7dkgvsbmlrsedirwgfhscz5c3xt2qbox5vqemxo2odii4pa",
+          "effects": [],
+          "doc": "The parts of `s` between `sep` in reverse order: `reverse_delimited(\"a.b.c\", \".\")` is\n`\"c.b.a\"`. An empty `sep` gives `s`."
+        },
+        {
+          "name": "case_words",
+          "kind": "fn",
+          "sig": "fn case_words(s: Str) -> List[Str]",
+          "sig_hash": "z6n4hs6ve35eridobdpmi3wjvq",
+          "hash": "4yw5i5yyloaarm7wlwdrvsphmn5qwaq5udut7hhovn73wd26r4rq",
+          "effects": [],
+          "doc": "The words of `s` for case conversion. Words are runs of letters and decimal digits; every\nother character separates them. Inside a run a new word starts at a lowercase letter or digit\nfollowed by an uppercase letter (`fooBar`, `version2Beta`) and at the last capital of an\nacronym followed by a lowercase letter (`HTTPServer` is `HTTP`, `Server`). Digits stay with\nthe letters before them (`utf8`, `x86_64` is `x86`, `64`)."
+        },
+        {
+          "name": "to_camel",
+          "kind": "fn",
+          "sig": "fn to_camel(s: Str) -> Str",
+          "sig_hash": "6quwwyvafwrptvmzqmvyijt2q4",
+          "hash": "ff24nvrpiqkhsciuk7vwj4kwfq5fkazr735os3ah5pzg76afpvoa",
+          "effects": [],
+          "doc": "`s` in camelCase: `to_camel(\"Hello world_HTTP\")` is `\"helloWorldHttp\"`. Words come from\n`case_words`; acronyms are not kept in capitals."
+        },
+        {
+          "name": "to_pascal",
+          "kind": "fn",
+          "sig": "fn to_pascal(s: Str) -> Str",
+          "sig_hash": "z24jgvgaeavzfihfwpz6apnria",
+          "hash": "vxqyfnr7i4swysqw443aiko22ksvt5nrrwscbzpcraam7dcz53ca",
+          "effects": [],
+          "doc": "`s` in PascalCase: `\"HttpServer\"` for `\"HTTP server\"`."
+        },
+        {
+          "name": "to_snake",
+          "kind": "fn",
+          "sig": "fn to_snake(s: Str) -> Str",
+          "sig_hash": "65no5jnt6wyzsphu5qy5kegfcu",
+          "hash": "6gkjpbvc2paeqxyl2hitprr3obydfiqd3mrdxebb7ef4l4cshy3a",
+          "effects": [],
+          "doc": "`s` in snake_case: `\"http_server\"` for `\"HTTPServer\"`."
+        },
+        {
+          "name": "to_screaming_snake",
+          "kind": "fn",
+          "sig": "fn to_screaming_snake(s: Str) -> Str",
+          "sig_hash": "okd2smgljn7i6pedkp4wqtsbna",
+          "hash": "axallfyp2b3yibimuty5t47yxkrg242g5yb7tx5euradsf5bmowa",
+          "effects": [],
+          "doc": "`s` in SCREAMING_SNAKE_CASE, the constant style: `\"HTTP_SERVER\"`."
+        },
+        {
+          "name": "to_kebab",
+          "kind": "fn",
+          "sig": "fn to_kebab(s: Str) -> Str",
+          "sig_hash": "hofm7mrnlrvcqv2rwpj7otru7m",
+          "hash": "krn7znhkqg3du2e3pgb3av3ktoygkezbt5zcexhix5okapgzb2bq",
+          "effects": [],
+          "doc": "`s` in kebab-case: `\"http-server\"`."
+        },
+        {
+          "name": "to_train",
+          "kind": "fn",
+          "sig": "fn to_train(s: Str) -> Str",
+          "sig_hash": "kfz34dxkq3isbkrkesvph5cxta",
+          "hash": "rwcioesr4dulmxotnat7zu2r3yes7vek6c5cwqc3qa5x3t5rid6q",
+          "effects": [],
+          "doc": "`s` in Train-Case: `\"Http-Server\"`."
+        },
+        {
+          "name": "to_dot",
+          "kind": "fn",
+          "sig": "fn to_dot(s: Str) -> Str",
+          "sig_hash": "u24krzcaoaodndb6uo6fnrsi2y",
+          "hash": "gdvae4cnqwd76gh4nqwyniwr55fez5istdktypm4tbcmddvhz7xq",
+          "effects": [],
+          "doc": "`s` in dot.case: `\"http.server\"`."
+        },
+        {
+          "name": "to_title",
+          "kind": "fn",
+          "sig": "fn to_title(s: Str) -> Str",
+          "sig_hash": "uygjzdpvp7onxdkceezx7vasxi",
+          "hash": "pyy7ugunuhvjkmawihhglgyrngopscrfmdbrpi4hjxvyb4xgtl7a",
+          "effects": [],
+          "doc": "The words of `s` as a title, each capitalized and the rest lowercased, joined by spaces:\n`to_title(\"the_quick-brownFox\")` is `\"The Quick Brown Fox\"`. Small words are capitalized too."
+        },
+        {
+          "name": "to_sentence",
+          "kind": "fn",
+          "sig": "fn to_sentence(s: Str) -> Str",
+          "sig_hash": "uif645ljxeeqztvxu6iqaar5xe",
+          "hash": "ito27b43sipewwzcuklizaxmyoegidjkpz2qioduytgyyvmt7xma",
+          "effects": [],
+          "doc": "The words of `s` as a sentence: lowercase, joined by spaces, the first letter capitalized:\n`to_sentence(\"helloWorld\")` is `\"Hello world\"`."
+        },
+        {
+          "name": "capitalize",
+          "kind": "fn",
+          "sig": "fn capitalize(s: Str) -> Str",
+          "sig_hash": "tjgkkdcz3ludfg7q5aothco4ea",
+          "hash": "7wdwmib4nmmekaynqkqemrjj3t2bwg52xovfrrkq2brrssuaz2ga",
+          "effects": [],
+          "doc": "`s` with its first character uppercased (by its full mapping, so `ß` becomes `SS`)."
+        },
+        {
+          "name": "uncapitalize",
+          "kind": "fn",
+          "sig": "fn uncapitalize(s: Str) -> Str",
+          "sig_hash": "2stnhqbbwkgvaisy4heddazdqy",
+          "hash": "6xbzzyzw2yekdsuvk4fqy3lcpcu7gytvvd4dvtb5v6466ocot6lq",
+          "effects": [],
+          "doc": "`s` with its first character lowercased."
+        },
+        {
+          "name": "swap_case",
+          "kind": "fn",
+          "sig": "fn swap_case(s: Str) -> Str",
+          "sig_hash": "nckjuutbf4gsnv5xiibyvkrkbe",
+          "hash": "qmqrw326zcpsd6pq6b6hq6n5swzrnbzyong2ubrut5bbue273mlq",
+          "effects": [],
+          "doc": "`s` with uppercase letters lowercased and lowercase letters uppercased; other characters stay."
+        },
+        {
+          "name": "capitalize_words",
+          "kind": "fn",
+          "sig": "fn capitalize_words(s: Str) -> Str",
+          "sig_hash": "mm6thnb73t7tb4xgr25lshoqdi",
+          "hash": "bdvxjimli3zibnciamspjawophedeuqrkk22p3gkorc2kfrccgdq",
+          "effects": [],
+          "doc": "`s` with the first letter of every whitespace-separated word capitalized and the rest left as\nthey are, keeping the whitespace (WordUtils `capitalize`)."
+        },
+        {
+          "name": "capitalize_fully",
+          "kind": "fn",
+          "sig": "fn capitalize_fully(s: Str) -> Str",
+          "sig_hash": "h5v4kdt55csnaa54i366pn55fq",
+          "hash": "wpatu23yeyvwepl5hinw4ibyof5ygyejm75t5576uzzdwsrmeqwq",
+          "effects": [],
+          "doc": "`s` with every whitespace-separated word capitalized and the rest of it lowercased (WordUtils\n`capitalizeFully`): `\"hELLO wORLD\"` is `\"Hello World\"`."
+        },
+        {
+          "name": "initials",
+          "kind": "fn",
+          "sig": "fn initials(s: Str) -> Str",
+          "sig_hash": "jomges2zvg6nw55dc22rugfuua",
+          "hash": "ajczz6jvwds5g2kslvh3qojky3bcm23ygqred265dt7w2fapialq",
+          "effects": [],
+          "doc": "The first character of every whitespace-separated word of `s`: `initials(\"Ada  King lovelace\")`\nis `\"AKl\"`."
+        },
+        {
+          "name": "split_any",
+          "kind": "fn",
+          "sig": "fn split_any(s: Str, seps: Str) -> List[Str]",
+          "sig_hash": "tnf6lrjklfu7aeooac36tr4awe",
+          "hash": "jyseho2gebf67knigjtel36zmfaw7mqo6neoimzgptz22uordzwq",
+          "effects": [],
+          "doc": "The tokens of `s` between any of the characters in `seps`, with empty tokens dropped (Commons\n`split(str, chars)`): `split_any(\"a,b;;c\", \",;\")` is `[\"a\", \"b\", \"c\"]`. An empty `seps` splits\non whitespace."
+        },
+        {
+          "name": "split_any_keep",
+          "kind": "fn",
+          "sig": "fn split_any_keep(s: Str, seps: Str) -> List[Str]",
+          "sig_hash": "xe2nqwsuwtoebqevetpp26dxe4",
+          "hash": "l4huguqrcnxr3ewzcfdfqwp2euzvjscjgp5vazq2lrtb4qaw2uya",
+          "effects": [],
+          "doc": "The parts of `s` between any of the characters in `seps`, keeping empty parts, so the result\nhas one more part than there are separators: `split_any_keep(\"a,,b\", \",\")` is `[\"a\", \"\", \"b\"]`\nand `\"\"` gives `[\"\"]`, like the builtin `split`. An empty `seps` splits on whitespace."
+        },
+        {
+          "name": "split_trim",
+          "kind": "fn",
+          "sig": "fn split_trim(s: Str, sep: Str) -> List[Str]",
+          "sig_hash": "urlw4a3x6jylsjhkwrxysusaam",
+          "hash": "6tx7httuyqsencafvv7iygrliv7uyh5bo3qxbiwwcvlcrnn5h37q",
+          "effects": [],
+          "doc": "The parts of `s` split at `sep`, each trimmed, with empty parts dropped: `split_trim(\" a , b,,\",\n\",\")` is `[\"a\", \"b\"]`. An empty `sep` gives `[s.trim]`, or `[]` when `s` is blank."
+        },
+        {
+          "name": "split_n",
+          "kind": "fn",
+          "sig": "fn split_n(s: Str, sep: Str, n: Int where _ >= 1) -> List[Str]",
+          "sig_hash": "phgtvhptuve2mcx4xgt4v6wcse",
+          "hash": "xgq5bih45yca4t2upchzppfxuuu5nypaqske7pwiknhcbws4htsa",
+          "effects": [],
+          "doc": "`s` split at the first `n - 1` occurrences of `sep`, so there are at most `n` parts and the last\none holds the rest: `split_n(\"a=b=c\", \"=\", 2)` is `[\"a\", \"b=c\"]`. An empty `sep` gives `[s]`."
+        },
+        {
+          "name": "split_last",
+          "kind": "fn",
+          "sig": "fn split_last(s: Str, sep: Str) -> Opt[(Str, Str)]",
+          "sig_hash": "di2bzpqqy5qvrfryahgpc7xxta",
+          "hash": "sjksryx2ifipuc2smuc2hre7h4idfbpbi3rp7owd57uluqfzeyfq",
+          "effects": [],
+          "doc": "`s` split at the last occurrence of `sep` into what comes before and after it; `none` when\n`sep` does not occur or is empty. The mirror of the builtin `split_once`."
+        },
+        {
+          "name": "split_by_char_type",
+          "kind": "fn",
+          "sig": "fn split_by_char_type(s: Str) -> List[Str]",
+          "sig_hash": "wbfpp6pgyqh6ymbpkengfzykxu",
+          "hash": "lvqvtjo5rzapw2plyxhjlf5x4odtehsmns4inzvpgqe5wp6dcnia",
+          "effects": [],
+          "doc": "`s` split into runs of one character type: uppercase, lowercase, digits, whitespace, uncased\nletters and everything else (Commons `splitByCharacterType`): `\"fooBar 42\"` is `[\"foo\", \"B\",\n\"ar\", \" \", \"42\"]`."
+        },
+        {
+          "name": "split_by_char_type_camel",
+          "kind": "fn",
+          "sig": "fn split_by_char_type_camel(s: Str) -> List[Str]",
+          "sig_hash": "hxpiv24tv2viqxica25rcw6wsa",
+          "hash": "edducm3r26sxieu3oulqn5h6skfwq2yo2gzbztsvzokwczntsjea",
+          "effects": [],
+          "doc": "Like `split_by_char_type`, but an uppercase run followed by lowercase letters gives its last\ncapital to them: `\"ASFRules\"` is `[\"ASF\", \"Rules\"]` and `\"fooBar\"` is `[\"foo\", \"Bar\"]`."
+        },
+        {
+          "name": "lines",
+          "kind": "fn",
+          "sig": "fn lines(s: Str) -> List[Str]",
+          "sig_hash": "deaxd27acfxn2rfqfrkuok7uvy",
+          "hash": "6yvtekbsjibcz3pj67sllxclrq4a36n573iio6bp66m6z66l54oa",
+          "effects": [],
+          "doc": "The lines of `s`, split at `\\n`, `\\r\\n` and `\\r`, without the line endings. A final line ending\ndoes not start another line, so `\"a\\nb\\n\"` is `[\"a\", \"b\"]` and `\"\"` is `[]` (Python\n`splitlines`)."
+        },
+        {
+          "name": "join_non_empty",
+          "kind": "fn",
+          "sig": "fn join_non_empty(xs: List[Str], sep: Str) -> Str",
+          "sig_hash": "pi6idofzqmb52ukhb63spyq3re",
+          "hash": "o5r3jzuqdvjkjvhoxu4dve6drwz6ohwzkwfjzoli5bhtr2p6kvda",
+          "effects": [],
+          "doc": "The strings of `xs` that are not empty, joined with `sep`."
+        },
+        {
+          "name": "chunks_of",
+          "kind": "fn",
+          "sig": "fn chunks_of(s: Str, n: Int where _ >= 1) -> List[Str]",
+          "sig_hash": "jeyo34vacmeou6pf43ahuezqyu",
+          "hash": "42nnwkf3ucknul3dnkpsnp253snh7e7hkidkcyrpykzvf5efqd7a",
+          "effects": [],
+          "doc": "`s` cut into pieces of `n` characters; the last piece may be shorter, and `\"\"` gives `[]`."
+        },
+        {
+          "name": "common_prefix",
+          "kind": "fn",
+          "sig": "fn common_prefix(xs: List[Str]) -> Str",
+          "sig_hash": "tk6s7wza45e3qivzpnhsj3tnsi",
+          "hash": "dexv2ba445gn2bh356km2jglltzvcryln35qejcajav4vkho6f7a",
+          "effects": [],
+          "doc": "The longest prefix every string in `xs` starts with; `\"\"` for an empty list."
+        },
+        {
+          "name": "common_suffix",
+          "kind": "fn",
+          "sig": "fn common_suffix(xs: List[Str]) -> Str",
+          "sig_hash": "gl6vxt3sldpwoky4kp5yxwmcje",
+          "hash": "4kmid5nmnwxrqxi3bxsc77tkkbemqttnjdhxe4upt6hzgdj75z4a",
+          "effects": [],
+          "doc": "The longest suffix every string in `xs` ends with; `\"\"` for an empty list."
+        },
+        {
+          "name": "index_of_difference",
+          "kind": "fn",
+          "sig": "fn index_of_difference(a: Str, b: Str) -> Opt[Int]",
+          "sig_hash": "5g7o5cwxr6jzreb3hw3k2che3e",
+          "hash": "3bdzqqxjlz6epoeaclp22nuz7yqponb6qp7hihby3fynsj265jda",
+          "effects": [],
+          "doc": "The index of the first character where `a` and `b` differ (the length of the shorter one when\nit is a prefix of the other); `none` when they are equal."
+        },
+        {
+          "name": "difference",
+          "kind": "fn",
+          "sig": "fn difference(a: Str, b: Str) -> Str",
+          "sig_hash": "alqdeep7yb7luor23kqsyftyle",
+          "hash": "kegqofrf3pzgbykngbmkdxcjjfoy25flkx6gmytrd27piwtbxovq",
+          "effects": [],
+          "doc": "The rest of `b` from the first character where it differs from `a` (Commons `difference`):\n`difference(\"abcde\", \"abxyz\")` is `\"xyz\"`; `\"\"` when they are equal."
+        },
+        {
+          "name": "remove_prefix",
+          "kind": "fn",
+          "sig": "fn remove_prefix(s: Str, prefix: Str) -> Str",
+          "sig_hash": "gyyv5hufuxssjccphfwefi57ha",
+          "hash": "v25l3tekuuvkvsilbnenluo3fcs43wukwgzj4mw4ean57kajz24q",
+          "effects": [],
+          "doc": "`s` without `prefix` at the start; `s` when it doesn't start with it."
+        },
+        {
+          "name": "remove_suffix",
+          "kind": "fn",
+          "sig": "fn remove_suffix(s: Str, suffix: Str) -> Str",
+          "sig_hash": "yef3qzhav54jrdj53ijns27vme",
+          "hash": "jyy5rc64lms5pkpews54pe4qonzy4k25dlistde6euinuxhtorma",
+          "effects": [],
+          "doc": "`s` without `suffix` at the end; `s` when it doesn't end with it."
+        },
+        {
+          "name": "ensure_prefix",
+          "kind": "fn",
+          "sig": "fn ensure_prefix(s: Str, prefix: Str) -> Str",
+          "sig_hash": "pvwnmc3oan4ho2xzlwzlevx5fi",
+          "hash": "tn5vegybuqaj3spvyvk6q5ggbkfb45diu45qvbdvt6yrygmkcahq",
+          "effects": [],
+          "doc": "`s` starting with `prefix`: unchanged when it already does, else `prefix + s`."
+        },
+        {
+          "name": "ensure_suffix",
+          "kind": "fn",
+          "sig": "fn ensure_suffix(s: Str, suffix: Str) -> Str",
+          "sig_hash": "qbqvzwjpv2lqujdgl63q5m7ybu",
+          "hash": "xfnwpdohjzjeykf43udbfamosng43q6tq4drbooz6qlgwuctwvgq",
+          "effects": [],
+          "doc": "`s` ending with `suffix`: unchanged when it already does, else `s + suffix`."
+        },
+        {
+          "name": "starts_with_any",
+          "kind": "fn",
+          "sig": "fn starts_with_any(s: Str, prefixes: List[Str]) -> Bool",
+          "sig_hash": "beut2nv7j4pfkz5pbilbx4gkmy",
+          "hash": "crimz6to2ucsjuodhrhjaevqxlvxgnlytusyofafrecko5df5viq",
+          "effects": [],
+          "doc": "Whether `s` starts with any of `prefixes`."
+        },
+        {
+          "name": "ends_with_any",
+          "kind": "fn",
+          "sig": "fn ends_with_any(s: Str, suffixes: List[Str]) -> Bool",
+          "sig_hash": "wdjcqblpliz43wlq7pksvdo37y",
+          "hash": "e35jp6egcpgtowfyixlwpgfujq2echvbozdqjjuh7dxvyx4wspcq",
+          "effects": [],
+          "doc": "Whether `s` ends with any of `suffixes`."
+        },
+        {
+          "name": "starts_with_ci",
+          "kind": "fn",
+          "sig": "fn starts_with_ci(s: Str, prefix: Str) -> Bool",
+          "sig_hash": "cidrypgufwivt5e2xbk3mlefda",
+          "hash": "zb6sogspr2hlej64n73kmygebejno2tkjjusbyvcs45qddi2xxza",
+          "effects": [],
+          "doc": "Whether `s` starts with `prefix`, ignoring case by full case folding (`fold_case`, so\n`\"STRASSE\"` starts with `\"straß\"`)."
+        },
+        {
+          "name": "ends_with_ci",
+          "kind": "fn",
+          "sig": "fn ends_with_ci(s: Str, suffix: Str) -> Bool",
+          "sig_hash": "mxsgongckasursva5cfr5coiqe",
+          "hash": "6fa7mwkx5p45fiy7yer7lc32tqtxmrp2hszbu3mr43w3ttchcvjq",
+          "effects": [],
+          "doc": "Whether `s` ends with `suffix`, ignoring case by full case folding."
+        },
+        {
+          "name": "contains_ci",
+          "kind": "fn",
+          "sig": "fn contains_ci(s: Str, sub: Str) -> Bool",
+          "sig_hash": "zd6vihu7iuc7rvcgdkwl3fhaim",
+          "hash": "wlgq6cotei5davleqegthq7dc4drsn4qrya6zbdacxxjjuaiau3q",
+          "effects": [],
+          "doc": "Whether `s` contains `sub`, ignoring case by full case folding."
+        },
+        {
+          "name": "left",
+          "kind": "fn",
+          "sig": "fn left(s: Str, n: Int) -> Str",
+          "sig_hash": "ekd5v2fhusrfaitzapzccoepru",
+          "hash": "u77ifjzxwlcpldxl2wtiza6isrn3adi7htjfihuv6frh54wxt3tq",
+          "effects": [],
+          "doc": "The first `n` characters of `s`; `\"\"` when `n <= 0`, all of `s` when `n` is larger."
+        },
+        {
+          "name": "right",
+          "kind": "fn",
+          "sig": "fn right(s: Str, n: Int) -> Str",
+          "sig_hash": "nuswubipbfaui7yjwoa3c4dnei",
+          "hash": "yjxkj3dudkdvgvecgcc4nd64vxlv5hgochxqfgsjojtwxil3poga",
+          "effects": [],
+          "doc": "The last `n` characters of `s`; `\"\"` when `n <= 0`, all of `s` when `n` is larger."
+        },
+        {
+          "name": "mid",
+          "kind": "fn",
+          "sig": "fn mid(s: Str, pos: Int, n: Int) -> Str",
+          "sig_hash": "27ggcianbeza6wbv4ggn56e2zy",
+          "hash": "ty4bjqash4k6j5yf7y4mr7xxrcbgbdac4aiyysnjdakfed75moea",
+          "effects": [],
+          "doc": "The `n` characters of `s` from `pos` (a negative `pos` counts as 0); `\"\"` when `n <= 0` or `pos`\nis past the end."
+        },
+        {
+          "name": "substring",
+          "kind": "fn",
+          "sig": "fn substring(s: Str, start: Int, end: Int) -> Str",
+          "sig_hash": "etic5r7r3dke3rjdzxrzky7ueq",
+          "hash": "g7hwvxw3cgygrozmimclcxwrza45w3wqpuicdfcwg67twjofwnuq",
+          "effects": [],
+          "doc": "The characters of `s` from `start` up to `end` (exclusive). Negative indexes count from the end\n(`-1` is the last character), indexes are clamped to the string, and `\"\"` is the result when\n`start` is not before `end`: `substring(\"hello\", -3, -1)` is `\"ll\"`."
+        },
+        {
+          "name": "substring_from",
+          "kind": "fn",
+          "sig": "fn substring_from(s: Str, start: Int) -> Str",
+          "sig_hash": "562sivrdeufaf3o7ws52t4x4eq",
+          "hash": "nbqxwfefrsyae63vbcspso35hjt4xxnye3agcaakwixfr3jfxdeq",
+          "effects": [],
+          "doc": "The characters of `s` from `start` to the end; a negative `start` counts from the end."
+        },
+        {
+          "name": "substring_before",
+          "kind": "fn",
+          "sig": "fn substring_before(s: Str, sep: Str) -> Str",
+          "sig_hash": "cnya7a7ytgertj7qrsdwbdubhq",
+          "hash": "4dvdddlgm7fcciokezpj23puq3io7rx6a72az3evsi7qden5dgeq",
+          "effects": [],
+          "doc": "What comes before the first `sep` in `s`; all of `s` when `sep` doesn't occur, `\"\"` when `sep`\nis empty (Commons `substringBefore`)."
+        },
+        {
+          "name": "substring_after",
+          "kind": "fn",
+          "sig": "fn substring_after(s: Str, sep: Str) -> Str",
+          "sig_hash": "fnj45pyg7wds5a3erj7r2pxj2q",
+          "hash": "jpmrjehc2hrfzn6ppx4ko4bopmdurnvxltofngyuny4bosqhx4ea",
+          "effects": [],
+          "doc": "What comes after the first `sep` in `s`; `\"\"` when `sep` doesn't occur, all of `s` when `sep` is\nempty."
+        },
+        {
+          "name": "substring_before_last",
+          "kind": "fn",
+          "sig": "fn substring_before_last(s: Str, sep: Str) -> Str",
+          "sig_hash": "czqbdnabepr3xrivmh6amqkxaq",
+          "hash": "ckunc6uqgjrxdqugwqzquywqce34orjwix3h5jjajyvl6kfbt2wq",
+          "effects": [],
+          "doc": "What comes before the last `sep` in `s`; all of `s` when `sep` doesn't occur or is empty."
+        },
+        {
+          "name": "substring_after_last",
+          "kind": "fn",
+          "sig": "fn substring_after_last(s: Str, sep: Str) -> Str",
+          "sig_hash": "jbizly24lpgvs2oo5xuvo3seb4",
+          "hash": "vjjgiwlnlnrjbluprrx2xbbea4eyvi5w3zu3if3dbkdpxbel54nq",
+          "effects": [],
+          "doc": "What comes after the last `sep` in `s`; `\"\"` when `sep` doesn't occur or is empty."
+        },
+        {
+          "name": "between",
+          "kind": "fn",
+          "sig": "fn between(s: Str, open: Str, close: Str) -> Opt[Str]",
+          "sig_hash": "yrcryyns56cwrcbtx5csvt2keq",
+          "hash": "xy43myqb5limlbock3rxkxbvztt3islbmbo3rguqgyxlh5xwfntq",
+          "effects": [],
+          "doc": "The text between the first `open` and the first `close` after it (Commons\n`substringBetween`): `between(\"a[b]c\", \"[\", \"]\")` is `some(\"b\")`. `none` when either is missing\nor empty."
+        },
+        {
+          "name": "between_all",
+          "kind": "fn",
+          "sig": "fn between_all(s: Str, open: Str, close: Str) -> List[Str]",
+          "sig_hash": "n6irlhtestseej4q7mucxccnaq",
+          "hash": "t65jk26eia67fapggaipzmwhjzelkdks4xwnmdwd4dy3kzudpueq",
+          "effects": [],
+          "doc": "Every text between an `open` and the next `close`, left to right without overlaps:\n`between_all(\"[a][b]\", \"[\", \"]\")` is `[\"a\", \"b\"]`; `[]` when `open` or `close` is empty."
+        },
+        {
+          "name": "chomp",
+          "kind": "fn",
+          "sig": "fn chomp(s: Str) -> Str",
+          "sig_hash": "jecwpfi6cdhmqkr7op7kyq5lri",
+          "hash": "5flj4npsu5u66yhnj7qir4mskds77kflxk6fgvlsbonaxtml5mpa",
+          "effects": [],
+          "doc": "`s` without one line ending at the end (`\\r\\n`, `\\n` or `\\r`); `s` when it has none."
+        },
+        {
+          "name": "chop",
+          "kind": "fn",
+          "sig": "fn chop(s: Str) -> Str",
+          "sig_hash": "7jkzqxw2x6ndvmgf2b5ijyhpxu",
+          "hash": "gxk3fnkjdy5y5hfbm45fwdk2lezpmcavya63l5x3rkvmnr3iguaa",
+          "effects": [],
+          "doc": "`s` without its last character, or without a final `\\r\\n` as a whole; `\"\"` stays `\"\"`."
+        },
+        {
+          "name": "strip_chars",
+          "kind": "fn",
+          "sig": "fn strip_chars(s: Str, set: Str) -> Str",
+          "sig_hash": "tdsgcx56kbyq7bp7wd7jqb6pja",
+          "hash": "5ix2ofpffqktj6cf2e275kq7wajvtpnhgoillqgq467h3ck3zuaa",
+          "effects": [],
+          "doc": "`s` without the characters of `set` at both ends; an empty `set` strips whitespace (the\nbuiltin `trim`)."
+        },
+        {
+          "name": "strip_start_chars",
+          "kind": "fn",
+          "sig": "fn strip_start_chars(s: Str, set: Str) -> Str",
+          "sig_hash": "cf7z7y7khwhabfwrk4szutt5bu",
+          "hash": "mhhtrckjffjio26bt7yv7uhj7le3pgios4y7ozgjqfb2z3ltgcgq",
+          "effects": [],
+          "doc": "`s` without the characters of `set` at the start; an empty `set` strips whitespace."
+        },
+        {
+          "name": "strip_end_chars",
+          "kind": "fn",
+          "sig": "fn strip_end_chars(s: Str, set: Str) -> Str",
+          "sig_hash": "etx6gjaqsklhl4ioer3ugzrgzu",
+          "hash": "b5uj5fzhhxvtk2oo6mfhgoovpjsppfmhbrjcivyzn5l7np4yoaea",
+          "effects": [],
+          "doc": "`s` without the characters of `set` at the end; an empty `set` strips whitespace."
+        },
+        {
+          "name": "remove_chars",
+          "kind": "fn",
+          "sig": "fn remove_chars(s: Str, set: Str) -> Str",
+          "sig_hash": "s7dviw75idduqmwpdcn6vc6zae",
+          "hash": "byxajaswq3rz6rugln4zunrf5z6ue7ffnwgzcbbphi53vo2obu2q",
+          "effects": [],
+          "doc": "`s` without any of the characters in `set` (Commons `CharSetUtils.delete`)."
+        },
+        {
+          "name": "keep_chars",
+          "kind": "fn",
+          "sig": "fn keep_chars(s: Str, set: Str) -> Str",
+          "sig_hash": "q4msjvbeyikmcb3sqkx6qnh5qq",
+          "hash": "jajua6tuqitfvhvbb4kdh22mcqipohvncsjfe7dgl5d4v7fd6lsq",
+          "effects": [],
+          "doc": "Only the characters of `s` that are in `set` (Commons `CharSetUtils.keep`)."
+        },
+        {
+          "name": "squeeze",
+          "kind": "fn",
+          "sig": "fn squeeze(s: Str, set: Str) -> Str",
+          "sig_hash": "277jxknfuulny3wtjo4gqa62sa",
+          "hash": "pza5lco4pl6zwfkm7szu56uctnixjdhiormrb5wv6v4ekba5ab2q",
+          "effects": [],
+          "doc": "`s` with every run of one repeated character from `set` squeezed to one: `squeeze(\"aabbcc\",\n\"ab\")` is `\"abcc\"`. An empty `set` squeezes every repeated character."
+        },
+        {
+          "name": "count_chars",
+          "kind": "fn",
+          "sig": "fn count_chars(s: Str, set: Str) -> Int",
+          "sig_hash": "baozbxxmwilyuvu6p7zdqyznga",
+          "hash": "qegebt2i6qthihmlbf3c4z5h52xg4nmj5aym4anmepj6and7n7ba",
+          "effects": [],
+          "doc": "How many characters of `s` are in `set`."
+        },
+        {
+          "name": "digits_only",
+          "kind": "fn",
+          "sig": "fn digits_only(s: Str) -> Str",
+          "sig_hash": "sgmee3pfuidjjulqwkpdv47j3y",
+          "hash": "azvmx47o2ofzmkjncffpqo7sa3jgvdpztey7wi5kuc5bohpsfi7q",
+          "effects": [],
+          "doc": "Only the decimal digits of `s` (see `is_numeric`): `digits_only(\"(555) 123-4567\")` is\n`\"5551234567\"`."
+        },
+        {
+          "name": "delete_whitespace",
+          "kind": "fn",
+          "sig": "fn delete_whitespace(s: Str) -> Str",
+          "sig_hash": "yrbzsktgxh33ynt47qgxdkbfty",
+          "hash": "bwganh56xlwb4cafh74cds44omkynwy6fwr5szmpwr35tsg5ldyq",
+          "effects": [],
+          "doc": "`s` without any whitespace characters."
+        },
+        {
+          "name": "normalize_space",
+          "kind": "fn",
+          "sig": "fn normalize_space(s: Str) -> Str",
+          "sig_hash": "dlpyvrismfmvrcgyt7trqrwn7q",
+          "hash": "2k5pplu6y5vyke5i4hdjvhu277e6iyjsygs27zjdczzer7l2wjeq",
+          "effects": [],
+          "doc": "`s` trimmed, with every run of whitespace inside it replaced by one space."
+        },
+        {
+          "name": "remove_all",
+          "kind": "fn",
+          "sig": "fn remove_all(s: Str, sub: Str) -> Str",
+          "sig_hash": "7zg5zne63zusaj7lvmri2cn7ia",
+          "hash": "sp2enoie454vbvhcmcmuoly2fq46dgau5zwung4r7uk3yb6fuwda",
+          "effects": [],
+          "doc": "`s` without every occurrence of `sub`; `s` when `sub` is empty."
+        },
+        {
+          "name": "indexes_of",
+          "kind": "fn",
+          "sig": "fn indexes_of(s: Str, sub: Str) -> List[Int]",
+          "sig_hash": "pqw2lhpthbl5dzqzot2bj2qcmm",
+          "hash": "lvgf5qyereilcpbvzcd5ieblsibl4f5zdxkfx5e7o4fv37e4e6aa",
+          "effects": [],
+          "doc": "The start index of every non-overlapping occurrence of `sub` in `s`, left to right; `[]` when\n`sub` is empty."
+        },
+        {
+          "name": "count_matches",
+          "kind": "fn",
+          "sig": "fn count_matches(s: Str, sub: Str) -> Int",
+          "sig_hash": "wqaigyx5aawhklv4brec64rhi4",
+          "hash": "2n7mwwmv5ucmo75y5jnffv5fb6hv65zgfmmfcshfqikg4rwxeexq",
+          "effects": [],
+          "doc": "How many non-overlapping times `sub` occurs in `s` (Commons `countMatches`); 0 when `sub` is\nempty: `count_matches(\"aaaa\", \"aa\")` is 2."
+        },
+        {
+          "name": "index_of_from",
+          "kind": "fn",
+          "sig": "fn index_of_from(s: Str, sub: Str, from: Int) -> Opt[Int]",
+          "sig_hash": "rypq6fymceyc446mu2gw2r5a6i",
+          "hash": "ppglqqqfkc4ysjc7nc5jdft7v5kwgjge2aupe4j53xbqzw3jidma",
+          "effects": [],
+          "doc": "The index of the first `sub` in `s` at or after `from`; a negative `from` counts as 0, and an\nempty `sub` is found at `from` while `from` is within the string."
+        },
+        {
+          "name": "last_index_of",
+          "kind": "fn",
+          "sig": "fn last_index_of(s: Str, sub: Str) -> Opt[Int]",
+          "sig_hash": "iqukej3o5fawybi3cuucha4uei",
+          "hash": "ky6ydot6iihfzpsbx6n4zrmh6cnun3zygxkgiofpezz3fb7zwo5a",
+          "effects": [],
+          "doc": "The index of the last `sub` in `s`; an empty `sub` is found at `s.len`."
+        },
+        {
+          "name": "ordinal_index_of",
+          "kind": "fn",
+          "sig": "fn ordinal_index_of(s: Str, sub: Str, n: Int where _ >= 1) -> Opt[Int]",
+          "sig_hash": "66mdcphaxd6o66efn24zf7m7ta",
+          "hash": "dzmoinimnaomfn2f2glrhchhqqnioxpnh4lmdamduuc2m2umf3wq",
+          "effects": [],
+          "doc": "The index of the `n`th occurrence of `sub` in `s`, counting overlapping occurrences as Commons\n`ordinalIndexOf` does (`ordinal_index_of(\"aaa\", \"aa\", 2)` is `some(1)`); an empty `sub` is\nfound at 0."
+        },
+        {
+          "name": "index_of_any",
+          "kind": "fn",
+          "sig": "fn index_of_any(s: Str, chars: Str) -> Opt[Int]",
+          "sig_hash": "c3rw5loxfbfy7z4y3fbnurc6be",
+          "hash": "4cgzs2zyrbuysrt2nt3fvd2nsx766xjgdyogyg4norfnhyn7sbgq",
+          "effects": [],
+          "doc": "The index of the first character of `s` that is in `chars`."
+        },
+        {
+          "name": "index_of_any_but",
+          "kind": "fn",
+          "sig": "fn index_of_any_but(s: Str, chars: Str) -> Opt[Int]",
+          "sig_hash": "rdyrijjk6bf7e72c7byz63q3vy",
+          "hash": "esegm7eslwfqk3nkv7tqorwkkfy67ga5gic56mgjpixgln4364sa",
+          "effects": [],
+          "doc": "The index of the first character of `s` that is not in `chars`."
+        },
+        {
+          "name": "last_index_of_any",
+          "kind": "fn",
+          "sig": "fn last_index_of_any(s: Str, chars: Str) -> Opt[Int]",
+          "sig_hash": "qbvqqmbivralkz2cwuekbjloji",
+          "hash": "ddtqzeziotgqgvxdfqbf3ta3zwa5x3ri7wejj6lwloynqldcm34q",
+          "effects": [],
+          "doc": "The index of the last character of `s` that is in `chars`."
+        },
+        {
+          "name": "index_of_first",
+          "kind": "fn",
+          "sig": "fn index_of_first(s: Str, subs: List[Str]) -> Opt[Int]",
+          "sig_hash": "pc7o7uw4rhzpx6f42n32byfani",
+          "hash": "ttmkc4b57d5a7n6kzombvyhxmcqkiiib3dxhjhp3uhnjcngvnhma",
+          "effects": [],
+          "doc": "The earliest index at which any of the non-empty strings in `subs` occurs in `s`."
+        },
+        {
+          "name": "contains_any",
+          "kind": "fn",
+          "sig": "fn contains_any(s: Str, chars: Str) -> Bool",
+          "sig_hash": "x5emtyebjsdnnbjaz6z4jhhq4u",
+          "hash": "ntypywwxqxpmgz3wjbn6rfbpgutuojqjmeohdpz57h77mghdzxeq",
+          "effects": [],
+          "doc": "Whether `s` contains any character of `chars`."
+        },
+        {
+          "name": "contains_none",
+          "kind": "fn",
+          "sig": "fn contains_none(s: Str, chars: Str) -> Bool",
+          "sig_hash": "6gx5qan2727rtmp7lxp4ajinam",
+          "hash": "btsuq33ro77xy6jjhrxlvrfniyrs7jvxeu4gtmmwbhjnksbvlwtq",
+          "effects": [],
+          "doc": "Whether `s` contains none of the characters of `chars`; true for an empty `s` or `chars`."
+        },
+        {
+          "name": "contains_only",
+          "kind": "fn",
+          "sig": "fn contains_only(s: Str, chars: Str) -> Bool",
+          "sig_hash": "qistjkkv4uu4xlleqwre55tlny",
+          "hash": "spw3lu6iv3orazrvoal7jmmzlsyqdey2ssnb7eb2x337phwt535q",
+          "effects": [],
+          "doc": "Whether every character of `s` is one of `chars`; true for an empty `s`."
+        },
+        {
+          "name": "contains_any_of",
+          "kind": "fn",
+          "sig": "fn contains_any_of(s: Str, subs: List[Str]) -> Bool",
+          "sig_hash": "4tfyxapmdec7hn3rdf7vvd7gim",
+          "hash": "3eske3bkras6pk6z7gxbu7y6oeez3de7edza47ljipgwirxs4luq",
+          "effects": [],
+          "doc": "Whether `s` contains at least one of `subs`."
+        },
+        {
+          "name": "contains_all_of",
+          "kind": "fn",
+          "sig": "fn contains_all_of(s: Str, subs: List[Str]) -> Bool",
+          "sig_hash": "fxkvvtwzsjgedso3dqrpjnffga",
+          "hash": "6ru7cuzwugy4x6fnx3ak2mone7fbeghdztlmdxipbm6umhtrpkba",
+          "effects": [],
+          "doc": "Whether `s` contains every one of `subs`; true for an empty list."
+        },
+        {
+          "name": "replace_once",
+          "kind": "fn",
+          "sig": "fn replace_once(s: Str, a: Str, b: Str) -> Str",
+          "sig_hash": "l6hpvpqfjmoxxkibun5yjf7nqm",
+          "hash": "jmkmnvk5hn6cscq35m3jtya6ncbmcqvwrvltdr23a7twdn3pafoq",
+          "effects": [],
+          "doc": "`s` with the first `a` replaced by `b`; `s` when `a` is empty or missing."
+        },
+        {
+          "name": "replace_last",
+          "kind": "fn",
+          "sig": "fn replace_last(s: Str, a: Str, b: Str) -> Str",
+          "sig_hash": "reoqexdscedv2jcksrfpzm6fb4",
+          "hash": "xbz7wn6dx77gtfminqdmaborvr7l46a47ebdzzovxxi4hd7cc3ra",
+          "effects": [],
+          "doc": "`s` with the last `a` replaced by `b`; `s` when `a` is empty or missing."
+        },
+        {
+          "name": "replace_n",
+          "kind": "fn",
+          "sig": "fn replace_n(s: Str, a: Str, b: Str, n: Int where _ >= 0) -> Str",
+          "sig_hash": "dppvo5iosbt5veb7fkyekp5f6a",
+          "hash": "gf2v4ufitzje3hqs3bg3yzh5hdr4r4kercolklda4nerebrowedq",
+          "effects": [],
+          "doc": "`s` with the first `n` non-overlapping occurrences of `a` replaced by `b`, left to right; `s`\nwhen `a` is empty or `n` is 0."
+        },
+        {
+          "name": "replace_each",
+          "kind": "fn",
+          "sig": "fn replace_each(s: Str, pairs: List[(Str, Str)]) -> Str",
+          "sig_hash": "onwwjlnpkdbfnsvlyhv57qawhi",
+          "hash": "2qzz4qmehjezru5a4zkggsylv72ngjeicn7yrobjwivwejc2geia",
+          "effects": [],
+          "doc": "`s` with every key of `pairs` replaced by its value in one pass (Commons `replaceEach`), so a\nreplacement is never replaced again: `replace_each(\"ab\", [(\"a\", \"b\"), (\"b\", \"a\")])` is `\"ba\"`.\nAt each position the first pair in list order whose key matches wins; empty keys are ignored."
+        },
+        {
+          "name": "replace_chars",
+          "kind": "fn",
+          "sig": "fn replace_chars(s: Str, from: Str, to: Str) -> Str",
+          "sig_hash": "aamlv3yrmb7qbxddqpjuryl3w4",
+          "hash": "gdkxnqzdwdrfb2vcclqa7tb6x42ugfnx5a7eh4kabebu4o6qyynq",
+          "effects": [],
+          "doc": "`s` with each character of `from` replaced by the character at the same index of `to`, and\ncharacters of `from` beyond the end of `to` deleted (Commons `replaceChars`, like `tr`)."
+        },
+        {
+          "name": "overlay",
+          "kind": "fn",
+          "sig": "fn overlay(s: Str, x: Str, start: Int, end: Int) -> Str",
+          "sig_hash": "tblp46xq25gmfzmiyw4awpdhtu",
+          "hash": "f4hq4ylsqe2acs7jorwyzpeojaizn6oaseowhs2cgy2okgy3xddq",
+          "effects": [],
+          "doc": "`s` with the characters from `start` to `end` replaced by `x` (Commons `overlay`): indexes are\nclamped to the string and swapped when `start > end`, so `overlay(\"abcdef\", \"zz\", 2, 4)` is\n`\"abzzef\"` and an index past the end appends."
+        },
+        {
+          "name": "insert_at",
+          "kind": "fn",
+          "sig": "fn insert_at(s: Str, pos: Int, x: Str) -> Str",
+          "sig_hash": "u2ssb3djrjk3m4gfh4rhzlcwxe",
+          "hash": "homunqhl26tpzdbmktzkndibs3zbcnlmvju5iuhnktydcsnmftcq",
+          "effects": [],
+          "doc": "`s` with `x` inserted before the character at `pos`, clamped to the string (0 prepends,\n`s.len` or more appends, negative counts from the end)."
+        },
+        {
+          "name": "levenshtein",
+          "kind": "fn",
+          "sig": "fn levenshtein(a: Str, b: Str) -> Int",
+          "sig_hash": "4pmpszz4f5sw3osxvcqzph5lua",
+          "hash": "62ljcoyh7o7qjikixvxveh3shopbqsqmsil5dk6lzzxwlpzniuea",
+          "effects": [],
+          "doc": "The Levenshtein edit distance between `a` and `b`: the fewest single-character insertions,\ndeletions and substitutions that turn one into the other, over code points."
+        },
+        {
+          "name": "levenshtein_within",
+          "kind": "fn",
+          "sig": "fn levenshtein_within(a: Str, b: Str, limit: Int where _ >= 0) -> Opt[Int]",
+          "sig_hash": "rzmzdeupbjbwvuqqjlb33kaozi",
+          "hash": "ervsq7rfgqlmir55vi5xdhzmeqlsl66fu2d5nqc6gtsy6ng2xwia",
+          "effects": [],
+          "doc": "The Levenshtein distance between `a` and `b` when it is at most `limit`, else `none`; it stops\nas soon as every path costs more, so a small limit is fast on long strings."
+        },
+        {
+          "name": "damerau_levenshtein",
+          "kind": "fn",
+          "sig": "fn damerau_levenshtein(a: Str, b: Str) -> Int",
+          "sig_hash": "35wfii7tasfoqmcs3ctgnnr5hm",
+          "hash": "ims6qulnj5oad5fqyhbeyqnesteh2yonodcoknmrr73wiursxuma",
+          "effects": [],
+          "doc": "The Damerau-Levenshtein distance in its optimal string alignment form: like `levenshtein`, and\nswapping two adjacent characters costs 1, but no substring is edited twice (so `\"ca\"` to\n`\"abc\"` is 3)."
+        },
+        {
+          "name": "hamming",
+          "kind": "fn",
+          "sig": "fn hamming(a: Str, b: Str) -> Opt[Int]",
+          "sig_hash": "bxvl64rn542izfgf2wrh5uusqu",
+          "hash": "256g2c24tiojjqdpmp47ovu664ytvu36c5aisdvtd4ubertp54vq",
+          "effects": [],
+          "doc": "The Hamming distance, the number of positions where `a` and `b` differ; `none` unless they\nhave the same length in code points."
+        },
+        {
+          "name": "jaro",
+          "kind": "fn",
+          "sig": "fn jaro(a: Str, b: Str) -> F64",
+          "sig_hash": "svvtuqwisz3iwkq2xvqunh52qu",
+          "hash": "pas6gk6bmynmbnxy563tcyxpmopvqiglib7nxisnakr52lam63lq",
+          "effects": [],
+          "doc": "The Jaro similarity of `a` and `b`, from 0.0 (nothing in common) to 1.0 (equal); two empty\nstrings are 1.0 and one empty string is 0.0."
+        },
+        {
+          "name": "jaro_winkler",
+          "kind": "fn",
+          "sig": "fn jaro_winkler(a: Str, b: Str) -> F64",
+          "sig_hash": "aytgzdisr6ou4hxlr5gknowa44",
+          "hash": "ng2c3umhie5in75nw66qnbscy5jx6iknudlc4csmw47hp4axctga",
+          "effects": [],
+          "doc": "The Jaro-Winkler similarity: `jaro` raised for a common prefix of up to 4 characters with the\nusual scaling factor 0.1, from 0.0 to 1.0. The boost applies at every Jaro score, as in Commons\nText and the Wikipedia definition."
+        },
+        {
+          "name": "lcs_length",
+          "kind": "fn",
+          "sig": "fn lcs_length(a: Str, b: Str) -> Int",
+          "sig_hash": "2hpuwppwuxfsbze7lvy7wrifhu",
+          "hash": "rvqk23ub27ymalv26myvv52czdl7u3udylztqlsx4zsbwiheh2qa",
+          "effects": [],
+          "doc": "The length of the longest common subsequence of `a` and `b` (characters in order, not\nnecessarily adjacent): `lcs_length(\"ABCBDAB\", \"BDCABA\")` is 4."
+        },
+        {
+          "name": "longest_common_substring",
+          "kind": "fn",
+          "sig": "fn longest_common_substring(a: Str, b: Str) -> Str",
+          "sig_hash": "ymwcrpprztj7cqyw2qb2pdcumy",
+          "hash": "d6adxqtnbmf22nuaenlsuodzz5ixpxboehiulyrjh5674jsdquuq",
+          "effects": [],
+          "doc": "The longest string that occurs in both `a` and `b`, the leftmost in `a` on a tie; `\"\"` when\nthey share no character."
+        },
+        {
+          "name": "similarity",
+          "kind": "fn",
+          "sig": "fn similarity(a: Str, b: Str) -> F64",
+          "sig_hash": "rbqjy2nmbdzm27hoi3tzma72zm",
+          "hash": "sjynhnc5ufhut3wxliugqjgo5bf7b5xjkzhy4bq66fgrzm7qjhoa",
+          "effects": [],
+          "doc": "How similar `a` and `b` are by edit distance, `1 - levenshtein / longer length`, from 0.0 to\n1.0; two empty strings are 1.0."
+        },
+        {
+          "name": "closest",
+          "kind": "fn",
+          "sig": "fn closest(s: Str, candidates: List[Str]) -> Opt[Str]",
+          "sig_hash": "sxxro7xebtssusspuh4hhpo3gi",
+          "hash": "hfceoz65vlbfbm23aihhvbmv7ytprmljubvkdhfaebtcam4ma67q",
+          "effects": [],
+          "doc": "The candidate closest to `s` by Levenshtein distance, the first one on a tie; `none` for an\nempty list. For \"did you mean\" hints, compare the distance with a cut-off yourself."
+        },
+        {
+          "name": "natural_compare",
+          "kind": "fn",
+          "sig": "fn natural_compare(a: Str, b: Str) -> Int",
+          "sig_hash": "wwl4k6flfetutb6wy32rfghqhy",
+          "hash": "pmmwuzsgk37jxegozaakwcherd5cncis4z3s4rxjll326t44wbmq",
+          "effects": [],
+          "doc": "Compares `a` and `b` in natural order, with runs of ASCII digits compared as numbers, so\n`\"file2\" < \"file10\"`: negative, 0 or positive. Leading zeros don't change a number's value;\nstrings that only differ in them, and everything else, fall back to code point order, so only\nequal strings compare 0."
+        },
+        {
+          "name": "natural_sort",
+          "kind": "fn",
+          "sig": "fn natural_sort(xs: List[Str]) -> List[Str]",
+          "sig_hash": "hlhombdayzcljsfqgjnwxtvy74",
+          "hash": "a2mginp73otzdwvzjerdw4eqx7bf2l4j5whqxobc3qmnethbicva",
+          "effects": [],
+          "doc": "`xs` sorted in natural order (see `natural_compare`); the sort is stable."
+        },
+        {
+          "name": "wrap_lines",
+          "kind": "fn",
+          "sig": "fn wrap_lines(s: Str, width: Int where _ >= 1, break_long: Bool) -> List[Str]",
+          "sig_hash": "jgwyn4wgt64bq6mhyxdsfdqzii",
+          "hash": "l6mlgm6xn2wozrgd4t6kbucwmdfavb5qubzeuva7ymc4hcrzqttq",
+          "effects": [],
+          "doc": "`s` word-wrapped into lines of at most `width` display columns (see `display_width`). Each line\nof the input is wrapped on its own, so existing line breaks and blank lines stay; runs of\nwhitespace between words become one space. With `break_long`, a word wider than `width` is\ncut into pieces (a single character wider than `width`, such as a CJK character at width 1,\nstill gets a line of its own); without it, it stands alone on a longer line."
+        },
+        {
+          "name": "wrap",
+          "kind": "fn",
+          "sig": "fn wrap(s: Str, width: Int where _ >= 1) -> Str",
+          "sig_hash": "dv6atywaq2sbjvdx3sdzbl6ftq",
+          "hash": "yv4jdyuex4rzkht72q4yvehmbntn3bqn6na2hqwwqcf4lq4dzumq",
+          "effects": [],
+          "doc": "`s` wrapped to `width` columns with `\\n` between lines, not breaking long words (WordUtils\n`wrap`); see `wrap_lines`."
+        },
+        {
+          "name": "wrap_with",
+          "kind": "fn",
+          "sig": "fn wrap_with(s: Str, width: Int where _ >= 1, newline: Str, break_long: Bool) -> Str",
+          "sig_hash": "txhn6zbrl35q5tlzp5fm5zzmji",
+          "hash": "knv52tuclugzdac2wx5i7sclkqe5kyzuai74vaii5a46urcapqoq",
+          "effects": [],
+          "doc": "`s` wrapped to `width` columns with `newline` between lines; `break_long` cuts words wider than\n`width`. See `wrap_lines`."
+        },
+        {
+          "name": "unwrap",
+          "kind": "fn",
+          "sig": "fn unwrap(s: Str) -> Str",
+          "sig_hash": "m4f53tkx2gy3tzn6pbesypnqkq",
+          "hash": "kmxplfgdhtc3bscou43v7zz4st45fbrso6nu6yn2qdv3kw5ahyma",
+          "effects": [],
+          "doc": "`s` with the lines of each paragraph joined by single spaces; paragraphs are separated by blank\nlines and come back separated by one blank line (`\"\\n\\n\"`). The inverse of `wrap`, up to\nwhitespace."
+        },
+        {
+          "name": "indent",
+          "kind": "fn",
+          "sig": "fn indent(s: Str, prefix: Str) -> Str",
+          "sig_hash": "jbifpketm6v5wjt6n7mkqjo6t4",
+          "hash": "u7qmggc77aa4ahbjmzizxyne7d4pmvxtxgw53hvlaw2ynz2gz5bq",
+          "effects": [],
+          "doc": "`s` with `prefix` added at the start of every line that is not blank (Python `textwrap.indent`);\nline breaks are kept as they are."
+        },
+        {
+          "name": "dedent",
+          "kind": "fn",
+          "sig": "fn dedent(s: Str) -> Str",
+          "sig_hash": "4ic5jcsnltx2vwgiybnzufwe2e",
+          "hash": "yrvnpoezzdbqhr2q2lwiw5jey4ysu375fqjk36kwjobg53jih7ta",
+          "effects": [],
+          "doc": "`s` with the whitespace prefix common to all of its non-blank lines removed (Python\n`textwrap.dedent`); blank lines become empty. Tabs and spaces are different characters here."
+        },
+        {
+          "name": "surround",
+          "kind": "fn",
+          "sig": "fn surround(s: Str, q: Str) -> Str",
+          "sig_hash": "oljxam2eignaz63syxju557h34",
+          "hash": "ik6ailqjfdr2rlx54qxlaao4ik56wbzpljm4crhn4ughuaqm55na",
+          "effects": [],
+          "doc": "`s` between two copies of `q`: `surround(\"a\", \"'\")` is `\"'a'\"`."
+        },
+        {
+          "name": "surround_if_missing",
+          "kind": "fn",
+          "sig": "fn surround_if_missing(s: Str, q: Str) -> Str",
+          "sig_hash": "6ja3yyw3nznbef3lhq37fzuqeq",
+          "hash": "njkwp5lwuk5xz32gtfmnxabanebjq7du7t5tftja7moctm7rjo6q",
+          "effects": [],
+          "doc": "`s` with `q` added at the start and at the end where it is missing."
+        },
+        {
+          "name": "unsurround",
+          "kind": "fn",
+          "sig": "fn unsurround(s: Str, q: Str) -> Str",
+          "sig_hash": "f2i66lxljpwwlryztudktt7g3y",
+          "hash": "nufnjdmei6j75slp2czyknqhpix4f2j76vh75krtd5v3pzaopora",
+          "effects": [],
+          "doc": "`s` without one `q` at each end when it starts and ends with `q` (and is long enough to hold\nboth); otherwise `s`."
+        },
+        {
+          "name": "strip_accents",
+          "kind": "fn",
+          "sig": "fn strip_accents(s: Str) -> Str",
+          "sig_hash": "o4qznfxwokvgrntc5tdkpdg2ee",
+          "hash": "ofwg42exkgi3y3n6w3lt5rpznz5qmas3wqqyog4ejdnxjzsuu4sq",
+          "effects": [],
+          "doc": "`s` without diacritics: precomposed Latin letters with accents, and letters with a stroke\n(`ø`, `ł`, `đ`, `ħ`), become their base letters, from the Latin-1 Supplement, Latin\nExtended-A and B and Latin Extended Additional (so Vietnamese works), and combining marks\nU+0300 to U+036F are removed, which handles decomposed text. Ligatures and letters such as\n`æ`, `ß` and `þ` are not accented letters and stay (see `to_ascii`); Greek, Cyrillic and other\nscripts are unchanged."
+        },
+        {
+          "name": "to_ascii",
+          "kind": "fn",
+          "sig": "fn to_ascii(s: Str, replacement: Str) -> Str",
+          "sig_hash": "scs6ehzbixb4aok3q3nc62date",
+          "hash": "3bt7n7kmpirrgo5ofjidmqtb6whomkc6onrweoavoguu6n7hqlxq",
+          "effects": [],
+          "doc": "`s` spelled in ASCII where it can be: accents stripped (`strip_accents`), ligatures and special\nletters expanded (`æ` to `ae`, `ß` to `ss`, `þ` to `th`), typographic quotes, dashes, spaces\nand the ellipsis made plain, and a few symbols spelled out (`©` to `(c)`, `€` to `EUR`). Any\nother non-ASCII character becomes `replacement` (`\"\"` drops it)."
+        },
+        {
+          "name": "slug_options",
+          "kind": "fn",
+          "sig": "fn slug_options() -> SlugOptions",
+          "sig_hash": "al47omycgkfwvdgvwpuctinz3m",
+          "hash": "k6xcghsekvd4mthgmxzmaosiw3sgmk25xl53x3kupekdeh5xdynq",
+          "effects": [],
+          "doc": "The default slug options: `-` between words, no length limit, lowercase."
+        },
+        {
+          "name": "slugify",
+          "kind": "fn",
+          "sig": "fn slugify(s: Str) -> Str",
+          "sig_hash": "7b7mtdrtwmmtns5edqlmawytna",
+          "hash": "brh63a7l3kuteo3aswduva3ldyq5okk72fdywibm2egwjmm5h5wa",
+          "effects": [],
+          "doc": "A URL slug of `s` with the default options: `slugify(\"Crème Brûlée & Co.\")` is\n`\"creme-brulee-and-co\"`. See `slugify_with`."
+        },
+        {
+          "name": "slugify_with",
+          "kind": "fn",
+          "sig": "fn slugify_with(s: Str, o: SlugOptions) -> Str",
+          "sig_hash": "jz3okb6fhqd5sp7ytwgaihomna",
+          "hash": "vurf57osag64kkhnzrwzp7dmeyocz4fxomwa735j432t4ynwi5ia",
+          "effects": [],
+          "doc": "A URL slug of `s`: transliterated to ASCII (`to_ascii`), `&` spelled `and`, lowercased when\n`o.lowercase`, and every run of characters other than ASCII letters and digits replaced by\n`o.sep`, with none at the ends. With `o.max_len > 0` the slug is cut to that many characters,\nat the last separator that fits when there is one, and never ends in a separator. Text with\nno letters or digits gives `\"\"`."
+        },
+        {
+          "name": "unique_slug",
+          "kind": "fn",
+          "sig": "fn unique_slug(base: Str, taken: List[Str]) -> Str",
+          "sig_hash": "tklrrjgby7ymsi6sdrxco7veo4",
+          "hash": "m536wobjj6exyx6ktebboy6tayj6rlijn7vnkmmrdipoq2ptz3cq",
+          "effects": [],
+          "doc": "`base` if it is not in `taken`, else the first of `base-2`, `base-3`, ... that is not, for\nunique URLs: `unique_slug(\"post\", [\"post\", \"post-2\"])` is `\"post-3\"`."
+        },
+        {
+          "name": "escape_html",
+          "kind": "fn",
+          "sig": "fn escape_html(s: Str) -> Str",
+          "sig_hash": "bic77vlhh5mvvytntfvdswh4za",
+          "hash": "w7vg6jjh76ezl3qpuua2t5fmgpfhbx3d7zuzjxgq3rdo4ssvklsq",
+          "effects": [],
+          "doc": "`s` with `&`, `<`, `>`, `\"` and `'` replaced by character references (`&amp;`, `&lt;`, `&gt;`,\n`&quot;`, `&#39;`), safe in HTML text and in quoted attribute values."
+        },
+        {
+          "name": "escape_xml",
+          "kind": "fn",
+          "sig": "fn escape_xml(s: Str) -> Str",
+          "sig_hash": "cadnpvpkd522op4fnr4wbywtre",
+          "hash": "h6j2vkonnv5fq7hdzhtneujnivkoxnooqc4wsym5w42bhko3gzta",
+          "effects": [],
+          "doc": "`s` with the five XML special characters escaped as `&amp;`, `&lt;`, `&gt;`, `&quot;` and\n`&apos;`."
+        },
+        {
+          "name": "unescape_html",
+          "kind": "fn",
+          "sig": "fn unescape_html(s: Str) -> Str",
+          "sig_hash": "2xnlpb56lnpynu7je5z52uz44y",
+          "hash": "5taqxkaobpodgm45h7r6jpmcizrx3qoeo2vewylj33ysnr76bs3a",
+          "effects": [],
+          "doc": "`s` with character references decoded: the HTML 4 named references (`&amp;`, `&eacute;`,\n`&nbsp;`, `&euro;` and the rest of the 252) plus `&apos;`, and decimal and hexadecimal ones\n(`&#233;`, `&#xE9;`). References must end in `;`; unknown names, invalid code points and\nsurrogates are left as they are. HTML5's references without `;` are not decoded."
+        },
+        {
+          "name": "unescape_xml",
+          "kind": "fn",
+          "sig": "fn unescape_xml(s: Str) -> Str",
+          "sig_hash": "qomqqsv5umvmv6vrtrjnigsh3m",
+          "hash": "gkian2abje7a6cwolsznzb4yqelrrcdbyejmty5mnnmykwfp2blq",
+          "effects": [],
+          "doc": "`s` with the five XML entities and numeric character references decoded; anything else is\nleft as it is."
+        },
+        {
+          "name": "escape_json",
+          "kind": "fn",
+          "sig": "fn escape_json(s: Str) -> Str",
+          "sig_hash": "77defl2smorjh5ebrnwglp3fqm",
+          "hash": "3smzavcfbwq2ssfvuqxbcvk3rt6pi2hsaub3nppi52dwnzv6opgq",
+          "effects": [],
+          "doc": "`s` escaped for the inside of a JSON string: `\"` and `\\` get a backslash, `\\b \\f \\n \\r \\t` use\ntheir short forms, other control characters and U+2028 and U+2029 (which break JavaScript)\nbecome `\\u00XX` forms; everything else stays as UTF-8. No quotes are added."
+        },
+        {
+          "name": "quote_json",
+          "kind": "fn",
+          "sig": "fn quote_json(s: Str) -> Str",
+          "sig_hash": "ajonjfnccfvarb6vu6z7sec4yq",
+          "hash": "nywk7hofgl2hg6ozdtznsoyrurthctclfn5pra4nxhhjqywqansa",
+          "effects": [],
+          "doc": "`s` as a JSON string literal: `escape_json(s)` between double quotes."
+        },
+        {
+          "name": "unescape_json",
+          "kind": "fn",
+          "sig": "fn unescape_json(s: Str) -> Opt[Str]",
+          "sig_hash": "ihdvlrt6smpup3io3mozxcfh4i",
+          "hash": "f2ydxtpfngdspwqsaxpeqi52brvp3w6yefbpunx66yf5vyvlnyna",
+          "effects": [],
+          "doc": "The text of a JSON string's inside with its escapes decoded (`\\\"`, `\\\\`, `\\/`, `\\b`, `\\f`, `\\n`,\n`\\r`, `\\t` and `\\uHHHH` (four hex digits), with surrogate pairs combined); `none` for an unknown escape, a\ntruncated one or an unpaired surrogate. Unescaped quotes and control characters are accepted."
+        },
+        {
+          "name": "quote_shell",
+          "kind": "fn",
+          "sig": "fn quote_shell(s: Str) -> Str",
+          "sig_hash": "mxeorromhkmwlj35pkkkenucbm",
+          "hash": "xmd7ha3hgk7xcz2ss6p5qhrzuj2ns64n5kmlpwyrvqhgb53agboa",
+          "effects": [],
+          "doc": "`s` quoted for a POSIX shell (`sh`, `bash`, `zsh`) as one word: unchanged when it is non-empty\nand only has characters no shell treats specially (ASCII letters, digits and `_ - . / : = @ %\n+ ,`), else in single quotes with each `'` written `'\"'\"'` (Python `shlex.quote`)."
+        },
+        {
+          "name": "quote_regex",
+          "kind": "fn",
+          "sig": "fn quote_regex(s: Str) -> Str",
+          "sig_hash": "yerfaxxzdvfxigftewqr23gpty",
+          "hash": "nz7gaajoif7ljaxu47vfhb7whbjqdjs6btrxfam63ufh5uio6cea",
+          "effects": [],
+          "doc": "`s` with every regex metacharacter (`\\ . ^ $ | ? * + ( ) [ ] { }`) escaped by a backslash, so\n`regex(quote_regex(s))` matches `s` literally with SSPUR's regex syntax."
+        },
+        {
+          "name": "quote_csv",
+          "kind": "fn",
+          "sig": "fn quote_csv(s: Str) -> Str",
+          "sig_hash": "g3gvxpanxqyc64kzj4hrcdn5yq",
+          "hash": "hidnfryyjzsqa4nezs3w5742rr2zjw7g3x3w77cfwu3u7xr2hfba",
+          "effects": [],
+          "doc": "`s` as one CSV field (RFC 4180): in double quotes, with each `\"` doubled, when it contains a\ncomma, a double quote, a carriage return or a line feed; otherwise unchanged."
+        },
+        {
+          "name": "percent_encode",
+          "kind": "fn",
+          "sig": "fn percent_encode(s: Str) -> Str",
+          "sig_hash": "svqagsznlbjozqncsmjgj5msfa",
+          "hash": "dciogalab5ro7bdx4ckzf7esthy5tex57av26ddevxzys37jieva",
+          "effects": [],
+          "doc": "`s` percent-encoded for a URL component (RFC 3986): every UTF-8 byte except the unreserved\ncharacters `A-Z a-z 0-9 - . _ ~` becomes `%XX` with uppercase hex, so spaces are `%20`."
+        },
+        {
+          "name": "percent_decode",
+          "kind": "fn",
+          "sig": "fn percent_decode(s: Str) -> Opt[Str]",
+          "sig_hash": "f7fm3d4us6hnj7s3ctv2trrd54",
+          "hash": "g67o7xawq3keypmnvu4hiowf6dlugxnbdwf5zmrsxkxyjzd6l6sq",
+          "effects": [],
+          "doc": "`s` with `%XX` escapes decoded; `none` when a `%` is not followed by two hex digits or the bytes\nare not valid UTF-8. `+` stays `+`: replace it with a space first for form data."
+        }
+      ]
+    }
+  ]
+}

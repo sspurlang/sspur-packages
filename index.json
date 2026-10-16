@@ -30,6 +30,16 @@
       "updated": "2026-10-16T16:11:49Z",
       "yanked": false,
       "deprecated": null
+    },
+    {
+      "name": "strings",
+      "description": "String utilities in the spirit of Apache Commons StringUtils: case, padding, graphemes, distances, wrapping, slugs, escaping",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T19:57:58Z",
+      "yanked": false,
+      "deprecated": null
     }
   ]
 }
