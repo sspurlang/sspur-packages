@@ -1,0 +1,598 @@
+{
+  "schema": 1,
+  "name": "jwt",
+  "description": "JSON Web Tokens and JWS: HS256, HS384, HS512 and EdDSA, strict parsing, claim validation with leeway, typed keys bound to one algorithm, and JWKS",
+  "repository": "https://github.com/sspurlang/sspur-jwt",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-jwt.git",
+      "tag": "v0.1.0",
+      "commit": "1018450bd8891c009a3dba033a861308a5c83ab7",
+      "hash": "sc76yd67niey2ptxspqon5irxcmsoqm6efe5u6illvcqrsmdi3aq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/jwt-0.1.0/jwt-0.1.0.tar",
+        "sha256": "5e59fe2253ff9992e21b3a6d1c6e3bdd597b6c20fb798b877a47ddc8bf0955d8",
+        "size": 88576
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:17:40Z",
+      "publisher": "utkarshavardhana",
+      "request": 36,
+      "api": [
+        {
+          "name": "JwtErr",
+          "kind": "type",
+          "sig": "pub type JwtErr = Malformed{why: Str} | TooLarge{len: Int, max: Int} | UnsupportedAlg{alg: Str} | AlgNotAllowed{alg: Str} | UnknownCritical{name: Str} | NoKey{kid: Opt[Str]} | BadSignature | Expired{exp: Int, now: Int} | NotYetValid{nbf: Int, now: Int} | IssuedInFuture{iat: Int, now: Int} | IssuedTooLongAgo{iat: Int, max_age: Int} | WrongIssuer{iss: Opt[Str]} | WrongAudience{aud: List[Str]} | WrongSubject{sub: Opt[Str]} | WrongType{typ: Opt[Str]} | MissingClaim{name: Str} | BadClaim{name: Str, why: Str} | InvalidKey{why: Str} | BadJwks{why: Str} derive Eq, Show",
+          "sig_hash": "cefvmzd6cudon3vkylbidu6owm",
+          "hash": "zld6lqer537inwsxoxsvgmvs5lmzuymszanuqb5exxqatrniolia",
+          "effects": [],
+          "doc": "Why a token, a key or a key set was refused."
+        },
+        {
+          "name": "sha384",
+          "kind": "fn",
+          "sig": "fn sha384(data: Bytes) -> Bytes",
+          "sig_hash": "dhhkrjy6qewp6w3itfjd4bocma",
+          "hash": "g6eolupwxlcxdhukgnzteyuambvo2mdv5vibtrmacooiao2clsvq",
+          "effects": [],
+          "doc": "The SHA-384 digest (48 bytes) of `data`, FIPS 180-4."
+        },
+        {
+          "name": "hmac_sha384",
+          "kind": "fn",
+          "sig": "fn hmac_sha384(key: Secret[Bytes], data: Bytes) -> Bytes",
+          "sig_hash": "bmpsb3e64nq3dx4ubv4adtypdi",
+          "hash": "uk2q47zvbulqeuk5tv2vhybicw5uis4kvin4quprvb33jfnvowka",
+          "effects": [],
+          "doc": "HMAC-SHA-384 (RFC 2104, RFC 4231) of `data` under `key`: 48 bytes."
+        },
+        {
+          "name": "JsonValue",
+          "kind": "type",
+          "sig": "pub type JsonValue = JNull | JBool{value: Bool} | JNum{text: Str} | JStr{value: Str} | JArr{items: List[JsonValue]} | JObj{fields: List[(Str, JsonValue)]} derive Eq, Show",
+          "sig_hash": "monztxoirflcryufdhatw7ykwu",
+          "hash": "sconeo4hdev7suksi2w4r467cogu643aijrfvr6amwaxgfb5hrha",
+          "effects": [],
+          "doc": "A JSON value as parsed from a token, keeping the members of an object in their order and\nnumbers as their text (so nothing is lost or rounded)."
+        },
+        {
+          "name": "parse_json",
+          "kind": "fn",
+          "sig": "fn parse_json(s: Str) -> Res[JsonValue, Str]",
+          "sig_hash": "styxilem4zyzbh5agfcdjaft2m",
+          "hash": "ga3vhhbjwrfuecjp2p5sctj54ktdpghmorn2ylksgx5eczpnsuyq",
+          "effects": [],
+          "doc": "Parses JSON text (RFC 8259) strictly: one value, nested at most 32 deep, no duplicate member\nnames in an object, no lone surrogates, nothing after the value. `err` says what is wrong."
+        },
+        {
+          "name": "json_text",
+          "kind": "fn",
+          "sig": "fn json_text(v: JsonValue) -> Str",
+          "sig_hash": "bsed2qoeylay3zxe4mb6alntlq",
+          "hash": "zwku75fltde7imangskvlbmdptbda55unejbrt7qiwy5uet4yvtq",
+          "effects": [],
+          "doc": "The compact JSON text of `v`: no spaces, members in order, strings escaped as RFC 8259\nrequires (quote, backslash and control characters), other characters as they are."
+        },
+        {
+          "name": "jint",
+          "kind": "fn",
+          "sig": "fn jint(n: Int) -> JsonValue",
+          "sig_hash": "lrj3ztca344yyge4siycivxy4u",
+          "hash": "tnncsgh7npcbwwesqnzqpix76y22neuqt2zdj3dmyl3lt3hvgrlq",
+          "effects": [],
+          "doc": "A JSON number for an integer."
+        },
+        {
+          "name": "jstr",
+          "kind": "fn",
+          "sig": "fn jstr(s: Str) -> JsonValue",
+          "sig_hash": "owc6t3zktcfjkwc6jwyq6l3w4i",
+          "hash": "35wxhjhztlkl24ik6pduknho5wzuxd3fvnx2x4ksyzltxg5hknlq",
+          "effects": [],
+          "doc": "A JSON string."
+        },
+        {
+          "name": "member",
+          "kind": "fn",
+          "sig": "fn member(v: JsonValue, name: Str) -> Opt[JsonValue]",
+          "sig_hash": "xmbcsxpxt6qre3jlsv2hfmbjzm",
+          "hash": "dzko6adx7nx3b5j2exqoptwxub6wcaddfjp5dfzfh73miapn7g5a",
+          "effects": [],
+          "doc": "The member `name` of an object, or none (also for values that are not objects)."
+        },
+        {
+          "name": "json_int",
+          "kind": "fn",
+          "sig": "fn json_int(v: JsonValue) -> Opt[Int]",
+          "sig_hash": "mdqgsg2tuwe7hlknqfwm5ljlkq",
+          "hash": "nqk3xrp4lwtc3demwolnccsjkurdzlnsbbjhhfx55qlulwfzqxgq",
+          "effects": [],
+          "doc": "The integer a JSON number denotes, rounded down when it has a fraction or an exponent\n(NumericDate values may be fractional), or none when it doesn't fit in an Int."
+        },
+        {
+          "name": "b64url",
+          "kind": "fn",
+          "sig": "fn b64url(b: Bytes) -> Str",
+          "sig_hash": "5wyby66eutlcmtwjfwicd5s2wu",
+          "hash": "5lhvvjzpm6ym4ffs6dqlkn6umolq4ftkbctqaoxtqcnhyaw3vdvq",
+          "effects": [],
+          "doc": "`b` as unpadded base64url, the encoding of every JWS segment."
+        },
+        {
+          "name": "from_b64url",
+          "kind": "fn",
+          "sig": "fn from_b64url(s: Str) -> Opt[Bytes]",
+          "sig_hash": "x7cvf6acp7dd4xwm7snomwinea",
+          "hash": "5vhsj2oujlw3p3pmtksznajqfchz6e7dgx2qptdfc4ukvgecgpaa",
+          "effects": [],
+          "doc": "The bytes of a canonical unpadded base64url segment: only `A-Z a-z 0-9 - _`, no padding, no\nwhitespace, and unused trailing bits zero. Anything else is none."
+        },
+        {
+          "name": "Alg",
+          "kind": "type",
+          "sig": "pub type Alg = HS256 | HS384 | HS512 | EdDSA derive Eq, Show",
+          "sig_hash": "k4h5uotwsp7e6qpgqmdj6ak644",
+          "hash": "vzxj3bho2wfhvdhpeh4u7urnz64jmdtkumobjr3iodvnlkbovczq",
+          "effects": [],
+          "doc": "A JWS algorithm this package implements: HMAC with SHA-256, SHA-384 or SHA-512, and EdDSA\nwith Ed25519."
+        },
+        {
+          "name": "alg_name",
+          "kind": "fn",
+          "sig": "fn alg_name(a: Alg) -> Str",
+          "sig_hash": "ul6o56ybxqt7sd53qccwdec2pm",
+          "hash": "24eskgp2r7vn5kagtivafs226zddp54x5cs4afoy3xm37pwgzeva",
+          "effects": [],
+          "doc": "The `alg` header value of `a`."
+        },
+        {
+          "name": "alg_of",
+          "kind": "fn",
+          "sig": "fn alg_of(name: Str) -> Opt[Alg]",
+          "sig_hash": "hy3kvjhckbhc37oqhzn5mu7c6i",
+          "hash": "uisev7s7323dbg2beo7jo3revstsa4fzsev3evmpaqktaiz3jxea",
+          "effects": [],
+          "doc": "The algorithm an `alg` header value names, matched exactly (names are case-sensitive), or none.\n`none` and every algorithm this package doesn't implement are none."
+        },
+        {
+          "name": "all_algs",
+          "kind": "fn",
+          "sig": "fn all_algs() -> List[Alg]",
+          "sig_hash": "e6nhnkregjr7mdqqfv2wxulk3u",
+          "hash": "7aglqicw7xekcfxbfzzv7lljenqkfpx43zjntvfyz6g7qyj6akeq",
+          "effects": [],
+          "doc": "Every algorithm, for a policy that accepts whatever the keys allow."
+        },
+        {
+          "name": "Key",
+          "kind": "type",
+          "sig": "pub type Key = HmacKey{alg: Alg, kid: Opt[Str], mac_key: KeyBytes} | EdSigningKey{kid: Opt[Str], seed: KeyBytes, x: Bytes} | EdVerifyingKey{kid: Opt[Str], x: Bytes} derive Eq, Show",
+          "sig_hash": "lilqu3z6pu33mv2deay5cdvosi",
+          "hash": "vc6rl4gqsiebdh4icbhw3bni7h2c7botslg52habf7bjov7jhftq",
+          "effects": [],
+          "doc": "A key, bound to exactly one algorithm: an HMAC secret for `alg`, an Ed25519 signing key (its\n32-byte secret seed and public key `x`), or an Ed25519 verifying key. `kid` is the key id that\ntokens name in their header. Keys hold secrets, which can't be compared or printed, so `Key`\nhas hand-written `Eq` (secrets compared in constant time) and `Show` (secrets shown as\n`<secret>`) instead of derived ones. Build keys with `hmac_key`, `ed25519_signing_key` and\n`ed25519_verifying_key`, which check them."
+        },
+        {
+          "name": "KeyBytes",
+          "kind": "type",
+          "sig": "pub type KeyBytes = new Secret[Bytes]",
+          "sig_hash": "ire5wtdla3yetervo57hvt3abm",
+          "hash": "gbrjxc5qfa4v3qxf5zdxmwfmtkbfxv2kwdmv3jitabylhyygy3fa",
+          "effects": [],
+          "doc": "Secret key material, so keys can derive `Eq` and `Show`: it prints as `<secret>` (a `Key`\nshows it as `KeyBytes(<secret>)`), and two `KeyBytes` compare in constant time. Unwrap with\n`.raw`."
+        },
+        {
+          "name": "impl Eq for KeyBytes",
+          "kind": "impl",
+          "sig": "impl Eq for KeyBytes",
+          "sig_hash": "vtdkassnjjfsicj5mzehqyqvle",
+          "hash": "tuq54pcztn7l2d42stn6r3ikvrfp3ofwfglfrgpzv43ysdd5uxca",
+          "effects": [],
+          "doc": "Equal when the bytes are, compared in constant time."
+        },
+        {
+          "name": "impl Show for KeyBytes",
+          "kind": "impl",
+          "sig": "impl Show for KeyBytes",
+          "sig_hash": "lpzoxhvage2axi6xebpvn2e6ve",
+          "hash": "aphcyet3g2b54rnbyhtsmfgirsswul6d5zdke4cgfo6bpktf52wq",
+          "effects": [],
+          "doc": "Always `<secret>`."
+        },
+        {
+          "name": "hmac_key",
+          "kind": "fn",
+          "sig": "fn hmac_key(alg: Alg, k: Secret[Bytes]) -> Res[Key, JwtErr]",
+          "sig_hash": "zl62ihzvc3zvcjqu5inac332im",
+          "hash": "cooaoo735mx7s457njpds2nl3c4nb2uqlbciha24ibpbozreqpeq",
+          "effects": [],
+          "doc": "An HMAC key for `alg` (HS256, HS384 or HS512). RFC 7518 section 3.2 requires a key at least as\nlong as the hash: 32, 48 or 64 bytes."
+        },
+        {
+          "name": "ed25519_signing_key",
+          "kind": "fn",
+          "sig": "fn ed25519_signing_key(seed: Secret[Bytes]) -> Res[Key, JwtErr]",
+          "sig_hash": "dhci5oyzfkxjkklwa4k5aurphe",
+          "hash": "kuukd2vrcsnfmxongrgu2w3u4bnnucky3rgp2z7y6jzbyz77yexq",
+          "effects": [],
+          "doc": "An Ed25519 signing key from its 32-byte secret seed (the JWK `d`)."
+        },
+        {
+          "name": "ed25519_verifying_key",
+          "kind": "fn",
+          "sig": "fn ed25519_verifying_key(x: Bytes) -> Res[Key, JwtErr]",
+          "sig_hash": "rsoswovincu3yr6hur3vactjqy",
+          "hash": "75n73l6ottoskzxz7wu26ozsjs6awaiwigxfjh7e74k6p2he6x5q",
+          "effects": [],
+          "doc": "An Ed25519 verifying key from its 32-byte public key (the JWK `x`)."
+        },
+        {
+          "name": "generate_hmac_key",
+          "kind": "fn",
+          "sig": "fn generate_hmac_key(alg: Alg) -> Res[Key, JwtErr] ! rand",
+          "sig_hash": "yd3hs2lt2bbupteaq2l5rvpvvq",
+          "hash": "allcysqpuhduq3iu2jw4beqj6p3novdyi7bypu7d76bzqvtapw6q",
+          "effects": [
+            "rand"
+          ],
+          "doc": "A new random HMAC key of the minimum size for `alg`."
+        },
+        {
+          "name": "generate_ed25519_key",
+          "kind": "fn",
+          "sig": "fn generate_ed25519_key() -> Key ! rand",
+          "sig_hash": "jdkbyq5ooihibo62k24i24cc4q",
+          "hash": "pbdua4nveakqqblcfmzzvbyoskolk3hqydrhwu4dcklp3herid6q",
+          "effects": [
+            "rand"
+          ],
+          "doc": "A new random Ed25519 signing key."
+        },
+        {
+          "name": "with_kid",
+          "kind": "fn",
+          "sig": "fn with_kid(k: Key, kid: Str where _.len > 0) -> Key",
+          "sig_hash": "tdu4kgwo5hmetwggm4k47chd5q",
+          "hash": "tvvzgsrsbjuvpvn2lnkixcpbc2wote2rgwfk4xshf2svy56kbe2a",
+          "effects": [],
+          "doc": "`k` with the key id `kid`."
+        },
+        {
+          "name": "key_alg",
+          "kind": "fn",
+          "sig": "fn key_alg(k: Key) -> Alg",
+          "sig_hash": "dgbryxi35us7pzvvx46otmumjm",
+          "hash": "2b5vtlo6k7rpfemt6q7ijuzfpsyuvqzpvhknlktlh3nv6ugmqpkq",
+          "effects": [],
+          "doc": "The algorithm `k` is bound to."
+        },
+        {
+          "name": "key_id",
+          "kind": "fn",
+          "sig": "fn key_id(k: Key) -> Opt[Str]",
+          "sig_hash": "n32ouwf7rzrjpibly3mc3r5wby",
+          "hash": "azsrondh2fi3tvjqpuq6tg7grb4tamzsfloj7unb3ehvc2wnuw2a",
+          "effects": [],
+          "doc": "The key id of `k`, if it has one."
+        },
+        {
+          "name": "can_sign",
+          "kind": "fn",
+          "sig": "fn can_sign(k: Key) -> Bool",
+          "sig_hash": "dovvoqraeccv4uzme75aixxpw4",
+          "hash": "ivrl4smqfaj6z7mv6uoldkpgefop73idwmi4o3qu5fxh7igwtjua",
+          "effects": [],
+          "doc": "Whether `k` can sign: HMAC keys and Ed25519 signing keys can, verifying keys can't."
+        },
+        {
+          "name": "verifying_key",
+          "kind": "fn",
+          "sig": "fn verifying_key(k: Key) -> Opt[Key]",
+          "sig_hash": "7arn2yvimm6rjq2hfu7nvn6zki",
+          "hash": "vubb7o2u7amqtzzyjwrp3zklztkxjcxrwfudu3jjm5mavrfjq37q",
+          "effects": [],
+          "doc": "The key that verifies what `k` signs and may be given to others: the verifying key of an\nEd25519 signing key, `k` itself for a verifying key, and none for an HMAC key, whose verifier\nis the secret itself."
+        },
+        {
+          "name": "public_bytes",
+          "kind": "fn",
+          "sig": "fn public_bytes(k: Key) -> Opt[Bytes]",
+          "sig_hash": "qw7n4tv5vi6umnhugrp6jzkhay",
+          "hash": "cmyxvijh5egyx7ioyccbigz6y3wgleod5khsvbkkdvap4vvaendq",
+          "effects": [],
+          "doc": "The public key bytes of an Ed25519 key, none for an HMAC key."
+        },
+        {
+          "name": "select_keys",
+          "kind": "fn",
+          "sig": "fn select_keys(keys: List[Key], kid: Opt[Str], alg: Alg) -> List[Key]",
+          "sig_hash": "nedtwsjr2sjml45gitpswjyboq",
+          "hash": "ksb6x6yaxfya5zqwng3njxg6wytho52ijhlyvfxxg2idw2i7jkmq",
+          "effects": [],
+          "doc": "The keys of `keys` that may verify a token with algorithm `alg` and key id `kid`: bound to\n`alg`, and when `kid` is given, carrying that id."
+        },
+        {
+          "name": "Policy",
+          "kind": "type",
+          "sig": "pub type Policy = {algs: List[Alg], leeway: Int where _ >= 0, max_age: Opt[Int], issuers: List[Str], audiences: List[Str], subject: Opt[Str], typ: Opt[Str], required: List[Str], critical: List[Str], max_len: Int where _ > 0} derive Eq, Show",
+          "sig_hash": "uk6jr2zk2wjwn4egdkwltmefxq",
+          "hash": "obfuapvt67nv2nc4raoe6k4lfxqswrsqmwqgn63wquyazicfgmvq",
+          "effects": [],
+          "doc": "What verification accepts. `algs` is the allowlist (the header's `alg` must be in it and match\nthe key's); `leeway` is the clock skew allowed, in seconds, for `exp`, `nbf` and `iat`;\n`max_age` limits how old `iat` may be; `issuers` and `audiences`, when not empty, are the\naccepted `iss` values and the audiences of which `aud` must contain one; `subject` and `typ`\npin `sub` and the header's `typ`; `required` lists claims that must be present; `critical`\nlists the `crit` header extensions the caller understands; `max_len` bounds the token length."
+        },
+        {
+          "name": "policy",
+          "kind": "fn",
+          "sig": "fn policy(algs: List[Alg] where _.len > 0) -> Policy",
+          "sig_hash": "njh26g7ubu4n4vsq5zvpk6d5hy",
+          "hash": "vipwbq7kstywsziabizcnmu3aci5c66jb5g2a3n75wda47zymqvq",
+          "effects": [],
+          "doc": "A policy that accepts `algs` and checks only the time claims that are present, with no leeway\nand tokens of at most 8192 characters. Add requirements with `with`."
+        },
+        {
+          "name": "Jws",
+          "kind": "type",
+          "sig": "pub type Jws = {header: JsonValue, payload: Str, alg: Alg, kid: Opt[Str]} derive Eq, Show",
+          "sig_hash": "awrkj2x6434k524vrabbaoi7uy",
+          "hash": "y4rd7udm6m74y4ektgqv7qj4kugbzvym4dwwh4pc2bduaery5uwq",
+          "effects": [],
+          "doc": "A verified (or, from `decode_unverified`, merely decoded) JWS: its protected header, its\npayload as text, and the algorithm and key id it named."
+        },
+        {
+          "name": "jws_verify",
+          "kind": "fn",
+          "sig": "fn jws_verify(token: Str, keys: List[Key], p: Policy) -> Res[Jws, JwtErr]",
+          "sig_hash": "jgfimgvsqzyzfkkwmojephgr5e",
+          "hash": "xctxykadft5qqgis6z5otd5tx7csyuryauc7obwnqcepjewmsshq",
+          "effects": [],
+          "doc": "Verifies a compact JWS with `keys` under policy `p`'s `algs`, `critical` and `max_len`. The\nheader's `alg` must be in `p.algs`; then only keys bound to that algorithm, with the header's\n`kid` when it has one, are tried. The payload can be any text; `verify` adds the JWT rules."
+        },
+        {
+          "name": "sign_compact",
+          "kind": "fn",
+          "sig": "fn sign_compact(k: Key, header: Str, payload: Str) -> Res[Str, JwtErr]",
+          "sig_hash": "crrahhv4bjtxm5tscfyvbjjn7y",
+          "hash": "qei2tgdwxz5esxvvhg3vfzqnhxo6acfxubrdk5ujzbg3bosipr5a",
+          "effects": [],
+          "doc": "Signs `payload` with the exact header text `header`, which must be a JSON object whose `alg`\nis `k`'s algorithm. For reproducing tokens byte for byte; `jws_sign` and `sign` build the\nheader themselves."
+        },
+        {
+          "name": "jws_sign",
+          "kind": "fn",
+          "sig": "fn jws_sign(k: Key, extra: List[(Str, JsonValue)], payload: Str) -> Res[Str, JwtErr]",
+          "sig_hash": "zro76s6hvxhmv4iot75htlx5om",
+          "hash": "7stwicptbafxk4xidjbpfmwl7bujk4ushwcfrpjo3ldcojfu4xyq",
+          "effects": [],
+          "doc": "Signs `payload` (any text) as a compact JWS: the header is `alg` from the key, `kid` when the\nkey has one, then `extra` (which may not set `alg`, `kid`, `crit` or `b64`)."
+        },
+        {
+          "name": "decode_unverified",
+          "kind": "fn",
+          "sig": "fn decode_unverified(token: Str, max_len: Int where _ > 0) -> Res[Jws, JwtErr]",
+          "sig_hash": "pxbhxmq6ttql63wxh3n64hwsui",
+          "hash": "ktgwrwgqzhkcovznpgmarcgdfr6fydir3zxorffwlbpycueci37q",
+          "effects": [],
+          "doc": "Decodes a token without checking its signature, for reading its header (`kid`, `alg`) before\nchoosing keys, or for debugging. Never trust what it returns. Parsing is as strict as\n`jws_verify`'s, with no `crit` extension understood."
+        },
+        {
+          "name": "Claims",
+          "kind": "type",
+          "sig": "pub type Claims = {iss: Opt[Str], sub: Opt[Str], aud: List[Str], exp: Opt[Int], nbf: Opt[Int], iat: Opt[Int], jti: Opt[Str]} derive Eq, Show",
+          "sig_hash": "wq4pktk2hrjydgfycah7q2jcme",
+          "hash": "hq4omhwp7nox4hk6ezgxxysts63nssq5ya53uzsll6dwre6joima",
+          "effects": [],
+          "doc": "The registered claims of RFC 7519 section 4.1. `aud` is a list whether the token carries one\nstring or an array; the times are NumericDates in Unix seconds."
+        },
+        {
+          "name": "claims",
+          "kind": "fn",
+          "sig": "fn claims() -> Claims",
+          "sig_hash": "bwsrbkmo6bpdsv6ptin5li26hm",
+          "hash": "p6vrcgnrxaduwntp7fpmrsfjs4ircm73vtpk6iiob6zlg45qguvq",
+          "effects": [],
+          "doc": "No claims, to fill in with `with`."
+        },
+        {
+          "name": "Token",
+          "kind": "type",
+          "sig": "pub type Token = {header: JsonValue, claims: Claims, payload: JsonValue, text: Str, alg: Alg, kid: Opt[Str], typ: Opt[Str]} derive Eq, Show",
+          "sig_hash": "shbtlqena62ix4smt3en233pnm",
+          "hash": "kk74otbxhw3glcirzcpdrxwenrgtuboadewtd3nglygyu4nzu4pa",
+          "effects": [],
+          "doc": "A verified JWT: its JWS header, the registered claims, the whole payload as parsed JSON and\nas text (decode it into your own type with `json.decode[T](t.payload)`), and the header's\n`alg`, `kid` and `typ`."
+        },
+        {
+          "name": "claims_of",
+          "kind": "fn",
+          "sig": "fn claims_of(payload: JsonValue) -> Res[Claims, JwtErr]",
+          "sig_hash": "6dh23kuqmayfroquqfzwppf43i",
+          "hash": "wce5auxq36ci3yfpwik2zsb6deu4onhfrieqnxpz7xwxyxcewb2a",
+          "effects": [],
+          "doc": "The registered claims of a JWT payload, which must be a JSON object, with each registered claim\nof the right type."
+        },
+        {
+          "name": "claims_json",
+          "kind": "fn",
+          "sig": "fn claims_json(c: Claims, extra: List[(Str, JsonValue)]) -> Res[JsonValue, JwtErr]",
+          "sig_hash": "h3bhlosr6s3v746m4xdfeeofyq",
+          "hash": "mwyaaegi23ajuzztn7lc2t3t6u6w2r6to4qfdi4w7y3gxbni6woq",
+          "effects": [],
+          "doc": "The JSON object of `c`'s claims that are set, then `extra` (your own claims). A name in\n`extra` that is also a registered claim set in `c`, or that appears twice, is an error."
+        },
+        {
+          "name": "check_claims",
+          "kind": "fn",
+          "sig": "fn check_claims(t: Token, p: Policy, now: Int) -> Res[Unit, JwtErr]",
+          "sig_hash": "yhdkher6yhe44hsm5tt3krqlyq",
+          "hash": "zd5sfzod5m7cpgodq56vp426pp2ranmk7e2lyyirrkw55hvya32a",
+          "effects": [],
+          "doc": "Checks the claims and the `typ` of a decoded token against `p` at `now` (Unix seconds):\n`exp` must be after `now - leeway`, `nbf` at most `now + leeway`, `iat` not after\n`now + leeway` (and within `max_age` when set), `iss`, `aud`, `sub` and `typ` as `p` requires,\nand every claim in `p.required` present. `typ` compares without case and without an\n`application/` prefix (RFC 7515 section 4.1.9)."
+        },
+        {
+          "name": "verify",
+          "kind": "fn",
+          "sig": "fn verify(token: Str, keys: List[Key], p: Policy, now: Int) -> Res[Token, JwtErr]",
+          "sig_hash": "gvbd5frsdx6mgpmyiu3tydraga",
+          "hash": "nfo6t2s3avckueyccl36fvilohzx5sxxdi6aknhxxbutqfj26rha",
+          "effects": [],
+          "doc": "Verifies a JWT: the signature as `jws_verify` does, then the payload as a JSON object with\nwell-typed registered claims, then `check_claims` at `now` (Unix seconds)."
+        },
+        {
+          "name": "verify_now",
+          "kind": "fn",
+          "sig": "fn verify_now(token: Str, keys: List[Key], p: Policy) -> Res[Token, JwtErr] ! time",
+          "sig_hash": "kwsz4unsjk3cqzz7xuzrrkgsbu",
+          "hash": "vtz4a2vhz4mqeztv4axrdt6ylbcopqswocwcg6bilqkhqwl3iaha",
+          "effects": [
+            "time"
+          ],
+          "doc": "`verify` at the current time."
+        },
+        {
+          "name": "decode_jwt_unverified",
+          "kind": "fn",
+          "sig": "fn decode_jwt_unverified(token: Str, max_len: Int where _ > 0) -> Res[Token, JwtErr]",
+          "sig_hash": "wv3h5raq47lo4aulmbqnkdckua",
+          "hash": "urtrdsvlyrraicorzhdyyxyt3bmx3vrmu5yd2fjulgo2au45hdmq",
+          "effects": [],
+          "doc": "Decodes a JWT without checking its signature or its claims. Never trust what it returns."
+        },
+        {
+          "name": "sign",
+          "kind": "fn",
+          "sig": "fn sign(k: Key, c: Claims, extra: List[(Str, JsonValue)]) -> Res[Str, JwtErr]",
+          "sig_hash": "zfvadd4g4pdos3udplpj5j6tjm",
+          "hash": "bereehr4o4w4jyytpa25wjaelsnnkg337a2k5bf2ps25iqcwnkda",
+          "effects": [],
+          "doc": "Signs a JWT with `k`: header `alg`, `typ: JWT` and `kid` when the key has one; payload the\nclaims of `c` that are set, then `extra`."
+        },
+        {
+          "name": "sign_payload",
+          "kind": "fn",
+          "sig": "fn sign_payload(k: Key, payload: Str) -> Res[Str, JwtErr]",
+          "sig_hash": "bbmxr5ahaqjeteftcwpjggm3d4",
+          "hash": "txhgrm6lfkvxyx5hlslsbiapgm5xg6cvvtw35w5w4erpjprybkaa",
+          "effects": [],
+          "doc": "Signs the JSON object text `payload` as a JWT, for claims written with `json.encode` of your\nown record type. The text is signed exactly as given."
+        },
+        {
+          "name": "claim",
+          "kind": "fn",
+          "sig": "fn claim(t: Token, name: Str) -> Opt[JsonValue]",
+          "sig_hash": "rkqd45sceglo666ia7kwqu2d4y",
+          "hash": "j6xuhj3i4f73oudqv7x6pwzaeuue5bv72th5zmodimjn5wav72oq",
+          "effects": [],
+          "doc": "The claim `name` of a token's payload, if present."
+        },
+        {
+          "name": "claim_str",
+          "kind": "fn",
+          "sig": "fn claim_str(t: Token, name: Str) -> Opt[Str]",
+          "sig_hash": "v3prvfme6wcrn3laib7x4nx4qm",
+          "hash": "q6feu5wve2p7nvbbiv6scawmvf5erthyuhrg3tbizdubxpsltueq",
+          "effects": [],
+          "doc": "The claim `name` if it is a string."
+        },
+        {
+          "name": "claim_int",
+          "kind": "fn",
+          "sig": "fn claim_int(t: Token, name: Str) -> Opt[Int]",
+          "sig_hash": "qw37volswy4t3ohx6rryfuiqoa",
+          "hash": "zblrhhtgqubhgs7yzk6a3h2zvyd25hybsnmskuy53avowrfwnkiq",
+          "effects": [],
+          "doc": "The claim `name` if it is a number that fits an Int (rounded down)."
+        },
+        {
+          "name": "claim_bool",
+          "kind": "fn",
+          "sig": "fn claim_bool(t: Token, name: Str) -> Opt[Bool]",
+          "sig_hash": "bmoft62mq7wxljhqog4lns7rie",
+          "hash": "lsgjmirhogylwvrcc6qlkcwjcppdeoafvarixd3hordszbgyfq4a",
+          "effects": [],
+          "doc": "The claim `name` if it is a boolean."
+        },
+        {
+          "name": "claim_strs",
+          "kind": "fn",
+          "sig": "fn claim_strs(t: Token, name: Str) -> Opt[List[Str]]",
+          "sig_hash": "7qasjokp2qxcbpnfwuq4iqed7i",
+          "hash": "7p4nws5j4ypwcjuidsexkki4fh7nyasx6jf7i76th6n6yr2fqt6a",
+          "effects": [],
+          "doc": "The claim `name` as a list of strings: a string is a list of one, an array must hold only\nstrings. Scopes and roles are often one of these."
+        },
+        {
+          "name": "bearer_token",
+          "kind": "fn",
+          "sig": "fn bearer_token(req: Request) -> Opt[Str]",
+          "sig_hash": "xghivrvov3trcrmr3fezcsbagu",
+          "hash": "i5pehyp5eqr4k7rtfuqpxxqe4k7mrtv3nmnrvqhyuu7xew2gyiha",
+          "effects": [],
+          "doc": "The token of an `Authorization: Bearer <token>` header (RFC 6750), if the request has one."
+        },
+        {
+          "name": "parse_jwks",
+          "kind": "fn",
+          "sig": "fn parse_jwks(text: Str) -> Res[List[Key], JwtErr]",
+          "sig_hash": "3hol3s4ekes35g55h4qv3a3coi",
+          "hash": "lokgi2ws5snkn5tiynbk6nig7mmxie34uwfhqxzy25zts7j2wp2a",
+          "effects": [],
+          "doc": "The verifying keys of a public JWK set (RFC 7517 section 5), such as an issuer's\n`jwks_uri` document. Ed25519 keys (`kty` OKP, `crv` Ed25519) are read; keys of other types and\ncurves (RSA, EC, X25519) and keys whose `use` or `key_ops` exclude verification are skipped.\nA set that carries private material (`d`, or a symmetric `oct` key) is refused, since\npublishing it would have leaked it."
+        },
+        {
+          "name": "parse_private_jwks",
+          "kind": "fn",
+          "sig": "fn parse_private_jwks(text: Str) -> Res[List[Key], JwtErr]",
+          "sig_hash": "jxf7jz6t2dzdrxti6gxydtf7y4",
+          "hash": "wd27i7idxa6hlvvkqzwi5ljuvkvwwjypz7snozcrh2wu5ikkr43q",
+          "effects": [],
+          "doc": "The keys of a private JWK set: Ed25519 signing keys (with `d`, checked against `x`),\nverifying keys, and symmetric `oct` keys, which must name their `alg` so they are bound to it."
+        },
+        {
+          "name": "parse_jwk",
+          "kind": "fn",
+          "sig": "fn parse_jwk(text: Str) -> Res[Opt[Key], JwtErr]",
+          "sig_hash": "2jjivwexozcv7ozfcsayn24loy",
+          "hash": "iwpznmiy6uqzgmedm7efoahoqwd6hwxh7gimvbimvy4hlpoumssa",
+          "effects": [],
+          "doc": "One JWK, private parts allowed; none when it is of a type this package skips."
+        },
+        {
+          "name": "public_jwk",
+          "kind": "fn",
+          "sig": "fn public_jwk(k: Key) -> Opt[JsonValue]",
+          "sig_hash": "ul6kjd2cm4c36fj5cjde5von4a",
+          "hash": "xvhmpzwozpqlpzbncpg7ef2vqpma6nzhs2cpuygkwficudul3bja",
+          "effects": [],
+          "doc": "The public JWK of `k` (`kty` OKP, `crv` Ed25519, `x`, with `kid`, `alg` and `use` sig), or\nnone for an HMAC key, which has no public part."
+        },
+        {
+          "name": "public_jwks",
+          "kind": "fn",
+          "sig": "fn public_jwks(keys: List[Key]) -> Str",
+          "sig_hash": "if3zfb7bueeg3kooj2pio7ilem",
+          "hash": "6bb6hodwpbktbfh2hh37nqfsfoj3ikss5k6seclyvw2mdyu25t5a",
+          "effects": [],
+          "doc": "The public JWK set of `keys`, as an issuer publishes it; HMAC keys are left out."
+        },
+        {
+          "name": "thumbprint",
+          "kind": "fn",
+          "sig": "fn thumbprint(k: Key) -> Opt[Str]",
+          "sig_hash": "3othcqkvjspdpwpj3qldlkhc7m",
+          "hash": "q66brmh4ip5rucxjxbxnfuoqijufa4nxipcin7twshk4dbplqiya",
+          "effects": [],
+          "doc": "The RFC 7638 thumbprint of an Ed25519 key (base64url SHA-256 of its canonical JWK, as RFC\n8037 section A.3 shows), a common `kid`; none for an HMAC key."
+        }
+      ]
+    }
+  ]
+}
