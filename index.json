@@ -22,6 +22,16 @@
       "deprecated": null
     },
     {
+      "name": "maps",
+      "description": "Map utilities (merge with resolvers, invert, filter and map keys and values, counters, multimaps, diffs) and dynamic JSON values with paths, pointers and merge patches",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:03:11Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "pagination",
       "description": "Offset, page-number and keyset pagination: clamped requests, signed cursors, page ranges for UIs, Link headers and JSON envelopes",
       "latest": "0.2.0",
