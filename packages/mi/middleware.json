@@ -1,0 +1,1242 @@
+{
+  "schema": 1,
+  "name": "middleware",
+  "description": "Composable HTTP handler wrappers: CORS, security headers and CSP, request ids, access logs, limits, deadlines, negotiation, auth and host checks",
+  "repository": "https://github.com/sspurlang/sspur-middleware",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-middleware.git",
+      "tag": "v0.1.0",
+      "commit": "6aa6917a3117413d88610f0af1ceba9d7be78d66",
+      "hash": "pm27nz7bh4typpsejdfn2azylfqxne4fpyyqqhau7nca6knmpurq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/middleware-0.1.0/middleware-0.1.0.tar",
+        "sha256": "c3ea4e6dcc429c22f506875ec120506acfe19f8d93a45e0d5c43d6d5748b0563",
+        "size": 130048
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:14:23Z",
+      "publisher": "utkarshavardhana",
+      "request": 32,
+      "api": [
+        {
+          "name": "header_in",
+          "kind": "fn",
+          "sig": "fn header_in(hs: List[(Str, Str)], name: Str) -> Opt[Str]",
+          "sig_hash": "zagesazapsgmlkdr5piqz3s7me",
+          "hash": "4h2z56ttfmi6epueh4sr5fzuez2wgp7byz7frvovjlsl7umy47na",
+          "effects": [],
+          "doc": "The first value of the header `name` in `hs`, matched case-insensitively."
+        },
+        {
+          "name": "header_values",
+          "kind": "fn",
+          "sig": "fn header_values(hs: List[(Str, Str)], name: Str) -> List[Str]",
+          "sig_hash": "moqamoyar6sx4u5ory5vv6ar5q",
+          "hash": "wzdjkqkdyuh4fbwds7nubc4vhqj4plgmuhxjftwwp5xnde2s2sqq",
+          "effects": [],
+          "doc": "Every value of the header `name` in `hs`, in order, matched case-insensitively."
+        },
+        {
+          "name": "valid_header_name",
+          "kind": "fn",
+          "sig": "fn valid_header_name(s: Str) -> Bool",
+          "sig_hash": "3pvvruvtoekslwvvukymz57emm",
+          "hash": "cwwfx5xv2jez3uecit7mhgcgy3jragavahgap26vsgev4sbz2opa",
+          "effects": [],
+          "doc": "Whether `s` is a field name (an RFC 9110 token: letters, digits and ``!#$%&'*+-.^_`|~``)."
+        },
+        {
+          "name": "valid_header_value",
+          "kind": "fn",
+          "sig": "fn valid_header_value(s: Str) -> Bool",
+          "sig_hash": "l3g7qw3ogk6zcdvmhj55dvh4iu",
+          "hash": "giqxrp5pwphq2jv5g7tp5meufkvpz5nvbmmziqztfamfy66c4oga",
+          "effects": [],
+          "doc": "Whether `s` can be sent as a field value: no CR, LF or NUL, so it can't split the response."
+        },
+        {
+          "name": "set_header",
+          "kind": "fn",
+          "sig": "fn set_header(r: Response, name: Str, value: Str) -> Response",
+          "sig_hash": "by7g6rqoxtsgqpaojpb7p3cshe",
+          "hash": "7fo5h2uegpeaostamoyxfjdtauhnxeihojthqf2v5f2p35d3rnvq",
+          "effects": [],
+          "doc": "`r` with the header `name` set to `value`, replacing every earlier value of it."
+        },
+        {
+          "name": "add_header",
+          "kind": "fn",
+          "sig": "fn add_header(r: Response, name: Str, value: Str) -> Response",
+          "sig_hash": "lldtmh3o7w6bsccpi4usw5ah2e",
+          "hash": "7fnr2iad2wxa53vt2iacoylii7u77cqcffyattszkwzh2pd27dhq",
+          "effects": [],
+          "doc": "`r` with one more `name: value` header, keeping the values it has (for `set-cookie` and `link`)."
+        },
+        {
+          "name": "remove_header",
+          "kind": "fn",
+          "sig": "fn remove_header(r: Response, name: Str) -> Response",
+          "sig_hash": "pi7rrovuybczrzkidkcamnajda",
+          "hash": "stom3at5omhbsi4ptxylw6adlnalh6buau6jtgj5476f6uahaqvq",
+          "effects": [],
+          "doc": "`r` without any header called `name`."
+        },
+        {
+          "name": "default_header",
+          "kind": "fn",
+          "sig": "fn default_header(r: Response, name: Str, value: Str) -> Response",
+          "sig_hash": "nqfyif3fpdj5hjjpgj3w3a4tvm",
+          "hash": "m6esdhrx5exwncmzv2z5iwjap2okwxx6ugr3tj72lpz3y6cuke7q",
+          "effects": [],
+          "doc": "`r` with `name: value` unless it already has a header called `name`."
+        },
+        {
+          "name": "set_request_header",
+          "kind": "fn",
+          "sig": "fn set_request_header(req: Request, name: Str, value: Str) -> Request",
+          "sig_hash": "vuxiszfkmfe4vad2fjhr656czu",
+          "hash": "pm6jlbqswomzq776wzw7sizoqwlb4yg5ng7pqbh3kocphh3s4g6q",
+          "effects": [],
+          "doc": "`req` with the header `name` set to `value`, replacing every earlier value of it."
+        },
+        {
+          "name": "remove_request_header",
+          "kind": "fn",
+          "sig": "fn remove_request_header(req: Request, name: Str) -> Request",
+          "sig_hash": "pl3qcpm4kqg3cf3iu7grtamu5u",
+          "hash": "peoejuyxbfgng47jlusgnjwtqnp4aech7o73phevajn32vjm6cmq",
+          "effects": [],
+          "doc": "`req` without any header called `name`."
+        },
+        {
+          "name": "split_list",
+          "kind": "fn",
+          "sig": "fn split_list(s: Str) -> List[Str]",
+          "sig_hash": "6kkjsw5opf3v5hfgterpgftcku",
+          "hash": "x6s5knmy6frpccpmjzkjtq3svgnevzk6g42ig5rs35myorugwb6q",
+          "effects": [],
+          "doc": "The elements of a comma-separated field value, trimmed, without empty ones (RFC 9110 5.6.1)."
+        },
+        {
+          "name": "add_vary",
+          "kind": "fn",
+          "sig": "fn add_vary(r: Response, field: Str) -> Response",
+          "sig_hash": "hdb5fllwosznebvnyl4zia2jrq",
+          "hash": "j4dj64ithagynht3k4mnrstsvma4ftywbtmq2sn63jpfjt6vguba",
+          "effects": [],
+          "doc": "`r` with `field` in its `Vary` header, merged with what is there; `Vary: *` is left alone."
+        },
+        {
+          "name": "reason_phrase",
+          "kind": "fn",
+          "sig": "fn reason_phrase(status: Int) -> Str",
+          "sig_hash": "h6hzo75zmttekk76w3flkjd24i",
+          "hash": "vpuor5blgdwabvrsgvhxenx7ix6j5fmtrpbv6ozvrlmcjmvvol2a",
+          "effects": [],
+          "doc": "The reason phrase of a status code from RFC 9110 and its companions, or \"\" for an unknown one."
+        },
+        {
+          "name": "problem",
+          "kind": "fn",
+          "sig": "fn problem(status: Int where _ >= 400 and _ <= 599, detail: Str) -> Response",
+          "sig_hash": "4fm5w63cd2zpkvho4r5buwbgja",
+          "hash": "2cmosxeepopxm23zpqdxd2by2dy2zimn24ygbu5nl6wwqdrljmba",
+          "effects": [],
+          "doc": "An RFC 9457 problem details response (`application/problem+json`) with type `about:blank`,\nthe status's reason phrase as its title and `detail` (left out when empty)."
+        },
+        {
+          "name": "problem_with",
+          "kind": "fn",
+          "sig": "fn problem_with(status: Int where _ >= 400 and _ <= 599, detail: Str, members: List[(Str, Str)]) -> Response",
+          "sig_hash": "u5c6xl4fgl6uhdyqjehju5q6we",
+          "hash": "3obshc7vbgc5cf6y65haisrs7b2klh3w2le6ncjnvb3ztoe4ytkq",
+          "effects": [],
+          "doc": "A problem details response like `problem`, with extension members: each pair is a member name\nand its value, already encoded as JSON (`json.encode(x)`)."
+        },
+        {
+          "name": "redirect",
+          "kind": "fn",
+          "sig": "fn redirect(status: Int where _ == 301 or _ == 302 or _ == 303 or _ == 307 or _ == 308, location: Str) -> Response",
+          "sig_hash": "36eq5rukta74txpnbtkxtabiqa",
+          "hash": "e4c3sac27rca2rzchbbwcg4mejsqdipowvoow2ilhmfwh4mhp2nq",
+          "effects": [],
+          "doc": "A redirect to `location` with `status` (301, 302, 303, 307 or 308) and an empty body."
+        },
+        {
+          "name": "compose",
+          "kind": "fn",
+          "sig": "fn compose[e](layers: List[(Request -> Response ! e) -> Request -> Response ! e], h: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "vrehvddinptfd7hxodt3mldblq",
+          "hash": "dumuumfwaaa66wozsrf7hdo2m2yuwvf3gspt3sax47wafuc75ucq",
+          "effects": [],
+          "doc": "The handler `h` inside `layers`, the first layer outermost: `compose([a, b], h)` is `a(b(h))`.\nEvery layer must keep the effect row as it is (cors, secure, limits, guards); nest wrappers that\nadd `log`, `time` or `rand` directly around the result, `request_ids(p, compose([...], h))`."
+        },
+        {
+          "name": "only_when",
+          "kind": "fn",
+          "sig": "fn only_when[e](pred: Request -> Bool, layer: (Request -> Response ! e) -> Request -> Response ! e, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "5sfc6gopvanulfye7ej4kghgo4",
+          "hash": "jeq2g3scri5w7mmiejwnangsogxcegoc6lknmbjc33nts6jskjrq",
+          "effects": [],
+          "doc": "`layer` around `next` for requests that satisfy `pred`; others go straight to `next`. The layer\nkeeps the effect row, as for `compose`."
+        },
+        {
+          "name": "under",
+          "kind": "fn",
+          "sig": "fn under(prefix: Str, req: Request) -> Bool",
+          "sig_hash": "khcfq5qfj4hemqztnbzvv3krlm",
+          "hash": "uz5s7s6fyxu2ulj234vzakzfyoep3psvuo3n4dadawkohy3jtzdq",
+          "effects": [],
+          "doc": "Whether the path of `req` is `prefix` or below it (`/api` covers `/api` and `/api/x`, not `/apix`)."
+        },
+        {
+          "name": "before",
+          "kind": "fn",
+          "sig": "fn before[e](f: Request -> Request, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "4l5dsvvupueadfcnegsamiezu4",
+          "hash": "wraibm2g7zdnlr7ocl35rdqgtbtbbluivrhcydxsecdfx6cu3ioa",
+          "effects": [],
+          "doc": "A wrapper that changes the request before `next` sees it."
+        },
+        {
+          "name": "after",
+          "kind": "fn",
+          "sig": "fn after[e](f: (Request, Response) -> Response, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "onlnbu5yn44iu5zhzywpnwods4",
+          "hash": "ebpcuuwtkeoy6esi46vdvzbj2cvikhhajgsxzrqb6wnuloihpwxa",
+          "effects": [],
+          "doc": "A wrapper that changes the response `next` gives, seeing the request too."
+        },
+        {
+          "name": "with_headers",
+          "kind": "fn",
+          "sig": "fn with_headers[e](hs: List[(Str, Str)], next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "q4zazmrpjtw67g7ndionr5knwi",
+          "hash": "nixrfy6sh2my3vekzvojlejve2q5lj7eq4vnoxhcqzut3s34qvpq",
+          "effects": [],
+          "doc": "A wrapper that sets each of `hs` on every response (for example a fixed `server` header),\nreplacing the handler's values."
+        },
+        {
+          "name": "strip_headers",
+          "kind": "fn",
+          "sig": "fn strip_headers[e](names: List[Str], next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "7b7qideahn3d6kkp5rn37rqxdy",
+          "hash": "lcr7oqdybars2eotafxdw7b3iykudr6d3fvviutmokjaryhipcjq",
+          "effects": [],
+          "doc": "A wrapper that removes the headers called `names` from every response (`x-powered-by`, `server`)."
+        },
+        {
+          "name": "no_store",
+          "kind": "fn",
+          "sig": "fn no_store[e](next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "odvkia3gtm65ekuk3fmqdc4mbq",
+          "hash": "a73eo47c2dplzfjplkthzpubtdqc6omv2j2yz3nrt33pkh3tfwgq",
+          "effects": [],
+          "doc": "A wrapper that marks responses `cache-control: no-store` unless the handler set `cache-control`."
+        },
+        {
+          "name": "percent_decode",
+          "kind": "fn",
+          "sig": "fn percent_decode(s: Str, plus: Bool) -> Opt[Str]",
+          "sig_hash": "ikpggajohye4rl2o5s2tz5qutm",
+          "hash": "ge6qdmacjl6vwecu4dzxo655okq5p73gpsizspcps6oxti7sgefq",
+          "effects": [],
+          "doc": "`s` with `%XX` escapes decoded, and `+` as a space when `plus` is true (form encoding). `none`\nfor a truncated or non-hex escape, or bytes that are not UTF-8."
+        },
+        {
+          "name": "percent_encode",
+          "kind": "fn",
+          "sig": "fn percent_encode(s: Str) -> Str",
+          "sig_hash": "svqagsznlbjozqncsmjgj5msfa",
+          "hash": "55zi7rf7ip2xmpd7p4hrh37fa3i4yoiuzw5qg6k4adeb6es3zgrq",
+          "effects": [],
+          "doc": "`s` percent-encoded for a URL component: every byte except the RFC 3986 unreserved characters\n(letters, digits, `-`, `.`, `_`, `~`) becomes `%XX`."
+        },
+        {
+          "name": "query_string",
+          "kind": "fn",
+          "sig": "fn query_string(url: Str) -> Str",
+          "sig_hash": "zxfg6nnlkrtqs4bcbjkovsqu3i",
+          "hash": "jy4x4guuoawzdxoz34fppn5pgfwegusz4qvoplywbycd2d2jofja",
+          "effects": [],
+          "doc": "The query string of a request target, without the `?`, or \"\"."
+        },
+        {
+          "name": "query_pairs",
+          "kind": "fn",
+          "sig": "fn query_pairs(url: Str) -> List[(Str, Str)]",
+          "sig_hash": "fkgca5my4bi7dlbloaqiril62a",
+          "hash": "sogexl6rjt5cqk42ebqogrpsx4mc4lltbm6qpeg4t6darrmpqbra",
+          "effects": [],
+          "doc": "The decoded `name=value` pairs of a request target's query string, in order. A pair without `=`\nhas the value \"\"; a pair that does not decode is kept as it was sent."
+        },
+        {
+          "name": "redact_query",
+          "kind": "fn",
+          "sig": "fn redact_query(url: Str, names: List[Str]) -> Str",
+          "sig_hash": "6gtjqgjtumqpiyxbuaqg2aeijm",
+          "hash": "3c3yilu6fl4aadzhjnna7xs6st3zdxsze3vam35ssv54guqoeg7a",
+          "effects": [],
+          "doc": "The request target `url` with the values of the query parameters called `names` (compared\ncase-insensitively) replaced by `REDACTED`, for logs."
+        },
+        {
+          "name": "Weighted",
+          "kind": "type",
+          "sig": "pub type Weighted = {value: Str, params: List[(Str, Str)], q: F64} derive Eq, Show",
+          "sig_hash": "hxqsrows7j3ax2dq4r2p6idcte",
+          "hash": "oedojnx5umeqnrfqd2y4dm7y4ef5u6ezv7xvj7oajpemooe6kesa",
+          "effects": [],
+          "doc": "One element of an `Accept`-style field: its value, its parameters (lowercased names) and its\nweight from `q`, 1.0 when absent."
+        },
+        {
+          "name": "parse_weighted",
+          "kind": "fn",
+          "sig": "fn parse_weighted(header: Str) -> List[Weighted]",
+          "sig_hash": "4pvojvcdyhu4rrtlthf7ohwhbm",
+          "hash": "2k3aw5wsyvznzamfoz53evpn4aj2xoumgi3nmdm7c6spmxjtgvxq",
+          "effects": [],
+          "doc": "The elements of an `Accept`, `Accept-Encoding`, `Accept-Language` or `Accept-Charset` value in\nthe order sent. Elements with a malformed or repeated `q` are dropped (RFC 9110 12.4.2)."
+        },
+        {
+          "name": "negotiate_media",
+          "kind": "fn",
+          "sig": "fn negotiate_media(header: Str, offers: List[Str]) -> Opt[Str]",
+          "sig_hash": "ozsoak6w4grxjnzcsobcvntj5q",
+          "hash": "krjh7tcud7hf2meu6ogt4fbu5vrbooivrd34slxrb32ow7ipegya",
+          "effects": [],
+          "doc": "The offer (a media type, possibly with parameters) that best fits the `Accept` value `header`:\nthe most specific matching range gives each offer its weight, the highest weight wins and ties\ngo to the earlier offer. An empty header accepts the first offer; `none` means 406."
+        },
+        {
+          "name": "negotiate_encoding",
+          "kind": "fn",
+          "sig": "fn negotiate_encoding(header: Str, offers: List[Str]) -> Opt[Str]",
+          "sig_hash": "oqu56m2elypus62f2vi34nyfne",
+          "hash": "2yvwgjah6ms6pqsdi2m3bjidpegtv24upwvqlh7e24pvoq7bmm2q",
+          "effects": [],
+          "doc": "The content coding to use for the `Accept-Encoding` value `header` among `offers` (RFC 9110\n12.5.3): `x-gzip` is `gzip`, `*` covers unlisted codings, and `identity` is acceptable unless\nexcluded. A missing header (pass \"\") prefers `identity` when offered. `none` means nothing offered\nis acceptable."
+        },
+        {
+          "name": "negotiate_language",
+          "kind": "fn",
+          "sig": "fn negotiate_language(header: Str, offers: List[Str]) -> Opt[Str]",
+          "sig_hash": "kvinwshbm23uvkel5dkhw5rkuu",
+          "hash": "7qqtq6w7j3p5cfiduzzhwyfcm6647qtsfhdglmiuynpxao5s6juq",
+          "effects": [],
+          "doc": "The language tag among `offers` that best fits the `Accept-Language` value `header`, by RFC 4647\nbasic filtering: `en` matches `en` and `en-GB`, `*` matches anything, the longest matching range\ngives the weight, and ties go to the earlier offer. An empty header picks the first offer."
+        },
+        {
+          "name": "media_type",
+          "kind": "fn",
+          "sig": "fn media_type(content_type: Str) -> Opt[Str]",
+          "sig_hash": "4y2lev74vtfbndrymg26l2woha",
+          "hash": "4yf24o6oapsczphjzulvdeapq2xnja5pltim6nfmvyagudtzqmoa",
+          "effects": [],
+          "doc": "The media type of a `Content-Type` value, lowercased, without parameters: `type/subtype`, or\n`none` when it has no `/`."
+        },
+        {
+          "name": "media_matches",
+          "kind": "fn",
+          "sig": "fn media_matches(pattern: Str, mt: Str) -> Bool",
+          "sig_hash": "oo26zomnwmpbmpzx6va6oyrozm",
+          "hash": "sw7lqcc33fymtkxo4ofi57vopvuefdzwi4r7v36mgfbrypl3pdsa",
+          "effects": [],
+          "doc": "Whether the media type `mt` matches `pattern`: an exact type, `type/*`, `*/*`, or a structured\nsuffix such as `application/*+json`."
+        },
+        {
+          "name": "Cors",
+          "kind": "type",
+          "sig": "pub type Cors = {origins: List[Str] where _.all(valid_origin_pattern), any_origin: Bool, methods: List[Str] where _.all(valid_header_name), allow_headers: List[Str] where _.all(valid_header_name), any_header: Bool, expose_headers: List[Str] where _.all(valid_header_name), credentials: Bool, max_age_s: Int where _ >= -1 and _ <= 86400, private_network: Bool} derive Eq, Show",
+          "sig_hash": "rxjlyfgirlliwzvxgtgylp34sq",
+          "hash": "lrphjdaaeoa2dk6w3cmtuxg5llokn6jlo7xkslqasi4rthgf4qya",
+          "effects": [],
+          "doc": "A CORS policy (the Fetch standard's CORS protocol). `origins` are exact origins\n(`https://app.example.com`, `http://localhost:3000`), wildcard subdomains\n(`https://*.example.com`, which does not match `example.com` itself) or `null`, which must be\nlisted to be allowed. `any_origin` allows every origin and can't be combined with\n`credentials`. `methods` and `allow_headers` are what preflights may ask for (`any_header`\nallows any header), `expose_headers` what scripts may read, `max_age_s` how long a browser may\ncache a preflight (-1 sends no `Access-Control-Max-Age`), and `private_network` answers Private\nNetwork Access preflights."
+        },
+        {
+          "name": "cors_for",
+          "kind": "fn",
+          "sig": "fn cors_for(origins: List[Str]) -> Cors",
+          "sig_hash": "46tajwgfakvfsm45truxf3wn6e",
+          "hash": "x56ggw5giu5bhizpv45sxxwtwhnbezv3vrn4pio3etvfudtazgpq",
+          "effects": [],
+          "doc": "A policy for `origins` without credentials: the methods GET, HEAD, POST, PUT, PATCH and\nDELETE, the request headers `content-type`, `authorization` and `x-requested-with`, nothing\nexposed, and preflights cached for 10 minutes."
+        },
+        {
+          "name": "cors_public",
+          "kind": "fn",
+          "sig": "fn cors_public() -> Cors",
+          "sig_hash": "tfcipqaihgewcodflejbdg7e54",
+          "hash": "mayf5he45lxol4ygih6ozghyqurnhcz6fl2gbcrmuna7bbbika3q",
+          "effects": [],
+          "doc": "A policy that lets any origin read responses without credentials, for public APIs."
+        },
+        {
+          "name": "valid_origin_pattern",
+          "kind": "fn",
+          "sig": "fn valid_origin_pattern(s: Str) -> Bool",
+          "sig_hash": "vrgsnd4krvpwbmuzfjsgllizea",
+          "hash": "ouekpexwuvhepyhevcvfh637i7cvuj3hkgmktsszpzndgscj4kea",
+          "effects": [],
+          "doc": "Whether `s` is a valid entry of `Cors.origins`: `null`, or `scheme://host[:port]` where the host\nmay start with `*.`, with no path, query, fragment or user info."
+        },
+        {
+          "name": "origin_matches",
+          "kind": "fn",
+          "sig": "fn origin_matches(pattern: Str, origin: Str) -> Bool",
+          "sig_hash": "jujfwt6vm6l3lvkke6nv4aeih4",
+          "hash": "uhauxleqimb2pad7qtxjmu2ue7t23wrdmxupgv4ukkalftuu6v3q",
+          "effects": [],
+          "doc": "Whether the `Origin` value `origin` matches the pattern `pattern` (see `Cors`). Schemes and hosts\ncompare case-insensitively and default ports are the same as none."
+        },
+        {
+          "name": "cors_allows",
+          "kind": "fn",
+          "sig": "fn cors_allows(p: Cors, origin: Str) -> Bool",
+          "sig_hash": "fyqsls5lngqsr3tp3bygclpnka",
+          "hash": "w5g6m2nzydfl2zh345jvm2gu2kspiew6lgzfthqcf3fq3llaidcq",
+          "effects": [],
+          "doc": "Whether `p` lets the origin `origin` read responses."
+        },
+        {
+          "name": "is_preflight",
+          "kind": "fn",
+          "sig": "fn is_preflight(req: Request) -> Bool",
+          "sig_hash": "ozqyde4zprdaiwmcp367yx44jq",
+          "hash": "3u7g3jrk4dk3r2dlwf7knnmc6ms65px4jemvaseplmsbue45aedq",
+          "effects": [],
+          "doc": "Whether `req` is a CORS preflight: `OPTIONS` with `Origin` and `Access-Control-Request-Method`."
+        },
+        {
+          "name": "cors_preflight",
+          "kind": "fn",
+          "sig": "fn cors_preflight(p: Cors, req: Request) -> Response",
+          "sig_hash": "4nerpfirc7tlqf5lk4ygit7bay",
+          "hash": "gikysjdmylx3hrbssjgq3ik3od3s4xmbizynl7dexun72mcfwsha",
+          "effects": [],
+          "doc": "The answer to the preflight `req` under `p`: `204` with the `Access-Control-Allow-*` headers when\nthe origin, the method and every requested header are allowed, otherwise `403` without them, so\nthe browser blocks the request. Either way it varies on the request's CORS headers."
+        },
+        {
+          "name": "cors_headers",
+          "kind": "fn",
+          "sig": "fn cors_headers(p: Cors, req: Request) -> List[(Str, Str)]",
+          "sig_hash": "242pgvpiwjlqzgkgd72gv3iiry",
+          "hash": "vmlg4thacekuhs2ht6sr2wjluq3gkzwuik2wdn65h4ez2z4s3gkq",
+          "effects": [],
+          "doc": "The CORS headers for the response to the non-preflight request `req` under `p`: the allowed\norigin (or `*` for a public policy), credentials and exposed headers when the origin is allowed,\nand `Vary: Origin` whenever the answer depends on it."
+        },
+        {
+          "name": "cors",
+          "kind": "fn",
+          "sig": "fn cors[e](p: Cors, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "23gzryxil6gsgxcqmi7vdlppfe",
+          "hash": "mffs7itzvbul6k2iwlffiebxxliv6jyb42js3m2suhgzewiphfsq",
+          "effects": [],
+          "doc": "A wrapper that answers preflights itself and adds CORS headers to the other responses of `next`.\nUse it instead of the `Server.cors` field when you need credentials, wildcard subdomains,\nexposed headers or per-route policies."
+        },
+        {
+          "name": "Hsts",
+          "kind": "type",
+          "sig": "pub type Hsts = {max_age_s: Int where _ >= 0, include_subdomains: Bool, preload: Bool} derive Eq, Show",
+          "sig_hash": "cx5z4hrbc2ppabxg4pzypvc22a",
+          "hash": "mld6syflozmtg6xxxqxeerdqtfyutxko323l57eiqb3vedhx2yna",
+          "effects": [],
+          "doc": "`Strict-Transport-Security` (RFC 6797). Preloading needs a max age of at least a year and\n`include_subdomains`."
+        },
+        {
+          "name": "hsts_value",
+          "kind": "fn",
+          "sig": "fn hsts_value(h: Hsts) -> Str",
+          "sig_hash": "eavd2zorwsqsfv7emen3zeph2y",
+          "hash": "ewf2vqiekqx2estgszs5by4zijdzycez6negbyxqtc3koganl7la",
+          "effects": [],
+          "doc": "The `Strict-Transport-Security` value for `h`."
+        },
+        {
+          "name": "Csp",
+          "kind": "type",
+          "sig": "pub type Csp = {directives: List[(Str, List[Str])], report_only: Bool} derive Eq, Show",
+          "sig_hash": "7lcqencqajnt2puvplh424dmy4",
+          "hash": "jkcnxcyx35dugbjfh67ocfz36sc2tlfrkbqpgkbyrh6zmolkxcyq",
+          "effects": [],
+          "doc": "A Content Security Policy (CSP Level 3): directives in order, each with its sources, sent as\n`Content-Security-Policy`, or `Content-Security-Policy-Report-Only` when `report_only`."
+        },
+        {
+          "name": "valid_directive",
+          "kind": "fn",
+          "sig": "fn valid_directive(s: Str) -> Bool",
+          "sig_hash": "6rrnnuuz56s3q5skvrybknijoa",
+          "hash": "hc3uq3av4dtlj5m7opc2qm2pyapqwvw3bpdwc2buevivdv5x7b7a",
+          "effects": [],
+          "doc": "Whether `s` is a CSP directive name: lowercase letters and `-`."
+        },
+        {
+          "name": "valid_source",
+          "kind": "fn",
+          "sig": "fn valid_source(s: Str) -> Bool",
+          "sig_hash": "62nzijxh5ionx3rts663ujdele",
+          "hash": "a67pebzrfhbbz2ycidverhmi7ijzy7wpgj34wymc4glskhouk6jq",
+          "effects": [],
+          "doc": "Whether `s` can be a CSP source expression: printable, without whitespace, `;` or `,`, which\nwould end the directive or the policy."
+        },
+        {
+          "name": "csp_empty",
+          "kind": "fn",
+          "sig": "fn csp_empty() -> Csp",
+          "sig_hash": "z6pwwt67ufte4sddjhxtz35bji",
+          "hash": "y2dvzkdlznvgngdcbcdgb5bbl53v6j3ardr2exwspbj53zi5sdoq",
+          "effects": [],
+          "doc": "An empty policy."
+        },
+        {
+          "name": "csp_strict",
+          "kind": "fn",
+          "sig": "fn csp_strict() -> Csp",
+          "sig_hash": "awf6fns23ep6ijk5euyjit4vt4",
+          "hash": "77rddrpdlcdyyhzibpgjsv22nzpyxsdur4yfbwl6a26vfti4rvqa",
+          "effects": [],
+          "doc": "A strict starting policy: `default-src 'self'`, `base-uri 'none'`, `object-src 'none'`,\n`frame-ancestors 'none'`, `form-action 'self'`."
+        },
+        {
+          "name": "csp_helmet",
+          "kind": "fn",
+          "sig": "fn csp_helmet() -> Csp",
+          "sig_hash": "lsswfwjrlqdqk5dxoweliu73pa",
+          "hash": "4pnwkmme76utjqzpivwysaelnake6dsx7qsyupnhvd2xuifviryq",
+          "effects": [],
+          "doc": "The policy helmet sends by default: `default-src 'self'`, `base-uri 'self'`, `font-src 'self'\nhttps: data:`, `form-action 'self'`, `frame-ancestors 'self'`, `img-src 'self' data:`,\n`object-src 'none'`, `script-src 'self'`, `script-src-attr 'none'`, `style-src 'self' https:\n'unsafe-inline'`, `upgrade-insecure-requests`."
+        },
+        {
+          "name": "csp_set",
+          "kind": "fn",
+          "sig": "fn csp_set(c: Csp, name: Str, sources: List[Str]) -> Csp",
+          "sig_hash": "n7vcvbo7a6hfudu2owcayf3v3e",
+          "hash": "7rb2kzwy2exmoyjtzrqazizevbx22zb2ldodcsq6k3edqofspj3a",
+          "effects": [],
+          "doc": "`c` with the directive `name` set to `sources`, replacing it if present (a directive with no\nsources, such as `upgrade-insecure-requests`, is written as its name alone)."
+        },
+        {
+          "name": "csp_add",
+          "kind": "fn",
+          "sig": "fn csp_add(c: Csp, name: Str, sources: List[Str]) -> Csp",
+          "sig_hash": "3xpcxsbhpi5glwpwexvkggphiy",
+          "hash": "xqvelnck6bzynwbr56ze5wr3esfs33cpulkqucpn4lw6zgvisudq",
+          "effects": [],
+          "doc": "`c` with `sources` added to the directive `name` (created when missing), without duplicates.\nA directive that only had `'none'` loses it."
+        },
+        {
+          "name": "csp_remove",
+          "kind": "fn",
+          "sig": "fn csp_remove(c: Csp, name: Str) -> Csp",
+          "sig_hash": "sqjuwy2c4ccp3fegqfl4d6mpsu",
+          "hash": "buiuw72stbity3wmbmt2zbkjghdou7dp6mozmzoaa24ilgdqsgsq",
+          "effects": [],
+          "doc": "`c` without the directive `name`."
+        },
+        {
+          "name": "csp_report_only",
+          "kind": "fn",
+          "sig": "fn csp_report_only(c: Csp, on: Bool) -> Csp",
+          "sig_hash": "zvurzffofev4cr2rxqj7amv7oe",
+          "hash": "6auef47pk3l5yd7fu645app5wefofjanr7m3hsocx5tvks7jdmuq",
+          "effects": [],
+          "doc": "`c` sent in report-only mode (or enforced when `on` is false)."
+        },
+        {
+          "name": "csp_value",
+          "kind": "fn",
+          "sig": "fn csp_value(c: Csp) -> Str",
+          "sig_hash": "7qlysnioaeq5hmvjlpeknvidxi",
+          "hash": "dyholgkiegjffjurfakutgi7ghvnv3kea4olz3fjl5qstw4g6rxq",
+          "effects": [],
+          "doc": "The policy text of `c`: directives separated by `; `."
+        },
+        {
+          "name": "csp_header",
+          "kind": "fn",
+          "sig": "fn csp_header(c: Csp) -> (Str, Str)",
+          "sig_hash": "jwy4i6ktwvuglx4gkmaytfcs2y",
+          "hash": "bcdrs36hax4mffxwquoky7dogneuedsyuxdgbth6cqtimc4gw62q",
+          "effects": [],
+          "doc": "The header for `c`: its name (enforcing or report-only) and value."
+        },
+        {
+          "name": "src_self",
+          "kind": "fn",
+          "sig": "fn src_self() -> Str",
+          "sig_hash": "xetefzvsf6jigfymxzvmi4slge",
+          "hash": "ioydc42oks42higa7dfrwhulkgv7nnjttaynu6jz32zp4gmjo7pa",
+          "effects": [],
+          "doc": "The source `'self'`."
+        },
+        {
+          "name": "src_none",
+          "kind": "fn",
+          "sig": "fn src_none() -> Str",
+          "sig_hash": "gjyduuyqyrnt2wasph2fvuoybm",
+          "hash": "46v3xqk45jrmizv4nn4aq7btw222rv6t2d45af3lqycbw4sv6mxq",
+          "effects": [],
+          "doc": "The source `'none'`."
+        },
+        {
+          "name": "src_unsafe_inline",
+          "kind": "fn",
+          "sig": "fn src_unsafe_inline() -> Str",
+          "sig_hash": "jlavyujhdbjwfpolkztenp55ay",
+          "hash": "tcqwnvvyimbjl2vpesnsbwxmxgnmmse7crp6aceai4wpmcmutg2q",
+          "effects": [],
+          "doc": "The source `'unsafe-inline'`."
+        },
+        {
+          "name": "src_unsafe_eval",
+          "kind": "fn",
+          "sig": "fn src_unsafe_eval() -> Str",
+          "sig_hash": "xmxvadpzyvmzizhsdbt6pwfldi",
+          "hash": "z3uxaufo3pmr4xgcy47i7tfrto2jpuaapgw6k25dltcdsfxtdeha",
+          "effects": [],
+          "doc": "The source `'unsafe-eval'`."
+        },
+        {
+          "name": "src_wasm_unsafe_eval",
+          "kind": "fn",
+          "sig": "fn src_wasm_unsafe_eval() -> Str",
+          "sig_hash": "i5nixhzwo5sed6vxsy2sujzogy",
+          "hash": "vy3k6cbwfdbrsmxurloaeqxnk4pqjrm656uu3soagmf2xwy3nuaq",
+          "effects": [],
+          "doc": "The source `'wasm-unsafe-eval'`."
+        },
+        {
+          "name": "src_strict_dynamic",
+          "kind": "fn",
+          "sig": "fn src_strict_dynamic() -> Str",
+          "sig_hash": "f57bth4qdkx7422gumxudghjvy",
+          "hash": "xlnd4q3xfhemypxl2c7dtxmf3luqnyxpa2l7xgwssadzswmupila",
+          "effects": [],
+          "doc": "The source `'strict-dynamic'`."
+        },
+        {
+          "name": "src_report_sample",
+          "kind": "fn",
+          "sig": "fn src_report_sample() -> Str",
+          "sig_hash": "ogjdeu7i5glemo3rxzuj6vki6m",
+          "hash": "jyqfti6mvqrej6h667csumpzmer4axhf4a3bjveniqnazc2rfwfq",
+          "effects": [],
+          "doc": "The source `'report-sample'`."
+        },
+        {
+          "name": "src_nonce",
+          "kind": "fn",
+          "sig": "fn src_nonce(nonce: Str where _.len > 0 and _.chars.all(c => c.is_alpha or \"0123456789+/-_=\".contains(c))) -> Str",
+          "sig_hash": "itsccdpnbzvczu4hi3ficyimdu",
+          "hash": "2owqu76xpejtpnib4zjxdajgd4b5mewvlgvfenulkwmliapgjmoa",
+          "effects": [],
+          "doc": "The source `'nonce-<nonce>'`; `nonce` must be base64 or base64url text."
+        },
+        {
+          "name": "src_sha256",
+          "kind": "fn",
+          "sig": "fn src_sha256(content: Str) -> Str",
+          "sig_hash": "jmjbglie4lc37bkdthrn6hgrde",
+          "hash": "3h6hwg2i4mhcvk2zaf3htdpakb4kfb5ys7vajhtliivfzfq234ra",
+          "effects": [],
+          "doc": "The source `'sha256-<base64>'` that allows the inline script or style `content` exactly."
+        },
+        {
+          "name": "src_sha512",
+          "kind": "fn",
+          "sig": "fn src_sha512(content: Str) -> Str",
+          "sig_hash": "maxwjmazsydyoopyevfjv6ltay",
+          "hash": "4zhmg265cbxsgbxobzit6iq4p4coeqjzzadbzm66gqkceq42sdkq",
+          "effects": [],
+          "doc": "The source `'sha512-<base64>'` that allows the inline script or style `content` exactly."
+        },
+        {
+          "name": "permissions_policy",
+          "kind": "fn",
+          "sig": "fn permissions_policy(features: List[(Str, List[Str])]) -> Str",
+          "sig_hash": "udwucyl2h2l7jzws7on7tgvbwa",
+          "hash": "l3w6nn5imeradktpgsovkusvo4ayqxf5iuomaybpygojd3dz7sua",
+          "effects": [],
+          "doc": "A `Permissions-Policy` value (a structured field dictionary): each feature with its allowlist,\nwhere `self` and `src` are keywords, `*` allows every origin and other entries are origins.\nAn empty allowlist disables the feature."
+        },
+        {
+          "name": "Security",
+          "kind": "type",
+          "sig": "pub type Security = {hsts: Opt[Hsts], csp: Opt[Csp], frame: Str where _.frame_ok, referrer: Str where _.referrer_ok, nosniff: Bool, coop: Str where _.coop_ok, coep: Str where _.coep_ok, corp: Str where _.corp_ok, permissions: Str where valid_header_value(_), dns_prefetch: Str where _.onoff_ok, cross_domain: Str where _.xdomain_ok, origin_agent_cluster: Bool, xss_off: Bool, overwrite: Bool} derive Eq, Show",
+          "sig_hash": "tjb3entqnimzsbygmlhq4ty5dm",
+          "hash": "memi56xftw67io55z5umvtsp7xoyjsoprjmqeeh7aka4q43lt5ea",
+          "effects": [],
+          "doc": "The security headers to send, after OWASP's HTTP Headers Cheat Sheet and helmet. A field that\nis `none` or \"\" sends nothing: `frame` is `X-Frame-Options` (`DENY` or `SAMEORIGIN`),\n`referrer` is `Referrer-Policy`, `coop`, `coep` and `corp` are the `Cross-Origin-*-Policy`\nheaders, `permissions` is a `permissions_policy` value, `dns_prefetch` is\n`X-DNS-Prefetch-Control`, `cross_domain` is `X-Permitted-Cross-Domain-Policies`. `nosniff` sends\n`X-Content-Type-Options: nosniff`, `origin_agent_cluster` sends `Origin-Agent-Cluster: ?1`, and\n`xss_off` sends `X-XSS-Protection: 0`, which turns off the legacy filter that caused leaks.\nWith `overwrite` false, headers the handler set are kept."
+        },
+        {
+          "name": "security_defaults",
+          "kind": "fn",
+          "sig": "fn security_defaults() -> Security",
+          "sig_hash": "wiw4v4njyrjmbntvsjl5vl2ili",
+          "hash": "om5vayn65jis6cuf76gf2adodkekwxham4ixhkihv3fjk7xxyamq",
+          "effects": [],
+          "doc": "helmet's defaults: `csp_helmet`, HSTS for a year with subdomains, `SAMEORIGIN` framing,\n`no-referrer`, nosniff, COOP and CORP `same-origin`, no COEP, DNS prefetching off, no\ncross-domain policies, `Origin-Agent-Cluster`, the XSS filter off, and handler headers kept."
+        },
+        {
+          "name": "security_api",
+          "kind": "fn",
+          "sig": "fn security_api() -> Security",
+          "sig_hash": "u4i3xkjt4xkem7k4aw7rpaanwm",
+          "hash": "nddwl7jwbebolrbnjsuri5gichzikdi56luxxyu6hyroj5w4onya",
+          "effects": [],
+          "doc": "Defaults for a JSON API that no browser should render or frame: `csp_strict` with\n`default-src 'none'`, `DENY`, `no-referrer`, nosniff, CORP `same-origin`, HSTS for a year."
+        },
+        {
+          "name": "security_headers",
+          "kind": "fn",
+          "sig": "fn security_headers(s: Security) -> List[(Str, Str)]",
+          "sig_hash": "4x762sjnqvixyticfkxaa5gsl4",
+          "hash": "vkjubqh543m2w43egdrpd3qgi66ypw3k4tio6b7aykdztc5t3tza",
+          "effects": [],
+          "doc": "The headers `s` sends, in a fixed order."
+        },
+        {
+          "name": "apply_security",
+          "kind": "fn",
+          "sig": "fn apply_security(s: Security, r: Response) -> Response",
+          "sig_hash": "mgmav42vwqy3o5664olge2f54a",
+          "hash": "4k6oert32xcaofhyjva5atqkrbvpwkh64vdzjsmewmbeujfg2o6q",
+          "effects": [],
+          "doc": "`r` with the headers of `s`: replacing the handler's when `s.overwrite`, otherwise only where\nthe handler set none."
+        },
+        {
+          "name": "secure",
+          "kind": "fn",
+          "sig": "fn secure[e](s: Security, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "v4cbo3p6arzqdmgo4cm5molqx4",
+          "hash": "3ooh75dhwvalvnsy6cdxlmcxjp44z5ueowtw6dau6hnm4tbn2v3q",
+          "effects": [],
+          "doc": "A wrapper that adds the security headers of `s` to every response of `next`. HSTS only takes\neffect over HTTPS; behind a TLS-terminating proxy that is the browser's connection, so it is\nsent regardless."
+        },
+        {
+          "name": "nonce_header",
+          "kind": "fn",
+          "sig": "fn nonce_header() -> Str",
+          "sig_hash": "eboddavguedd4fka4y4gg522zy",
+          "hash": "7gvshe6qypftn5lreh3irkflikfnmbzyqaq6pa3s5s4ob3hcyg2q",
+          "effects": [],
+          "doc": "The request header that carries the per-request CSP nonce to the handler."
+        },
+        {
+          "name": "request_nonce",
+          "kind": "fn",
+          "sig": "fn request_nonce(req: Request) -> Opt[Str]",
+          "sig_hash": "esta3l73tgrimngifmrtpbtnbe",
+          "hash": "oyfif4kcy77oycik4ljwitreopetpal7bqumlomlhmtwwoz3mh5a",
+          "effects": [],
+          "doc": "The CSP nonce `with_nonce` gave this request, for `<script nonce=\"...\">` in the page."
+        },
+        {
+          "name": "with_nonce",
+          "kind": "fn",
+          "sig": "fn with_nonce[e](c: Csp, next: Request -> Response ! e) -> Request -> Response ! e, rand",
+          "sig_hash": "uom4wfk5iaamawlkarjmm23sqy",
+          "hash": "youyhnu4pb6pjkstby6kgiuccvjznz2tuqh7nzc6dfpg55w4fo7q",
+          "effects": [],
+          "doc": "A wrapper that makes a fresh 128-bit nonce for each request, passes it to `next` in the\n`x-csp-nonce` request header (any such header from the client is replaced), and sends `c` with\n`'nonce-...'` added to `script-src` and `style-src`."
+        },
+        {
+          "name": "RequestIds",
+          "kind": "type",
+          "sig": "pub type RequestIds = {header: Str where valid_header_name(_), trust_incoming: Bool, max_len: Int where _ >= 8 and _ <= 200} derive Eq, Show",
+          "sig_hash": "iqiewpzrdtqptou6xdpa6zpuay",
+          "hash": "caldymhqeyb7mejcoocfoqrnzeevnxdcryofiwoxmwedbqwbvmna",
+          "effects": [],
+          "doc": "How request ids are handled: the header that carries them in both directions, whether an id\nthe client sent is kept, and the longest one accepted."
+        },
+        {
+          "name": "request_ids_default",
+          "kind": "fn",
+          "sig": "fn request_ids_default() -> RequestIds",
+          "sig_hash": "4qmnaf4cobzhw34znnc3bwsepa",
+          "hash": "visdd2ieat3u2xfnuad4da7xgdluw72gpvupg4fat3bhg27o27ka",
+          "effects": [],
+          "doc": "`x-request-id`, client ids kept when valid, up to 128 characters."
+        },
+        {
+          "name": "valid_request_id",
+          "kind": "fn",
+          "sig": "fn valid_request_id(id: Str, max_len: Int) -> Bool",
+          "sig_hash": "ah7pw7eh6xdznmesf5xjjwquua",
+          "hash": "p3jzhzzcd4v3sefrwhxsg7n4moo4b7utu73fcmt2mwjmpep3v3pq",
+          "effects": [],
+          "doc": "Whether `id` is an acceptable request id: 1 to `max_len` characters from letters, digits and\n`-_.:`, so it is safe to log and to echo."
+        },
+        {
+          "name": "request_id",
+          "kind": "fn",
+          "sig": "fn request_id(req: Request) -> Str",
+          "sig_hash": "wx2oyijkbaod7xwfeckd4d5gry",
+          "hash": "qsahokhwq6eihwphayb5v5u4kqmeexbo5sjfvly4lbmrstymv23a",
+          "effects": [],
+          "doc": "The request id of `req` under `http.serve`, which always sets `x-request-id`, or \"\"."
+        },
+        {
+          "name": "request_ids",
+          "kind": "fn",
+          "sig": "fn request_ids[e](p: RequestIds, next: Request -> Response ! e) -> Request -> Response ! e, rand, time",
+          "sig_hash": "myo3iub6fh2umboqj2w5cr2eg4",
+          "hash": "4nevenc43g3gkl3wznx6kumatdzlq46xoqalrdpc4uz7nrdynnja",
+          "effects": [],
+          "doc": "A wrapper that gives each request an id in `p.header`: the client's when trusted and valid,\notherwise a fresh UUIDv7, and echoes it on the response."
+        },
+        {
+          "name": "AccessEntry",
+          "kind": "type",
+          "sig": "pub type AccessEntry = {method: Str, target: Str, status: Int, ms: Int, size: Int, id: Str, agent: Str, referer: Str} derive Eq, Show, Json",
+          "sig_hash": "iej66oxggwgtilwnlggqnustae",
+          "hash": "fouvmq4cfx3cshz6usknwi4kmkhbobreld4d235tfptkjvl4vwmq",
+          "effects": [],
+          "doc": "One access log line: method, path with the query (secrets redacted), status, milliseconds,\nresponse body bytes, request id, user agent and referrer."
+        },
+        {
+          "name": "AccessLog",
+          "kind": "type",
+          "sig": "pub type AccessLog = {skip: List[Str], redact: List[Str], slow_ms: Int where _ >= 0} derive Eq, Show",
+          "sig_hash": "kbswkaqmm34ngb6odeuatye254",
+          "hash": "yxwmxmujronqnxesylbqknxrhe5bpnt3arno3ve273tqh7focl5a",
+          "effects": [],
+          "doc": "What the access log writes: paths not to log (`/healthz`, matched like `under`), query parameters\nto redact, and the time from which a line is a warning (0 never). 5xx answers are errors and\n4xx answers are warnings."
+        },
+        {
+          "name": "access_log_default",
+          "kind": "fn",
+          "sig": "fn access_log_default() -> AccessLog",
+          "sig_hash": "b6267ngpvxupxxifskf3jonj74",
+          "hash": "m3mhvaomgxaem5xxelq6dhggnkcv2t6mhztbjloijchd5nur6pxa",
+          "effects": [],
+          "doc": "No skipped paths; `token`, `code`, `password`, `secret`, `key` and `signature` redacted; slow\nfrom 1 second."
+        },
+        {
+          "name": "access_entry",
+          "kind": "fn",
+          "sig": "fn access_entry(p: AccessLog, req: Request, r: Response, ms: Int) -> AccessEntry",
+          "sig_hash": "d2t5k5rgvzcjmwwnzvohqpatni",
+          "hash": "nupegjmllvnx24wrpx7c7xewfb3rnv5gthlkisyg4pvmcjrtucia",
+          "effects": [],
+          "doc": "The entry for `req` answered with `r` in `ms` milliseconds."
+        },
+        {
+          "name": "access_level",
+          "kind": "fn",
+          "sig": "fn access_level(p: AccessLog, a: AccessEntry) -> Str",
+          "sig_hash": "tngjb7ewex6i6aysar35mafwoe",
+          "hash": "r6rl6s2nohkx53qu3jtqqnd4reilx2pgf3jwjfqqs4lg6cikcosa",
+          "effects": [],
+          "doc": "The level an entry is logged at: `error` for 5xx, `warn` for 4xx or slow answers, else `info`."
+        },
+        {
+          "name": "access_log",
+          "kind": "fn",
+          "sig": "fn access_log[e](p: AccessLog, next: Request -> Response ! e) -> Request -> Response ! e, log, time",
+          "sig_hash": "mwqhwzrwzfcmksp4kd76gonani",
+          "hash": "vj5botw7zdzg3fkcnbvt4kug2u6uf6tko3yzeekvk45isgirryua",
+          "effects": [],
+          "doc": "A wrapper that times `next` on the monotonic clock and logs one JSON line per request through\n`log.info`, `log.warn` or `log.error`, so `SSPUR_LOG=json` gives its fields as the line's fields.\nTurn off the server's own `access_log` to avoid two lines."
+        },
+        {
+          "name": "server_timing",
+          "kind": "fn",
+          "sig": "fn server_timing[e](next: Request -> Response ! e) -> Request -> Response ! e, time",
+          "sig_hash": "5vpuoplcsoxkvy523xvvcjwjfa",
+          "hash": "ovk2wnljzygzeopxfodplr7ivqtgcwh4r74xcrswtzlgpdsirusq",
+          "effects": [],
+          "doc": "A wrapper that reports the handler's time on the monotonic clock in `Server-Timing` (`app;dur=`\nmilliseconds with one decimal), which browsers show in their developer tools. Only use it where\ntimings may be public."
+        },
+        {
+          "name": "content_length",
+          "kind": "fn",
+          "sig": "fn content_length(req: Request) -> Opt[Int]",
+          "sig_hash": "pxvgd5zsexnoh2rwnrevxlhmwu",
+          "hash": "ifng6fahawbtdnate3l5futrkannyapmhm4dq3gdm2rk5kiz7koq",
+          "effects": [],
+          "doc": "The `Content-Length` of `req`: `some(n)` when present and a valid decimal number, `some(-1)`\nwhen present and invalid, `none` when absent."
+        },
+        {
+          "name": "body_problem",
+          "kind": "fn",
+          "sig": "fn body_problem(req: Request, max: Int where _ >= 0) -> Opt[Response]",
+          "sig_hash": "pu5svrh5oxio3crrwfglrrbxte",
+          "hash": "xx7di63lko7znjcyq5gyrkw6xarwdv3peu6l2ksfzuoihgt5r3wa",
+          "effects": [],
+          "doc": "The error response for a body over `max` bytes (`413`), or a malformed `Content-Length`\n(`400`), or `none` when the body is acceptable."
+        },
+        {
+          "name": "body_limit",
+          "kind": "fn",
+          "sig": "fn body_limit[e](max: Int where _ >= 0, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "7gw7krkttijkz4wpb6wszmmii4",
+          "hash": "jzgs7hw4da3dtwdvk5vbauxbm5kys3y76t7vvarujqykywco456q",
+          "effects": [],
+          "doc": "A wrapper that answers `413` for bodies over `max` bytes, for routes that need less than the\nserver's `max_body`."
+        },
+        {
+          "name": "media_problem",
+          "kind": "fn",
+          "sig": "fn media_problem(req: Request, types: List[Str]) -> Opt[Response]",
+          "sig_hash": "op752ypjwf6kd5ldfppftxemiq",
+          "hash": "xz3rtsm3wa7berb4mo337aimbmnuvdbn2pgayp7d6twwv7a7tl6q",
+          "effects": [],
+          "doc": "The `415` response for a `POST`, `PUT` or `PATCH` request with a body whose media type matches\nnone of `types` (patterns as in `media_matches`), with `Accept-Post` or `Accept-Patch` naming\nthem; `none` when the request is acceptable."
+        },
+        {
+          "name": "require_media",
+          "kind": "fn",
+          "sig": "fn require_media[e](types: List[Str], next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "d6vow44cgdmqgacograrnitylq",
+          "hash": "kjau3tq5v3bphk2au7vjtsh7ipyfr7nhkf4g6hw3tuautkbvibsq",
+          "effects": [],
+          "doc": "A wrapper that answers `415` unless request bodies are of one of `types`."
+        },
+        {
+          "name": "Deadline",
+          "kind": "type",
+          "sig": "pub type Deadline = {ms: Int where _ > 0, header: Str where valid_header_name(_), replace_late: Bool} derive Eq, Show",
+          "sig_hash": "mi43fagavqzkfjdwz2odnofuky",
+          "hash": "bx3qlxot3dawc55reqoncgk4hnslcym5hw4kqcnjpwg74lbscrna",
+          "effects": [],
+          "doc": "A time budget per request: `ms` milliseconds, announced to the handler in the request header\n`header` as the absolute deadline in Unix milliseconds. With `replace_late`, a response that\ncomes after the deadline is replaced by `503` (only for GET, HEAD and OPTIONS, since other\nmethods may have changed something)."
+        },
+        {
+          "name": "deadline_of",
+          "kind": "fn",
+          "sig": "fn deadline_of(ms: Int where _ > 0) -> Deadline",
+          "sig_hash": "ziljxmxpsiljibrbkg2w6vq7ba",
+          "hash": "ahltpjvbmhm44bhguhbrfrkrhx5tfnagmacf5ltqd3mriw22xj5q",
+          "effects": [],
+          "doc": "`ms` milliseconds in `x-request-deadline`, late safe responses replaced."
+        },
+        {
+          "name": "remaining_ms",
+          "kind": "fn",
+          "sig": "fn remaining_ms(req: Request, header: Str, now_ms: Int) -> Opt[Int]",
+          "sig_hash": "d4v5l76koi4fyr2cyzxf3pewhi",
+          "hash": "xiemykkb6bzao675kaqvfkha5wcyd6qsw3uqwzwucycxio2hgdeq",
+          "effects": [],
+          "doc": "The milliseconds left at `now_ms` before the deadline in `header`, at least 0, or `none` when the\nrequest has no deadline. Pass it on as the `timeout_ms` of outgoing calls."
+        },
+        {
+          "name": "deadline",
+          "kind": "fn",
+          "sig": "fn deadline[e](d: Deadline, next: Request -> Response ! e) -> Request -> Response ! e, time",
+          "sig_hash": "l6fv3lejzjjzdbkv2bgll52xwu",
+          "hash": "rnpsudgqjtbu3unhj3abwqce26ks2hfts3mogduptrpbxmuc7naa",
+          "effects": [],
+          "doc": "A wrapper that sets the deadline header (replacing any the client sent) and, with\n`replace_late`, turns late answers to safe requests into `503`. The handler is not stopped:\nit should read `remaining_ms` and give up itself."
+        },
+        {
+          "name": "overridden_method",
+          "kind": "fn",
+          "sig": "fn overridden_method(req: Request) -> Opt[Str]",
+          "sig_hash": "2vkewxgdqxxkf75rtut3f4s5iu",
+          "hash": "efn44en6fi2lb3cop5fyxdsqezaqenn3crf2bv62bleszcdu55ca",
+          "effects": [],
+          "doc": "The method a `POST` asks to be treated as, from `X-HTTP-Method-Override`,\n`X-HTTP-Method` or `X-Method-Override`, or a form field `_method`; only `PUT`, `PATCH` and\n`DELETE` are honoured, so an override can't turn a form into a safe or tracing request."
+        },
+        {
+          "name": "method_override",
+          "kind": "fn",
+          "sig": "fn method_override[e](next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "ba3syt4fxes24claxahy5tqgmq",
+          "hash": "wx5bt6hezdok4rkazz6ftawbo5rq4ixuy7qfgzv47avmao2xsbya",
+          "effects": [],
+          "doc": "A wrapper that applies `overridden_method`, keeping the original in `x-original-method`."
+        },
+        {
+          "name": "internal_error",
+          "kind": "fn",
+          "sig": "fn internal_error[E](req: Request, err: E) -> Response ! log",
+          "sig_hash": "ka4wkvk7tvlq3by5sokjkqnniq",
+          "hash": "wj4pvk5daifo22qixccvken5vgqzbxnpfoexkmyl3dfi3bi7kjsa",
+          "effects": [
+            "log"
+          ],
+          "doc": "The answer to a request whose handler raised `err`: a `500` problem that carries only the\nrequest id, with `err` logged under that id, so internals never reach the client. Use it in the\nhandler lambda: `req => catch api(req) | e => middleware.internal_error(req, e)`. (Traps, such as\noverflow or a failed contract, can't be caught; the server answers those with `500` itself.)"
+        },
+        {
+          "name": "Ip",
+          "kind": "type",
+          "sig": "pub type Ip = {v6: Bool, octets: List[Int]} derive Eq, Show",
+          "sig_hash": "al4lboug3mwlhjss7gzehnicee",
+          "hash": "bdfvb5yhxkluq36nxrss7oirqw4sfkqihs7amrc5j3to76lhioca",
+          "effects": [],
+          "doc": "An IP address: 4 bytes for IPv4, 16 for IPv6."
+        },
+        {
+          "name": "Cidr",
+          "kind": "type",
+          "sig": "pub type Cidr = {net: Ip, prefix: Int} derive Eq, Show",
+          "sig_hash": "x3sfh5q4opa7sg6wxnk7k5gz2q",
+          "hash": "6mbuvzhdx32j7o6fjjcnguuff6qnfwopyw3uitbcqd5dip6ncchq",
+          "effects": [],
+          "doc": "A network: an address and a prefix length (0 to 32, or 0 to 128)."
+        },
+        {
+          "name": "parse_ip",
+          "kind": "fn",
+          "sig": "fn parse_ip(s: Str) -> Opt[Ip]",
+          "sig_hash": "mr5k2d73penuev46hpep4ltvwy",
+          "hash": "fscadblrkr2fgswk3svfpylas6pekgp64uhnslhzjhfampfw4ata",
+          "effects": [],
+          "doc": "The address `s`: dotted IPv4 (no leading zeros, which some parsers read as octal), or IPv6 with\noptional `::` compression and a trailing dotted quad. Zones (`%eth0`) and brackets are not\naccepted; `strip_brackets` first."
+        },
+        {
+          "name": "strip_brackets",
+          "kind": "fn",
+          "sig": "fn strip_brackets(s: Str) -> Str",
+          "sig_hash": "nhble7lvmeozgmdb5peqt4atz4",
+          "hash": "kdkinvoogonlai433t5i4drzcmvdlps5mya6fbuhss245xm4pesq",
+          "effects": [],
+          "doc": "`s` without surrounding `[` and `]`."
+        },
+        {
+          "name": "unmap",
+          "kind": "fn",
+          "sig": "fn unmap(ip: Ip) -> Ip",
+          "sig_hash": "doqh3xghiegfatwpai6cf7qgli",
+          "hash": "sjcjeynhivxmuncqafwapdkfi3dvorzmlhcorms7jicrzomfqzna",
+          "effects": [],
+          "doc": "The address in IPv4 form when `ip` is an IPv4-mapped IPv6 address (`::ffff:a.b.c.d`), else `ip`."
+        },
+        {
+          "name": "ip_text",
+          "kind": "fn",
+          "sig": "fn ip_text(ip: Ip) -> Str",
+          "sig_hash": "wpv6wg2qovjwercqcdxvr5naye",
+          "hash": "txfnimzgdm4ifl4fkv7chmy3pu5dsod3tpibkbwz7ivltodnl3jq",
+          "effects": [],
+          "doc": "The text of `ip`: dotted IPv4, or IPv6 as RFC 5952 recommends (lowercase hex, no leading zeros,\nthe longest run of two or more zero groups as `::`, IPv4-mapped addresses as `::ffff:a.b.c.d`)."
+        },
+        {
+          "name": "parse_cidr",
+          "kind": "fn",
+          "sig": "fn parse_cidr(s: Str) -> Opt[Cidr]",
+          "sig_hash": "dz6xnor5v535pz6qbhjrprs6rm",
+          "hash": "3lz3niufyfe4vy2k2iyns2mvgc4h6ku26wgo2seecvepod6eyyga",
+          "effects": [],
+          "doc": "The network `s`: `address/prefix`, or a bare address as a single host. Host bits below the\nprefix are cleared."
+        },
+        {
+          "name": "cidr_contains",
+          "kind": "fn",
+          "sig": "fn cidr_contains(c: Cidr, ip: Ip) -> Bool",
+          "sig_hash": "q3ovh4tz7ywwzgbnxdrhnxogyu",
+          "hash": "4bmnafx625g4csnnih4vrejpjy7xvmbyuhb2cgcmiovebyve6t2a",
+          "effects": [],
+          "doc": "Whether `ip` is inside `c`. IPv4-mapped IPv6 addresses match IPv4 networks."
+        },
+        {
+          "name": "private_networks",
+          "kind": "fn",
+          "sig": "fn private_networks() -> List[Cidr]",
+          "sig_hash": "kpp3l27a7p3wmcjbnweub5tzeq",
+          "hash": "aydavgpk4sdtqlrl3tuks2ipirdvr3rirwrphtkigxpkgznak3ha",
+          "effects": [],
+          "doc": "The usual networks of proxies and load balancers in front of a service: loopback and the\nprivate ranges (`127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `::1/128`,\n`fc00::/7`)."
+        },
+        {
+          "name": "forwarded_for",
+          "kind": "fn",
+          "sig": "fn forwarded_for(req: Request) -> List[Opt[Ip]]",
+          "sig_hash": "bforq5x74emqm5a4gdiv4mkh6y",
+          "hash": "dhlk24huvdnrdy7zm4qnmxguc2qd37tygh3df3cgizz4mk5aiifa",
+          "effects": [],
+          "doc": "The client addresses a request passed through, oldest first: the `for=` parameters of\n`Forwarded` (RFC 7239) when present, else `X-Forwarded-For`. Entries that are not addresses\n(`unknown`, obfuscated names) are `none`."
+        },
+        {
+          "name": "client_ip",
+          "kind": "fn",
+          "sig": "fn client_ip(req: Request, trusted: List[Cidr]) -> Opt[Ip]",
+          "sig_hash": "6kd663q3pusaxpqwtrrp7jwbee",
+          "hash": "zwqrob4smub66im37ncassly5746mhee3s2cjztjrp5vppvnh7wa",
+          "effects": [],
+          "doc": "The client's address: walking the forwarding chain from the newest hop, the first address not\nin `trusted` (your proxies). An entry that is not an address stops the walk with `none`, since\nnothing before it can be trusted; a chain of only trusted proxies gives its oldest entry. The\nserver only sees headers, so this is only meaningful when every connection comes through those\nproxies (listen on 127.0.0.1 or a private network)."
+        },
+        {
+          "name": "IpRules",
+          "kind": "type",
+          "sig": "pub type IpRules = {allow: List[Cidr], deny: List[Cidr], trusted: List[Cidr], allow_unknown: Bool} derive Eq, Show",
+          "sig_hash": "gsygd4xm73xi33crh2hyqxqeze",
+          "hash": "5chkd77xkyxqu3spwqqjn7vtm2qz6fo46t4xjpd5q2i55nskkxma",
+          "effects": [],
+          "doc": "Who may call: addresses in `deny` are refused, then if `allow` is not empty only addresses in it\npass. `trusted` are the proxies whose forwarding headers are believed (see `client_ip`), and\n`allow_unknown` says whether a request without a usable address passes."
+        },
+        {
+          "name": "ip_allowed",
+          "kind": "fn",
+          "sig": "fn ip_allowed(rules: IpRules, ip: Opt[Ip]) -> Bool",
+          "sig_hash": "mjgshugov6ic4kjt5cpdavq2fi",
+          "hash": "vvgzmpibnqwjzh5fxidr3ipvfeyq5vbbseycs5nkdozchtcxqara",
+          "effects": [],
+          "doc": "Whether `rules` let `ip` (or an unknown address, `none`) through."
+        },
+        {
+          "name": "ip_filter",
+          "kind": "fn",
+          "sig": "fn ip_filter[e](rules: IpRules, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "p62rgme6w2y6wdqhnnozenofwi",
+          "hash": "bearphvfoftnim4lrwcbs5elcpnwggkqalurhe3n6tmr7t3wzwha",
+          "effects": [],
+          "doc": "A wrapper that answers `403` to callers `rules` don't allow."
+        },
+        {
+          "name": "basic_credentials",
+          "kind": "fn",
+          "sig": "fn basic_credentials(req: Request) -> Opt[(Str, Str)]",
+          "sig_hash": "2mjjdxa7b7ag7iidpmhrq55dre",
+          "hash": "lssrxx6ghn7ppev2pdqznbhcdp7dnv42fmfn66o7j7bm5cuee3na",
+          "effects": [],
+          "doc": "The user id and password of an `Authorization: Basic` header (RFC 7617): base64 of UTF-8\n`user:password`, split at the first colon. `none` when absent or malformed."
+        },
+        {
+          "name": "basic_challenge",
+          "kind": "fn",
+          "sig": "fn basic_challenge(realm: Str) -> (Str, Str)",
+          "sig_hash": "x4n2ogn6xhsvqela2adeja25ke",
+          "hash": "klybxds7gpxn57lziepjivothjps2ml72fmau7qrggn5oza7rugq",
+          "effects": [],
+          "doc": "The `WWW-Authenticate` header that asks for Basic credentials in `realm`, in UTF-8."
+        },
+        {
+          "name": "secret_equal",
+          "kind": "fn",
+          "sig": "fn secret_equal(a: Str, b: Str) -> Bool",
+          "sig_hash": "etlvncy2klalztbo7hunhqznsy",
+          "hash": "nhwx2u4qy5maholg6d3vwgj354yjginhpajhhqshwtwhpautg3iq",
+          "effects": [],
+          "doc": "Whether the secrets `a` and `b` are equal, in time that depends on neither their contents nor\ntheir lengths (both are hashed first, then compared with `crypto.equal`)."
+        },
+        {
+          "name": "basic_auth",
+          "kind": "fn",
+          "sig": "fn basic_auth[e](realm: Str, check: (Str, Str) -> Bool ! e, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "tymglcs75bjqxoz2eoxe2ozomu",
+          "hash": "wjyrswdcuexhydzlvyiegvhid4chsvotucykat6m2uvc3qw37o2a",
+          "effects": [],
+          "doc": "A wrapper that lets through requests whose Basic credentials `check` accepts and answers the\nothers with `401` and a challenge for `realm`. Compare passwords with `secret_equal`, or better\nagainst a stored hash; Basic credentials are only safe over HTTPS."
+        },
+        {
+          "name": "request_host",
+          "kind": "fn",
+          "sig": "fn request_host(req: Request) -> Opt[Str]",
+          "sig_hash": "ycz4uq6k6ndpt4s6cum2gor7fi",
+          "hash": "hudaronyaqzb5gtoclyiy56xhg4ofxgci5k3fq2nyf5qeh5sshya",
+          "effects": [],
+          "doc": "The host `req` was sent to, from `Host`, lowercased, without the port and a trailing dot (IPv6\nkeeps its brackets); `none` when missing or not a valid host."
+        },
+        {
+          "name": "host_allowed",
+          "kind": "fn",
+          "sig": "fn host_allowed(patterns: List[Str], host: Str) -> Bool",
+          "sig_hash": "sej7ibypc5wtkeelywucndc42m",
+          "hash": "ujghscmizu2vzxbmfpl45yjzatcizsqnlinfqsagbznifzg2qubq",
+          "effects": [],
+          "doc": "Whether `host` matches one of `patterns`: `*` matches any host, `.example.com` matches\n`example.com` and its subdomains, anything else must be equal (case-insensitively)."
+        },
+        {
+          "name": "allowed_hosts",
+          "kind": "fn",
+          "sig": "fn allowed_hosts[e](patterns: List[Str], next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "6go32vqdlqi7vzgra3f76kureu",
+          "hash": "3jccdktrzvdiojtm73udppdngyedd3fe3ayqwwmldanz5zsx4gzq",
+          "effects": [],
+          "doc": "A wrapper that answers `400` when the `Host` header is missing or not one of `patterns`, which\nprotects against DNS rebinding and host header injection into links and redirects."
+        },
+        {
+          "name": "forwarded_proto",
+          "kind": "fn",
+          "sig": "fn forwarded_proto(req: Request) -> Opt[Str]",
+          "sig_hash": "kpcugr2joik5oup66c6lv7pswe",
+          "hash": "syfoqncphnzivftm6rka2zt63olimskvcf47w7rdu667nausvfka",
+          "effects": [],
+          "doc": "The scheme the client used according to the proxy in front: `proto=` of the first `Forwarded`\nelement, else the first `X-Forwarded-Proto` value, lowercased. Only believe it behind a proxy\nthat sets it."
+        },
+        {
+          "name": "https_redirect",
+          "kind": "fn",
+          "sig": "fn https_redirect[e](next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "vqowo5ohcmcjp6spquzbquf73a",
+          "hash": "edx56hlgd666zmo6nlj6qlfccmlboqkczdpyqiubkuc3zncy6siq",
+          "effects": [],
+          "doc": "A wrapper that redirects requests the proxy received over plain HTTP to HTTPS on the same host\nand target: `301` for GET and HEAD, `308` for other methods so they are repeated as sent.\nRequests without forwarding information are served as they are. Combine it with\n`allowed_hosts`, since the redirect uses the `Host` header."
+        },
+        {
+          "name": "FetchPolicy",
+          "kind": "type",
+          "sig": "pub type FetchPolicy = {allow_same_site: Bool, allow_paths: List[Str]} derive Eq, Show",
+          "sig_hash": "uvmbewdvvh2inve5awjkhmxu4y",
+          "hash": "j2rluan3iiuzmyvkji3or5nyr3l4slam4kkdswkcjcwnwthsdvyq",
+          "effects": [],
+          "doc": "A Fetch Metadata resource isolation policy: same-origin requests, requests the user started\n(`none`) and plain navigations pass; `allow_same_site` lets sibling subdomains through too, and\npaths under `allow_paths` are open to everyone (for example public assets or OAuth callbacks)."
+        },
+        {
+          "name": "fetch_allowed",
+          "kind": "fn",
+          "sig": "fn fetch_allowed(p: FetchPolicy, req: Request) -> Bool",
+          "sig_hash": "mrk7zwfssu7xewsave62levv3i",
+          "hash": "vt4rxveshwwq2mub374m7jwen5dbnfca3ynkbhtes6lehur3a4ha",
+          "effects": [],
+          "doc": "Whether `p` lets `req` through. Browsers that send no `Sec-Fetch-Site` are allowed."
+        },
+        {
+          "name": "fetch_metadata",
+          "kind": "fn",
+          "sig": "fn fetch_metadata[e](p: FetchPolicy, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "dvrflxai5firowngny5n523yhe",
+          "hash": "xpbbrtgaypo37wxuuzrepu2av3uxuoyfax3tcoaslizao252gwpa",
+          "effects": [],
+          "doc": "A wrapper that answers `403` to requests `p` refuses, a defence against CSRF, XSSI and\ncross-site leaks in browsers that send Fetch Metadata."
+        },
+        {
+          "name": "origin_of",
+          "kind": "fn",
+          "sig": "fn origin_of(url: Str) -> Opt[Str]",
+          "sig_hash": "e2tgwht7k5sujkch2vbpsisdoy",
+          "hash": "ngf4mgrp54lyt2rm4rgvbaaptkxln3jej6jyf7tg7czazncbbokq",
+          "effects": [],
+          "doc": "The origin of a URL (`scheme://host[:port]`), or `none`."
+        },
+        {
+          "name": "OriginGuard",
+          "kind": "type",
+          "sig": "pub type OriginGuard = {origins: List[Str] where _.all(valid_origin_pattern), allow_missing: Bool} derive Eq, Show",
+          "sig_hash": "unuklkcmzovg4mhtgo253s3ap4",
+          "hash": "gcjrvzrxpioe42wukgpbammeiwk7dxxo3zgxgtqpf2cdwdctvx6q",
+          "effects": [],
+          "doc": "OWASP's CSRF check with standard headers: requests with unsafe methods must come from one of\n`origins` according to `Origin`, or `Referer` when `Origin` is missing. `allow_missing` lets\nthrough requests that carry neither (some privacy tools strip both)."
+        },
+        {
+          "name": "origin_ok",
+          "kind": "fn",
+          "sig": "fn origin_ok(g: OriginGuard, req: Request) -> Bool",
+          "sig_hash": "dgnbpllf465oltvmsymhuuaeiq",
+          "hash": "kloppbwakhiml624ybjk3tyapobh6pvdsw5zfgbbfdo524tj4cma",
+          "effects": [],
+          "doc": "Whether `g` lets `req` through: GET, HEAD and OPTIONS always pass; `Origin: null` never does."
+        },
+        {
+          "name": "origin_guard",
+          "kind": "fn",
+          "sig": "fn origin_guard[e](g: OriginGuard, next: Request -> Response ! e) -> Request -> Response ! e",
+          "sig_hash": "gaz6ox7nvs44duwdpfibshvkhe",
+          "hash": "xyv3mhnzcitjevlfwwrerpj5nmm6walfr6ztu4rpmwqtyz35ouma",
+          "effects": [],
+          "doc": "A wrapper that answers `403` to requests `origin_ok` refuses."
+        }
+      ]
+    }
+  ]
+}
