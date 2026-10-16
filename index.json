@@ -62,6 +62,16 @@
       "deprecated": null
     },
     {
+      "name": "middleware",
+      "description": "Composable HTTP handler wrappers: CORS, security headers and CSP, request ids, access logs, limits, deadlines, negotiation, auth and host checks",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:14:23Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "numeric",
       "description": "Number theory, exact rounding modes, primes, combinatorics and statistics for Int, F64 and BigInt, pure and tested in both tiers",
       "latest": "0.1.0",
