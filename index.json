@@ -100,6 +100,16 @@
       "updated": "2026-10-16T19:57:58Z",
       "yanked": false,
       "deprecated": null
+    },
+    {
+      "name": "validate",
+      "description": "Validators that say why: email, URL, UUID, dates, IPv4/IPv6 and CIDR, host names, cards, IBAN, ISBN, semver, JSON and more",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:08:49Z",
+      "yanked": false,
+      "deprecated": null
     }
   ]
 }
