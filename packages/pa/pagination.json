@@ -74,6 +74,73 @@
           "doc": "The offset of the page before `p`, if there is one."
         }
       ]
+    },
+    {
+      "version": "0.1.1",
+      "git": "https://github.com/utkarshavardhana/sspur-pagination.git",
+      "tag": "v0.1.1",
+      "commit": "cfa722a8f48c16544c8b9748fa216ad353bdd81c",
+      "hash": "3hq4n2zhvhhtlx74o73fhgju6w5nk3w5ld2ddjlzq6b5cp2ef24a",
+      "snapshot": {
+        "url": "https://github.com/utkarshavardhana/sspur-packages/releases/download/pagination-0.1.1/pagination-0.1.1.tar",
+        "sha256": "9aa8dff9831f70e7c604e78353f5ac7c465b4035760f67c6ae69258956757227",
+        "size": 8192
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T05:01:51Z",
+      "publisher": "utkarshavardhana",
+      "request": 3,
+      "api": [
+        {
+          "name": "Page",
+          "kind": "type",
+          "sig": "pub type Page[T] = {items: List[T], total: Int, limit: Int, offset: Int, next: Opt[Int]} derive Eq, Show",
+          "sig_hash": "evsogriznqaa4yox5f6oil46mm",
+          "hash": "zud642qawdzv3dcpmemd7obfiubr4ij34qxahawjwtvvol5mnnbq",
+          "effects": [],
+          "doc": "A page of `items` out of `total`, starting at `offset`; `next` is the offset of the next page."
+        },
+        {
+          "name": "PageReq",
+          "kind": "type",
+          "sig": "pub type PageReq = {limit: Int where _ >= 1 and _ <= 100, offset: Int where _ >= 0} derive Eq, Show",
+          "sig_hash": "jzq4rejska2jzjqbtwzfob2ski",
+          "hash": "zcecyyzvqktsugcaeppco5hpginiym34fmknlcp4l7uv3uv3zv3q",
+          "effects": [],
+          "doc": "A checked page request."
+        },
+        {
+          "name": "request",
+          "kind": "fn",
+          "sig": "fn request(limit: Opt[Int], offset: Opt[Int]) -> PageReq",
+          "sig_hash": "zkfx4v62bp2wzffbpfu7ew3i3a",
+          "hash": "aodwacxcquq6n4vf6yk4s4zwvngljxuzuvqukl7x7w2lsqpvsamq",
+          "effects": [],
+          "doc": "The page request for query parameters that may be missing or out of range: `limit` defaults to\n20 and is kept within 1 to 100, `offset` defaults to 0 and is never negative."
+        },
+        {
+          "name": "page",
+          "kind": "fn",
+          "sig": "fn page[T](items: List[T], total: Int, r: PageReq) -> Page[T]",
+          "sig_hash": "2lwp2wnudrm6jioj3ayx2ftora",
+          "hash": "lsx3ld2qlqtuz67mhlbjrr4rzjuzyjkcvl224fohjhtb46ofdcoq",
+          "effects": [],
+          "doc": "The page of `items` (already limited by the query) for request `r` out of `total` rows."
+        },
+        {
+          "name": "prev",
+          "kind": "fn",
+          "sig": "fn prev[T](p: Page[T]) -> Opt[Int]",
+          "sig_hash": "gdnjqtt7kddjbvmm2indhoxfne",
+          "hash": "sljv7t3i26k5ezr5yccgejm7omlhtosurbqpy6ix5sthtfvtuq7q",
+          "effects": [],
+          "doc": "The offset of the page before `p`, if there is one."
+        }
+      ]
     }
   ]
 }

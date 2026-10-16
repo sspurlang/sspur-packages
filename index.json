@@ -4,10 +4,10 @@
     {
       "name": "pagination",
       "description": "Offset pagination for list endpoints: clamped page requests and pages with a next offset",
-      "latest": "0.1.0",
-      "versions": 1,
+      "latest": "0.1.1",
+      "versions": 2,
       "keywords": [],
-      "updated": "2026-10-16T04:30:37Z",
+      "updated": "2026-10-16T05:01:51Z",
       "yanked": false,
       "deprecated": null
     }
