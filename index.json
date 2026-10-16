@@ -2,6 +2,16 @@
   "schema": 1,
   "packages": [
     {
+      "name": "dates",
+      "description": "Calendar helpers on Time and Zone: boundaries, business days, ISO weeks, ranges, intervals, periods, RFC 2822, HTTP-date and ISO durations",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:06:21Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "featureflags",
       "description": "Feature flags: targeting rules, segments, prerequisites, stable percentage rollouts, OpenFeature-style details, JSON definitions and a SQLite store with audit",
       "latest": "0.1.0",
