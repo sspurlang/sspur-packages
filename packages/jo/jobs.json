@@ -1,0 +1,729 @@
+{
+  "schema": 1,
+  "name": "jobs",
+  "description": "Durable background jobs on SQLite: priorities, delays, unique keys, leases, retries with backoff, dead letters, workers and cron schedules",
+  "repository": "https://github.com/sspurlang/sspur-jobs",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-jobs.git",
+      "tag": "v0.1.0",
+      "commit": "ded2d3b48e349e507f8a5cb0972a6ac3f1933f43",
+      "hash": "kps3happkvuyut5s7ea62hzjegyjg4gbw55mkynnggbbykzkuraa",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/jobs-0.1.0/jobs-0.1.0.tar",
+        "sha256": "15ccdad099087afa97fe114dbbfd5cf40c74715808b2bf4451cb9adf0cc9f754",
+        "size": 86016
+      },
+      "effects": [
+        "db"
+      ],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:25:46Z",
+      "publisher": "utkarshavardhana",
+      "request": 42,
+      "api": [
+        {
+          "name": "Cron",
+          "kind": "type",
+          "sig": "pub type Cron = {source: Str, seconds: List[Int], minutes: List[Int], hours: List[Int], days: List[Int], months: List[Int], weekdays: List[Int], any_day: Bool, any_weekday: Bool, has_seconds: Bool} derive Eq, Show",
+          "sig_hash": "muslevfl2qf7oom2dgjqsy6due",
+          "hash": "lgolp5go6nnzkfa4vjkzlwxg6l4tlpowa6gvpqqns34o3m43svda",
+          "effects": [],
+          "doc": "A parsed cron expression. Each list holds the allowed values of one field in ascending order:\nseconds 0-59 (only 0 for a 5-field expression), minutes 0-59, hours 0-23, days of the month\n1-31, months 1-12 and days of the week 0-6 (0 is Sunday; 7 is read as 0). `any_day` and\n`any_weekday` record whether those fields started with `*`, which decides how the two day fields\ncombine (see `cron_matches`)."
+        },
+        {
+          "name": "parse_cron",
+          "kind": "fn",
+          "sig": "fn parse_cron(expr: Str) -> Res[Cron, Str]",
+          "sig_hash": "6xvb25ec4gnk3un5gqrdrovwqe",
+          "hash": "6m36lbocaqas2f6b45o2msnjvukhrc2v2u5gnhzlnhq72o5ohd2q",
+          "effects": [],
+          "doc": "Parses a cron expression: five fields (minute, hour, day of month, month, day of week), six\nwith a seconds field first, or a macro (`@yearly`, `@annually`, `@monthly`, `@weekly`, `@daily`,\n`@midnight`, `@hourly`). Fields take `*`, numbers, `a-b` ranges, `/step` on any of them\n(`*/15`, `1-30/5`, and `5/15` for `5-59/15`), comma lists, month names `JAN`-`DEC` and day names\n`SUN`-`SAT` (any case); 0 and 7 are both Sunday. Errors name the field and the offending text."
+        },
+        {
+          "name": "cron_matches",
+          "kind": "fn",
+          "sig": "fn cron_matches(c: Cron, t: Time) -> Bool",
+          "sig_hash": "6yn2vznxtyfoqndox72u2icdxy",
+          "hash": "3ssriajnf6fhhb6khyk5cwjv5f5fmaueruya5bednx5q5fhbke2a",
+          "effects": [],
+          "doc": "Whether the instant `t` (to the second, in UTC) is a fire time of `c`. When both day fields are\nrestricted (neither starts with `*`), a day matches if either matches, as in Vixie cron:\n`0 0 1 * MON` fires on the 1st and on every Monday. Otherwise both must match."
+        },
+        {
+          "name": "cron_matches_in",
+          "kind": "fn",
+          "sig": "fn cron_matches_in(c: Cron, z: Zone, t: Time) -> Bool",
+          "sig_hash": "lfdkxwicvavdthzkp7oon5r7fe",
+          "hash": "hnpkevbbd246h3qn7vrb4njez53ulmlszwxzu32egewagi2awc6q",
+          "effects": [],
+          "doc": "Whether `t` is a fire time of `c` on the wall clock of the zone `z`."
+        },
+        {
+          "name": "next_fire",
+          "kind": "fn",
+          "sig": "fn next_fire(c: Cron, t: Time) -> Opt[Time]",
+          "sig_hash": "t7f6fzsbzbbg5bdrn2tm3ggsz4",
+          "hash": "avrpmjzawmxxpmmv75o5tq3tatslvewfa4nuitcqrc7xn2edb5wq",
+          "effects": [],
+          "doc": "The first fire time of `c` strictly after `t`, in UTC, or none when there is none within nine\nyears (such as `0 0 30 2 *`)."
+        },
+        {
+          "name": "prev_fire",
+          "kind": "fn",
+          "sig": "fn prev_fire(c: Cron, t: Time) -> Opt[Time]",
+          "sig_hash": "xmxy6rphfvcucqzsu7xzvbp4ca",
+          "hash": "7aiipgrhlonenlemmp532mk7uyftvpgkvvg5gs23djdbu4iisxrq",
+          "effects": [],
+          "doc": "The last fire time of `c` at or before `t`, in UTC."
+        },
+        {
+          "name": "next_fires",
+          "kind": "fn",
+          "sig": "fn next_fires(c: Cron, t: Time, n: Int where _ >= 0) -> List[Time]",
+          "sig_hash": "wrwy5vl67rhjbbzylyx3jrrbuq",
+          "hash": "uounuhmloo33af3jojoxydsxabkvez53ao56vq4eg2h36h4yniya",
+          "effects": [],
+          "doc": "The next `n` fire times of `c` after `t`, in UTC (fewer if the expression runs out)."
+        },
+        {
+          "name": "next_fire_in",
+          "kind": "fn",
+          "sig": "fn next_fire_in(c: Cron, z: Zone, t: Time) -> Opt[Time]",
+          "sig_hash": "7wuws5hgokk6o4cvwkphkx7qcu",
+          "hash": "wk4uetsspgqdmfv63zzktcje4zwk6olgck66rh277tnzrn2wpnoa",
+          "effects": [],
+          "doc": "The first fire time of `c` strictly after `t` on the wall clock of `z`, as an instant. Skipped\nand repeated wall times follow the rules of daylight saving time described in the README."
+        },
+        {
+          "name": "prev_fire_in",
+          "kind": "fn",
+          "sig": "fn prev_fire_in(c: Cron, z: Zone, t: Time) -> Opt[Time]",
+          "sig_hash": "2kwmigxcvdoc4loikezgvbx4uu",
+          "hash": "65uj74aoxnwb7r2xamu23ac4ndou3j4hanunocvmfkioty2s4cnq",
+          "effects": [],
+          "doc": "The last fire time of `c` at or before `t` on the wall clock of `z`, as an instant."
+        },
+        {
+          "name": "next_fires_in",
+          "kind": "fn",
+          "sig": "fn next_fires_in(c: Cron, z: Zone, t: Time, n: Int where _ >= 0) -> List[Time]",
+          "sig_hash": "i7eure5np4qgkfj5ttcnynvana",
+          "hash": "n23wypq6pjmv7jbweq4oqk5h5aevwg5hnh6u2vui667upgfgfira",
+          "effects": [],
+          "doc": "The next `n` fire times of `c` after `t` on the wall clock of `z`."
+        },
+        {
+          "name": "State",
+          "kind": "type",
+          "sig": "pub type State = Pending | Running | Completed | Dead | Cancelled derive Eq, Ord, Show",
+          "sig_hash": "ql5zosznkl45uvwrbmmt6mbrj4",
+          "hash": "ynypfpo62dk5qovxmzsvdpnm6bw252iizk3cjbsvxvl6c2ad7oza",
+          "effects": [],
+          "doc": "Where a job is in its life. `Pending` jobs wait for their `run_at` (a retry is a pending job\nwith attempts already made), `Running` jobs are leased to a worker, and the other three are\nfinal: `Completed`, `Dead` (out of attempts or discarded: the dead letter set) and `Cancelled`."
+        },
+        {
+          "name": "NewJob",
+          "kind": "type",
+          "sig": "pub type NewJob = {queue: Str where _.len > 0 and _.len <= 200, kind: Str where _.len > 0 and _.len <= 200, payload: Str, priority: Int where _ >= -1000 and _ <= 1000, run_at: Opt[Time], delay: Duration, max_attempts: Int where _ >= 1 and _ <= 1000, unique_key: Opt[Str], unique_for: Duration} derive Eq, Show",
+          "sig_hash": "eisl4hl46vygqscu26ziilc6wu",
+          "hash": "65z5dylxurv757zrlvy33x5hcierhm5e7t5oeuvo5imtzxlt4cda",
+          "effects": [],
+          "doc": "A job to enqueue. Build one with `job` and change fields with `with`. Smaller `priority` runs\nfirst. `run_at` (when set) or `delay` (from the enqueue time) says when it becomes available.\nWith a `unique_key`, enqueueing again in the same queue while a job with that key is pending or\nrunning, or within `unique_for` of the first one, returns the existing job instead."
+        },
+        {
+          "name": "AttemptError",
+          "kind": "type",
+          "sig": "pub type AttemptError = {attempt: Int, at: Time, error: Str} derive Eq, Show",
+          "sig_hash": "incyya5ei6hsniemjsfcwmykky",
+          "hash": "xqrtfyxkaq4gzb7hudjhhcfn74w3f3peo3grklyn6chi3zgztqyq",
+          "effects": [],
+          "doc": "One failed attempt, as recorded in `Job.errors`."
+        },
+        {
+          "name": "Job",
+          "kind": "type",
+          "sig": "pub type Job = {id: Int, queue: Str, kind: Str, payload: Str, priority: Int, state: State, run_at: Time, attempts: Int, max_attempts: Int, unique_key: Opt[Str], last_error: Opt[Str], errors: List[AttemptError], created_at: Time, attempted_at: Opt[Time], finished_at: Opt[Time]} derive Eq, Show",
+          "sig_hash": "vxfumglmbij4c3pbsn6lygwmii",
+          "hash": "4vfcaknx7was3wrpqf6tdxaotth5o2f5k36tuwyohzqg7gkm7kqq",
+          "effects": [],
+          "doc": "A stored job."
+        },
+        {
+          "name": "Enqueued",
+          "kind": "type",
+          "sig": "pub type Enqueued = Inserted{id: Int} | Duplicate{id: Int} derive Eq, Show",
+          "sig_hash": "oslphwfn6a3sltmrrzgbb7ffju",
+          "hash": "pp3bkxrnnxo3mny4c6yb6ymrsblnm7y44qe3dgqqpdnuaid26yoa",
+          "effects": [],
+          "doc": "The result of an enqueue: a new job, or the existing job with the same unique key."
+        },
+        {
+          "name": "Lease",
+          "kind": "type",
+          "sig": "pub type Lease = {job: Job, token: Int, until: Time} derive Eq, Show",
+          "sig_hash": "4ygcd6scrjpdrvpbjfyiznjq7a",
+          "hash": "ilgqe5t4schl3h572ydusroqrtnnlvofhfudan7vwhaqlp5wrsva",
+          "effects": [],
+          "doc": "A claimed job. `token` identifies this claim: finishing calls with an older token (after the\nlease expired and another worker claimed the job) change nothing and return false."
+        },
+        {
+          "name": "Outcome",
+          "kind": "type",
+          "sig": "pub type Outcome = Done | Retry{error: Str} | RetryIn{error: Str, after: Duration} | Discard{error: Str} | Snooze{after: Duration} derive Eq, Show",
+          "sig_hash": "64quetxzyuig3fmiont3eoabvy",
+          "hash": "lmn6wmd57bwgm4wkvheoyty3wvmqy2n6uehqykiuvzvzc2zxuqua",
+          "effects": [],
+          "doc": "What a handler decided about a job. `Retry` waits by the worker's backoff and `RetryIn` by the\ngiven time; both count the attempt, and a job out of attempts goes to `Dead`. `Discard` sends it\nto `Dead` at once. `Snooze` runs it again later without counting the attempt."
+        },
+        {
+          "name": "Backoff",
+          "kind": "type",
+          "sig": "pub type Backoff = Exponential{base: Duration, cap: Duration, jitter: F64} | Fixed{delay: Duration} | Linear{step: Duration, cap: Duration} | Steps{delays: List[Duration]} derive Eq, Show",
+          "sig_hash": "vawaxavwnttxgz377zlc4syagi",
+          "hash": "4tpcupgr7kwruvrngpmne74ezjtdyergqhm4ct2y7uutxp5xuleq",
+          "effects": [],
+          "doc": "How long to wait before the next attempt, by the number of attempts made (1 after the first).\n`Exponential` doubles `base` up to `cap` and then takes off up to `jitter` (0 to 1) of it at\nrandom but repeatably, seeded by the job id; `Linear` waits `step` times the attempt, up to `cap`;\n`Steps` takes the list in order and repeats its last element."
+        },
+        {
+          "name": "Worker",
+          "kind": "type",
+          "sig": "pub type Worker = {queue: Str where _.len > 0, lease: Duration, backoff: Backoff} derive Eq, Show",
+          "sig_hash": "mhldytp3btbtf6gdeelll4njne",
+          "hash": "2crh4hn7up3wfwtcbljztxgpb32uvsmse6d7od5poz36r6ij4sca",
+          "effects": [],
+          "doc": "What a worker needs: the queue it serves, how long a claim lasts before another worker may take\nthe job over, and the backoff for `Retry`."
+        },
+        {
+          "name": "Ran",
+          "kind": "type",
+          "sig": "pub type Ran = Idle | Processed{job: Job, outcome: Outcome, recorded: Bool} derive Eq, Show",
+          "sig_hash": "vdngrs5m5qs3lp7ve4ioadsfja",
+          "hash": "h263d5upcjtmnkqjmybjhsnauysra2amui2qormjnv5pqa5eb2bq",
+          "effects": [],
+          "doc": "What `work` did: nothing was available, or it ran a job, with whether the outcome was recorded\n(false when the lease had been lost)."
+        },
+        {
+          "name": "Filter",
+          "kind": "type",
+          "sig": "pub type Filter = {queue: Opt[Str], state: Opt[State], kind: Opt[Str], after_id: Int, limit: Int where _ >= 1 and _ <= 1000} derive Eq, Show",
+          "sig_hash": "wf6p2j2j73im6jg6b5fq2udina",
+          "hash": "thyu5s6bhc2tinfdxt5nieuvcpvczxzv2avqwluiblrv2crf2woa",
+          "effects": [],
+          "doc": "Filters for `list`: by queue, state and kind (none means any), job ids above `after_id` (for\nkeyset paging), at most `limit` jobs in id order."
+        },
+        {
+          "name": "QueueStats",
+          "kind": "type",
+          "sig": "pub type QueueStats = {queue: Str, available: Int, scheduled: Int, running: Int, completed: Int, dead: Int, cancelled: Int, oldest_due: Opt[Time]} derive Eq, Show",
+          "sig_hash": "xxbqyp4lkhticwytwzewpdfsaa",
+          "hash": "65lgfzles43icxs3wvdppqtwitvcrlv5iduwpki5u7watto6tj6a",
+          "effects": [],
+          "doc": "Counts per queue. `available` are pending and due, `scheduled` pending and due later; `oldest_due`\nis the earliest `run_at` of the available ones, a measure of how far behind the workers are."
+        },
+        {
+          "name": "migrate",
+          "kind": "fn",
+          "sig": "fn migrate(c: Db) -> Int ! db, fail[DbErr]",
+          "sig_hash": "6l4bs7ou4lz7k7ccv7iy4f6mx4",
+          "hash": "fdiie7ku3cnw4tqfvtibjug2up6xpe6evov3e3as5ewaekema6zq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Creates or upgrades the tables this package uses (`jobs_jobs`, `jobs_schedules` and the version\ntable `jobs_schema`), each step in a transaction, and returns how many steps it applied. It is\nseparate from `db.migrate`, so an application's own migrations are not affected. Safe to call on\nevery start, from several processes."
+        },
+        {
+          "name": "job",
+          "kind": "fn",
+          "sig": "fn job(queue: Str where _.len > 0 and _.len <= 200, kind: Str where _.len > 0 and _.len <= 200, payload: Str) -> NewJob",
+          "sig_hash": "2exeryy3yvpu2o7wgd3vruv5la",
+          "hash": "mpijumt4hjf6wg34urv2mzjwhwp57wjdasgztv6wpiecarejyzxa",
+          "effects": [],
+          "doc": "A job for `queue` of kind `kind` with `payload` (usually JSON from `json.encode`): priority 0,\navailable at once, 20 attempts, not unique."
+        },
+        {
+          "name": "enqueue",
+          "kind": "fn",
+          "sig": "fn enqueue(c: Db, j: NewJob, now: Time) -> Enqueued ! db, fail[DbErr]",
+          "sig_hash": "emyu4jh2wsl55sqq3jli3reope",
+          "hash": "s2yeahyzxo54bif4d7bmewe32k7cnosuss4ak6pn25amy2lc7j3q",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Adds a job at time `now`, or finds the pending, running or recent job with its unique key."
+        },
+        {
+          "name": "enqueue_all",
+          "kind": "fn",
+          "sig": "fn enqueue_all(c: Db, js: List[NewJob], now: Time) -> List[Enqueued] ! db, fail[DbErr]",
+          "sig_hash": "zcfzod2gz76exfoekoz6bku6fu",
+          "hash": "yfwwzstiyui6gvjghitqczslqk2qwhw6b4dtkl5hvx2t4cbwnw3a",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Adds every job in one transaction: all of them or, if one fails, none. The results are in order."
+        },
+        {
+          "name": "enqueue_now",
+          "kind": "fn",
+          "sig": "fn enqueue_now(c: Db, j: NewJob) -> Enqueued ! db, fail[DbErr], time",
+          "sig_hash": "ruo2uijd5ihue3nit4kktrrzzm",
+          "hash": "fnj23n3xokrk76pa6qyt3jagq24srda3syznzzfx7dcv7r2c5mhq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "time"
+          ],
+          "doc": "`enqueue` at the current time."
+        },
+        {
+          "name": "enqueued_id",
+          "kind": "fn",
+          "sig": "fn enqueued_id(e: Enqueued) -> Int",
+          "sig_hash": "nthqt4tasltegqd6oxowwf2wly",
+          "hash": "skdaurbhddfsm6zxdma5mhloh3txwltxsphjv7ilwujviit3qq6q",
+          "effects": [],
+          "doc": "The id of an enqueue result, new or existing."
+        },
+        {
+          "name": "get",
+          "kind": "fn",
+          "sig": "fn get(c: Db, id: Int) -> Opt[Job] ! db, fail[DbErr]",
+          "sig_hash": "ik3uzv7v7rh5jx5mnnmiygcjgq",
+          "hash": "vn6yly2lqm5rz2dz5we6djbmlrwk4y5k7l45usfa7dw6qdcx77za",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "The job with id `id`."
+        },
+        {
+          "name": "filter",
+          "kind": "fn",
+          "sig": "fn filter() -> Filter",
+          "sig_hash": "q5l4btgqcp6ppsuinv2ro3brze",
+          "hash": "jwg7p7pge4hrwyjmb5c7svqos67pspedfd6rvhsu6ibgpuicrleq",
+          "effects": [],
+          "doc": "Any queue, state and kind, from the start, 100 at a time."
+        },
+        {
+          "name": "list",
+          "kind": "fn",
+          "sig": "fn list(c: Db, f: Filter) -> List[Job] ! db, fail[DbErr]",
+          "sig_hash": "ov7xtrmceca6c3ngw6q5xhmfam",
+          "hash": "rpvpho5hgxtg4bqnnhr7qsydictthv2qsudekgemlvo3vvuj3tlq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Jobs that pass `f`, in id order. For the next page, set `after_id` to the last id returned."
+        },
+        {
+          "name": "stats",
+          "kind": "fn",
+          "sig": "fn stats(c: Db, now: Time) -> List[QueueStats] ! db, fail[DbErr]",
+          "sig_hash": "sy537ndzwx4jv3i3unrgr2zo7a",
+          "hash": "obvluzppifby64y3bx54tfo4t34tccccjhhvbvkvm2ovpgvtd2uq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Counts for every queue that has jobs, in queue order, at time `now`."
+        },
+        {
+          "name": "rescue",
+          "kind": "fn",
+          "sig": "fn rescue(c: Db, now: Time) -> Int ! db, fail[DbErr]",
+          "sig_hash": "tzhf2jkpm6srzzaqvfe4noqnv4",
+          "hash": "dhlnnjta4mvsqqepplkldingg5ktrwe7k3ulius273ls34pbcnvq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Returns jobs whose lease expired at `now` to their queues (or to dead when they were on their\nlast attempt) and gives how many. `claim` does this for its own queue, so call it only to see\ncrashed work sooner, for example from a periodic task."
+        },
+        {
+          "name": "claim_many",
+          "kind": "fn",
+          "sig": "fn claim_many(c: Db, queue: Str, n: Int where _ >= 1 and _ <= 1000, lease: Duration, now: Time) -> List[Lease] ! db, fail[DbErr]",
+          "sig_hash": "4zragirldzweflwtnfrfk67jfq",
+          "hash": "rnsctl2lubcrtcncyu4hci7nx4qli2luejowcguqhsqn446yma6a",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Claims up to `n` available jobs of `queue` for `lease` from `now`, highest priority (smallest\nnumber) first, then earliest `run_at`, then oldest. Each claim counts an attempt. The claim is one\n`BEGIN IMMEDIATE` transaction, so concurrent workers in any number of threads or processes never\nget the same job; expired leases of the queue are rescued first."
+        },
+        {
+          "name": "claim",
+          "kind": "fn",
+          "sig": "fn claim(c: Db, queue: Str, lease: Duration, now: Time) -> Opt[Lease] ! db, fail[DbErr]",
+          "sig_hash": "xd4z7pbtqb3itiu7pskpc6os34",
+          "hash": "clg2p4cpggdrr36gn3sfdrtpc57gv4fngqqdavr7od33b7rk3ela",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Claims the next available job of `queue`, as `claim_many` with `n` = 1."
+        },
+        {
+          "name": "extend",
+          "kind": "fn",
+          "sig": "fn extend(c: Db, l: Lease, by: Duration, now: Time) -> Opt[Lease] ! db, fail[DbErr]",
+          "sig_hash": "g64axzzhigexesrecztkaxfadq",
+          "hash": "ggdby54mex3k4tidkzpbe7wxfpfulcpn2ectoa6qqiox2pq7mpsa",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Extends a lease to `by` after `now` (a heartbeat for long jobs). None when the lease was lost."
+        },
+        {
+          "name": "complete",
+          "kind": "fn",
+          "sig": "fn complete(c: Db, l: Lease, now: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "pjps24lcc6pdzxtqdmlkavjy4a",
+          "hash": "2ctnjysyfu4wetmishgae77atfntmkvxpzybpuspgt4s4mywj76q",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Marks a leased job completed. False when the lease was lost (the job was rescued and claimed\nagain, or cancelled)."
+        },
+        {
+          "name": "fail_attempt",
+          "kind": "fn",
+          "sig": "fn fail_attempt(c: Db, l: Lease, error: Str, backoff: Backoff, now: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "xpupoej2wygqg4flthbvbcgzrq",
+          "hash": "wc3xslzwx5hasujqlwyzmiyslm4zssolxk3jwqyxlftfezyie4da",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Records a failed attempt: the job runs again after `backoff`, or goes to dead when it has used\nits attempts. False when the lease was lost."
+        },
+        {
+          "name": "retry_in",
+          "kind": "fn",
+          "sig": "fn retry_in(c: Db, l: Lease, error: Str, after: Duration, now: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "im42ryz3jwycurm4gsw4wbqkr4",
+          "hash": "u3wvzadgpk4g2olw2qtyjaxuvq3voh4tk6jbeiousscppmtztrva",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Records a failed attempt that should run again after `after` (or go to dead when it has used its\nattempts)."
+        },
+        {
+          "name": "discard",
+          "kind": "fn",
+          "sig": "fn discard(c: Db, l: Lease, error: Str, now: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "tgfiamx6ep43knn7sknjjeat3i",
+          "hash": "axwnzeaaktthnf67kutcdc2wtkyphti2tqkhokz2nkj5alavz4ia",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Sends a leased job to dead at once, whatever attempts it has left."
+        },
+        {
+          "name": "snooze",
+          "kind": "fn",
+          "sig": "fn snooze(c: Db, l: Lease, after: Duration, now: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "5rlbvlstbljpfrusqsytq6g324",
+          "hash": "emgijlpgbxkqidp77xrwl7jzch6me346psodvolhieq5dy7x5ziq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Puts a leased job back to run after `after` without counting this attempt."
+        },
+        {
+          "name": "finish",
+          "kind": "fn",
+          "sig": "fn finish(c: Db, l: Lease, o: Outcome, backoff: Backoff, now: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "srj5lrjmsbs7hzegbipdndb2py",
+          "hash": "wfy6o2j2j5hv3c4t34bgryldcgojpgweqffs3lmlprgniw5xuiva",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Records a handler's outcome for a leased job, using `backoff` for `Retry`."
+        },
+        {
+          "name": "cancel",
+          "kind": "fn",
+          "sig": "fn cancel(c: Db, id: Int, now: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "rix4yn6mg5z6aafnzv6xpuzqym",
+          "hash": "k2poyho2h443zrdx45scbnyppsflhlexi7hyn7wignbsvylpgqva",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Cancels a pending or running job. A worker that still holds it can no longer record a result."
+        },
+        {
+          "name": "retry",
+          "kind": "fn",
+          "sig": "fn retry(c: Db, id: Int, now: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "5hye45n3ukks4fi5rmxoxcsyca",
+          "hash": "bneculslayvsjgcjtqtns6bm5bahducwfgpv4jbbcbwyujpz5rva",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Makes a dead or cancelled job pending again, with its attempts reset and available at `now`."
+        },
+        {
+          "name": "retry_dead",
+          "kind": "fn",
+          "sig": "fn retry_dead(c: Db, queue: Str, now: Time) -> Int ! db, fail[DbErr]",
+          "sig_hash": "vquaqzynfqrwxawvvvogjqkmry",
+          "hash": "x7etujpekq2jkbmiba5b6vz6y6mpaziequqilanlh5plc3qcqecq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "`retry` for every dead job of `queue`; gives how many."
+        },
+        {
+          "name": "reschedule",
+          "kind": "fn",
+          "sig": "fn reschedule(c: Db, id: Int, at: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "numoqu3m6wlyiusvdpo5eaatf4",
+          "hash": "5tbspfhvp7i6fph7lsv6mrn7zn3dppodnlasgrpdn67peo3ynewa",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Moves a pending job to run at `at` (sooner or later). False for jobs in other states."
+        },
+        {
+          "name": "delete",
+          "kind": "fn",
+          "sig": "fn delete(c: Db, id: Int) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "yantmm32mqskks2h5gdrunmlfe",
+          "hash": "hvwmmisxu6zazvtkiiyb6bveuplls3zpdt3kug4rk7pkmsvcgopq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Deletes a job in any state."
+        },
+        {
+          "name": "purge",
+          "kind": "fn",
+          "sig": "fn purge(c: Db, s: State, before: Time) -> Int ! db, fail[DbErr]",
+          "sig_hash": "vw44axkrpagye56qy7z3ak4kce",
+          "hash": "up4ogql4236ilvkwyrgzkl526472wc6c2athqhpdo576gdwtgtfq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Deletes jobs in the final state `s` (`Completed`, `Dead` or `Cancelled`) that finished before\n`before`, and gives how many. Pending and running jobs are never purged."
+        },
+        {
+          "name": "default_backoff",
+          "kind": "fn",
+          "sig": "fn default_backoff() -> Backoff",
+          "sig_hash": "pxxyffrjy5tshivarpzqyrfyha",
+          "hash": "atlybdxah7bjunkfvdstt44tx5a5fzosw6aefh6umb4sprcxdgva",
+          "effects": [],
+          "doc": "Exponential backoff from 1 second up to 1 hour, with a quarter of jitter."
+        },
+        {
+          "name": "backoff_delay",
+          "kind": "fn",
+          "sig": "fn backoff_delay(b: Backoff, attempt: Int where _ >= 0, seed: Int) -> Duration",
+          "sig_hash": "zcgqdopfmtin7plb7a2onlxlve",
+          "hash": "rr6hek4ai3vabagchj7f4nhxr2n76aarrmtpnmrdcezxj3d2cgna",
+          "effects": [],
+          "doc": "The wait before the attempt after `attempt` attempts, for a job seeded by `seed` (its id): the\nsame inputs always give the same wait, so retries are spread out but repeatable in tests."
+        },
+        {
+          "name": "worker",
+          "kind": "fn",
+          "sig": "fn worker(queue: Str where _.len > 0) -> Worker",
+          "sig_hash": "2nmxpy7ic2lqta3nj4iujfsh2e",
+          "hash": "vsrrzgnpncjypunu35aky2mvlyiqal5hzu3lsqbpjcot3qjfb2bq",
+          "effects": [],
+          "doc": "A worker for `queue` with a 5 minute lease and the default backoff."
+        },
+        {
+          "name": "work_at",
+          "kind": "fn",
+          "sig": "fn work_at[e](c: Db, w: Worker, handler: Job -> Outcome ! e, now: Time) -> Ran ! db, fail[DbErr], e",
+          "sig_hash": "xdcouuooaivdkvjowwbesauutu",
+          "hash": "3rddkpkx4dgg3ec3xf3cy637e4gd2rukyoiolucwbohchev7hgua",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "e"
+          ],
+          "doc": "Claims one job of the worker's queue at `now`, runs `handler` on it and records the outcome at\n`now`. Handlers report failure through their `Outcome`; a handler that traps or never returns\nleaves the job leased, and it is retried when the lease expires."
+        },
+        {
+          "name": "work",
+          "kind": "fn",
+          "sig": "fn work[e](c: Db, w: Worker, handler: Job -> Outcome ! e) -> Ran ! db, fail[DbErr], time, e",
+          "sig_hash": "k2hv4kqrcq4xpn4knqvek2tf74",
+          "hash": "miqnbjco77onl6i4rco6czn27z7uzzrhh7jzfpsfrqdecfoms7eq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "time",
+            "e"
+          ],
+          "doc": "`work_at` with the clock: claims now and records the outcome when the handler returns."
+        },
+        {
+          "name": "drain",
+          "kind": "fn",
+          "sig": "fn drain[e](c: Db, w: Worker, handler: Job -> Outcome ! e, max: Int where _ >= 0) -> Int ! db, fail[DbErr], time, e",
+          "sig_hash": "tfwnykkwgtkaxfh3d7uyazm64i",
+          "hash": "ao3xtlg3ser6ffq4z5uuw2gwwtztijt5ha4beufqp3v2nd3kq7ua",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "time",
+            "e"
+          ],
+          "doc": "Runs `work` until the queue has nothing available or `max` jobs ran, and gives how many ran.\nFor concurrency, start several in `par` and pass a top-level function (or a lambda written\ninside the task), since tasks can't share function values:\n`for i in par(0..4)` then `jobs.drain(c, w, send_email, 1000)`."
+        },
+        {
+          "name": "run_worker",
+          "kind": "fn",
+          "sig": "fn run_worker[e](c: Db, w: Worker, handler: Job -> Outcome ! e, stop: Atomic[Int], idle_ms: Int where _ >= 1) -> Int ! db, fail[DbErr], time, conc, div, e",
+          "sig_hash": "ospizjb6ajozt2hahx7sdps24q",
+          "hash": "sbn5wgli4clkxshacwchzbm2xkwtslhvs7fdrkzkdfqdzccias7a",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "time",
+            "conc",
+            "div",
+            "e"
+          ],
+          "doc": "Serves the worker's queue until `stop` holds a non-zero value: runs jobs while there are any and\nsleeps `idle_ms` when there are none. Gives how many jobs ran. Set `stop` from another task, or\nfrom a signal-handling path of the program, to finish after the current job."
+        },
+        {
+          "name": "Missed",
+          "kind": "type",
+          "sig": "pub type Missed = CatchUp{limit: Int} | Latest | Skip{grace: Duration} derive Eq, Show",
+          "sig_hash": "mx3ej26a5thrj2k4f77yhuittq",
+          "hash": "qkoqkt3pwzylt65ty247lnu2dknbbrg3wulqwyg2f2ql2t7d77za",
+          "effects": [],
+          "doc": "What `tick` does about fire times that passed while nothing ticked (the process was down):\n`CatchUp` enqueues each of them, at most the `limit` most recent; `Latest` enqueues only the most\nrecent; `Skip` enqueues the most recent only if it is at most `grace` old, and drops the rest."
+        },
+        {
+          "name": "Schedule",
+          "kind": "type",
+          "sig": "pub type Schedule = {name: Str where _.len > 0 and _.len <= 200, cron: Str, zone: Str, queue: Str where _.len > 0 and _.len <= 200, kind: Str where _.len > 0 and _.len <= 200, payload: Str, priority: Int where _ >= -1000 and _ <= 1000, max_attempts: Int where _ >= 1 and _ <= 1000, missed: Missed, enabled: Bool} derive Eq, Show",
+          "sig_hash": "etbkstltljzkw73ywmfiwv7t4e",
+          "hash": "vtojjsehs33c3bl74bphjkwmttvdjklfcuuhmmk4sbvzhwbpvv3a",
+          "effects": [],
+          "doc": "A recurring job: `cron` (see `parse_cron`) on the wall clock of the IANA zone `zone` (`\"UTC\"`,\n`\"Europe/Berlin\"`, or a fixed offset such as `\"+05:30\"`), enqueueing `kind` with `payload` into\n`queue`. `name` identifies it."
+        },
+        {
+          "name": "Fired",
+          "kind": "type",
+          "sig": "pub type Fired = {schedule: Str, at: Time, result: Enqueued} derive Eq, Show",
+          "sig_hash": "ymeotqezgcqmm2mqfk247iowja",
+          "hash": "n7w2b2wfrk5s6ajfgunxqnmkkprju7nkok5hdai7p2tq4fofqnfq",
+          "effects": [],
+          "doc": "One run that `tick` enqueued: the schedule, its fire time and the enqueue result."
+        },
+        {
+          "name": "schedule",
+          "kind": "fn",
+          "sig": "fn schedule(name: Str where _.len > 0 and _.len <= 200, cron: Str, queue: Str where _.len > 0 and _.len <= 200, kind: Str where _.len > 0 and _.len <= 200, payload: Str) -> Schedule",
+          "sig_hash": "z6vguxv64ht5u2duorzswkh2de",
+          "hash": "wwgfky64b4a5oyelacbpyl32fujgyz5rcjrjfqgk6fws7jkdfkja",
+          "effects": [],
+          "doc": "A schedule named `name` in UTC, enabled, with priority 0, 20 attempts and `Latest` for missed\nruns."
+        },
+        {
+          "name": "put_schedule",
+          "kind": "fn",
+          "sig": "fn put_schedule(c: Db, s: Schedule, now: Time) -> Res[Unit, Str] ! db, fail[DbErr], time",
+          "sig_hash": "ww7h2f54p7bbzmrrvfr3ezsz6y",
+          "hash": "lndo5pkakgeq6e2dhz3vwc5wrgimpviygolu34pbjg3w72ktcc7a",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "time"
+          ],
+          "doc": "Adds or replaces the schedule `s.name`, checking its cron expression and zone. Its first run is\nthe first fire time after `now`; replacing a schedule with the same expression and zone keeps\nits progress, so nothing fires twice. An error names what is wrong."
+        },
+        {
+          "name": "remove_schedule",
+          "kind": "fn",
+          "sig": "fn remove_schedule(c: Db, name: Str) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "skonvcve5zzq62nucu7sppfhym",
+          "hash": "7jnbjxpft2fdr6wwndropk45hi47hmxpn6anplqq6voyjz4tu7ya",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Removes a schedule. Jobs it already enqueued stay."
+        },
+        {
+          "name": "set_enabled",
+          "kind": "fn",
+          "sig": "fn set_enabled(c: Db, name: Str, enabled: Bool, now: Time) -> Bool ! db, fail[DbErr]",
+          "sig_hash": "mrqm4ttcibjafvas4pozutff3q",
+          "hash": "5hmyjbvfhc4os2e72iwjcqo3qzcj4pwenzly3aqj2r2l5bkyoiea",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Turns a schedule on or off. Turning one on counts from `now`, so the time it was off is not\ncaught up."
+        },
+        {
+          "name": "schedules",
+          "kind": "fn",
+          "sig": "fn schedules(c: Db) -> List[Schedule] ! db, fail[DbErr]",
+          "sig_hash": "3aacab4nojaosaypicrp53fqbu",
+          "hash": "7wyzmeztviaxdnds4bibwriqanpeyufogfjsyamnkytigs7cwdcq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Every schedule, by name."
+        },
+        {
+          "name": "due_fires",
+          "kind": "fn",
+          "sig": "fn due_fires(c: Cron, z: Zone, last: Time, now: Time, missed: Missed) -> List[Time]",
+          "sig_hash": "cpgnm5jsaywngxyimchl32yofi",
+          "hash": "nrx5g7khxvj2cyxhanxxmeqoxnhvovanuzainzw6gbquqtbuc4ca",
+          "effects": [],
+          "doc": "The fire times of `c` in `z` after `last` and at or before `now` that `missed` lets through,\noldest first. `tick` enqueues these."
+        },
+        {
+          "name": "tick",
+          "kind": "fn",
+          "sig": "fn tick(c: Db, now: Time) -> List[Fired] ! db, fail[DbErr], time",
+          "sig_hash": "wtj4ocnp6tqyofiv7r7jszygum",
+          "hash": "nld63ktqtgn2bxlsa3a43vpp2hpibpahqdjnpcblo5io6alzz32q",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "time"
+          ],
+          "doc": "Enqueues every run of every enabled schedule that is due at `now`, once: each run gets the unique\nkey `schedule:NAME:MILLIS` and the schedule's progress moves to `now` in the same transaction, so\nticking from several processes, or twice, enqueues nothing twice. Call it every few seconds or\nevery minute; missed runs follow each schedule's `missed`."
+        }
+      ]
+    }
+  ]
+}
