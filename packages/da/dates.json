@@ -1,0 +1,943 @@
+{
+  "schema": 1,
+  "name": "dates",
+  "description": "Calendar helpers on Time and Zone: boundaries, business days, ISO weeks, ranges, intervals, periods, RFC 2822, HTTP-date and ISO durations",
+  "repository": "https://github.com/sspurlang/sspur-dates",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-dates.git",
+      "tag": "v0.1.0",
+      "commit": "8f109a382de766b89cb465689beb07500467cbd4",
+      "hash": "veou6o3tqpoozccgkpo3mwlk6j5f2ea6zykow7jewnv53knqwbqq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/dates-0.1.0/dates-0.1.0.tar",
+        "sha256": "30ef5b6be8bcd112b1f6429726b972d61b592b926db4472d0b3cc791d29efcb9",
+        "size": 75776
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:06:21Z",
+      "publisher": "utkarshavardhana",
+      "request": 20,
+      "api": [
+        {
+          "name": "Period",
+          "kind": "type",
+          "sig": "pub type Period = {years: Int, months: Int, weeks: Int, days: Int, hours: Int, minutes: Int, seconds: Int, millis: Int} derive Eq, Show",
+          "sig_hash": "zzpgjncwpamgabuo52rewazgre",
+          "hash": "lyy7wy2xi7v5qfiwjx7odumaovycqtqzsqqnifyurtsrywnwg4qa",
+          "effects": [],
+          "doc": "A calendar period: the parts of an ISO 8601 duration. Years and months have no fixed length,\nso they are applied with Time.add_months (clamping the day to the month's end); weeks and days\nare 7 and 1 days of 24 hours; the rest are exact. Parts may be negative."
+        },
+        {
+          "name": "Interval",
+          "kind": "type",
+          "sig": "pub type Interval = {start: Time, end: Time} derive Eq, Show",
+          "sig_hash": "sgo4tlcowyr4hp6jgojqekcdkm",
+          "hash": "dhtqw5qudg4pd6fzkxoy3e5zq2oejxwne7ikk3npt7zdwadg2wka",
+          "effects": [],
+          "doc": "A half-open span of time, from `start` (included) to `end` (excluded), with `start <= end`."
+        },
+        {
+          "name": "IsoWeek",
+          "kind": "type",
+          "sig": "pub type IsoWeek = {year: Int, week: Int, weekday: Int} derive Eq, Show",
+          "sig_hash": "2ryowox3iue5dbepe5fcvt52om",
+          "hash": "mdsfus43hiodtq7a5iqmx5xtb5lg2e3h4iyaqk6xhqqh4q54zeaq",
+          "effects": [],
+          "doc": "An ISO 8601 week date: the ISO week-numbering `year`, the `week` (1 to 53) and the `weekday`\n(1 is Monday)."
+        },
+        {
+          "name": "CalUnit",
+          "kind": "type",
+          "sig": "pub type CalUnit = Days | Weeks | Months | Quarters | Years derive Eq, Show",
+          "sig_hash": "lanllaej6yoamxv2fhwe5d5kya",
+          "hash": "acyhcf6rqr3xtwyoro7dys3kfovvmej64us5e7m26rpnq2xawkwq",
+          "effects": [],
+          "doc": "The unit of a step in a date range, or of add_units."
+        },
+        {
+          "name": "BusinessCalendar",
+          "kind": "type",
+          "sig": "pub type BusinessCalendar = {weekend: List[Int], holidays: List[Time]} derive Eq, Show",
+          "sig_hash": "h6arwjtzuegmtyqx33mwroyhk4",
+          "hash": "ixyuc5c353hpn35xtunlxmk2uankihreazckpoh7s2kkjhndm7ta",
+          "effects": [],
+          "doc": "Which days are business days: the weekdays of the weekend (1 is Monday, 7 Sunday) and a list\nof holidays (only their UTC dates count)."
+        },
+        {
+          "name": "is_leap_year",
+          "kind": "fn",
+          "sig": "fn is_leap_year(y: Int) -> Bool",
+          "sig_hash": "2mb5cswm3u6fgv3be3vtk7bfoi",
+          "hash": "lbxgkvtkwszgpvppeyir7cfceon6hgvpukss2eblq4azjsxv7ura",
+          "effects": [],
+          "doc": "Whether `y` is a leap year in the proleptic Gregorian calendar (year 0 is a leap year)."
+        },
+        {
+          "name": "days_in_month",
+          "kind": "fn",
+          "sig": "fn days_in_month(y: Int, m: Int where _ >= 1 and _ <= 12) -> Int",
+          "sig_hash": "mzott334knsln4wo4rpc4ed3wu",
+          "hash": "5mamcwgpjevmpuhnispdcljqmzii4tuuutfpch2k533x73a3tmra",
+          "effects": [],
+          "doc": "The number of days in month `m` (1 to 12) of year `y`."
+        },
+        {
+          "name": "days_in_year",
+          "kind": "fn",
+          "sig": "fn days_in_year(y: Int) -> Int",
+          "sig_hash": "6fsuioptqntcliu7wqdbppzdrq",
+          "hash": "g3p4pfkkvzac55bfemchnhemcb3qub56h7zemg67kbxxo2vul3jq",
+          "effects": [],
+          "doc": "The number of days in year `y`: 365 or 366."
+        },
+        {
+          "name": "quarter",
+          "kind": "fn",
+          "sig": "fn quarter(t: Time) -> Int",
+          "sig_hash": "haiueulismqf7lhhe2jyeothhq",
+          "hash": "znnsgmggu7x3sjxcr6gmz5k6cvgcz2srbt23dkd2xuvcy6zouota",
+          "effects": [],
+          "doc": "The quarter of the year `t` is in (UTC): 1 for January to March, up to 4."
+        },
+        {
+          "name": "weekday_name",
+          "kind": "fn",
+          "sig": "fn weekday_name(d: Int where _ >= 1 and _ <= 7) -> Str",
+          "sig_hash": "ypcear3e25pj6bdyzgfavqsnre",
+          "hash": "dhw76pvvcrbrhir3rsjw3z4gtzavjrrl2sqhrgxl6laqrocliagq",
+          "effects": [],
+          "doc": "The English name of weekday `d` (1 is Monday): \"Monday\" to \"Sunday\"."
+        },
+        {
+          "name": "weekday_abbr",
+          "kind": "fn",
+          "sig": "fn weekday_abbr(d: Int where _ >= 1 and _ <= 7) -> Str",
+          "sig_hash": "qht4cg5xlshk3x2ep3umevurmy",
+          "hash": "tcjzygpgfegd3u7jdttolm7g6xgm2houu55sglxcepgtori3fbca",
+          "effects": [],
+          "doc": "The three-letter English abbreviation of weekday `d`: \"Mon\" to \"Sun\"."
+        },
+        {
+          "name": "month_name",
+          "kind": "fn",
+          "sig": "fn month_name(m: Int where _ >= 1 and _ <= 12) -> Str",
+          "sig_hash": "ipivcenjh2ddv3eohfxf2bky6a",
+          "hash": "au4ixcha5wpxsifddyl76zh6c6hfbiiwlclmzi637p645cdvz26a",
+          "effects": [],
+          "doc": "The English name of month `m`: \"January\" to \"December\"."
+        },
+        {
+          "name": "month_abbr",
+          "kind": "fn",
+          "sig": "fn month_abbr(m: Int where _ >= 1 and _ <= 12) -> Str",
+          "sig_hash": "sozjsadk2bbeyb2fdrgtcexum4",
+          "hash": "2pkn5lwpm3paojpowsldhkgprlrbajqdu5liltnblnl7ipbtcakq",
+          "effects": [],
+          "doc": "The three-letter English abbreviation of month `m`: \"Jan\" to \"Dec\"."
+        },
+        {
+          "name": "epoch_day",
+          "kind": "fn",
+          "sig": "fn epoch_day(t: Time) -> Int",
+          "sig_hash": "lg6ugxbqpia2d7eoco5ifaibhi",
+          "hash": "utu46xmlr6yidvjb7fctpscaqjyr4lfjso4jjzuof5235uxm33rq",
+          "effects": [],
+          "doc": "The number of days from 1970-01-01 to the UTC date of `t`, rounded down (negative before 1970)."
+        },
+        {
+          "name": "from_epoch_day",
+          "kind": "fn",
+          "sig": "fn from_epoch_day(n: Int) -> Time",
+          "sig_hash": "lashphhvy7zphf2gf34jc3f4q4",
+          "hash": "xccb76keb476lj4nko5rnm6rnr7nwsnlt2o2coflm2nryieove3a",
+          "effects": [],
+          "doc": "Midnight UTC of the date `n` days after 1970-01-01."
+        },
+        {
+          "name": "same_day",
+          "kind": "fn",
+          "sig": "fn same_day(a: Time, b: Time) -> Bool",
+          "sig_hash": "76beuuwqyb7es6etcqu3mjhdma",
+          "hash": "x74u75kpbsbtfig2h7ojs7faoxpecysjyllp7ktfvf77gfe3ga3q",
+          "effects": [],
+          "doc": "Whether `a` and `b` fall on the same UTC date."
+        },
+        {
+          "name": "same_day_in",
+          "kind": "fn",
+          "sig": "fn same_day_in(a: Time, b: Time, z: Zone) -> Bool",
+          "sig_hash": "udivll6scnbunloruw76e3wp3a",
+          "hash": "zk3pzze2kzczstiyvfy7gh7526kpw5rqmbb4oz6vtdybf2owjtjq",
+          "effects": [],
+          "doc": "Whether `a` and `b` fall on the same local date in zone `z`."
+        },
+        {
+          "name": "is_weekend",
+          "kind": "fn",
+          "sig": "fn is_weekend(t: Time) -> Bool",
+          "sig_hash": "ypc535odj5g3c7vebok2ugz2im",
+          "hash": "lcaramxp4eobnldpk4zbfrpfmzha7orx55lx6q3lj5bs3bddrwyq",
+          "effects": [],
+          "doc": "Whether `t` is on a Saturday or a Sunday (UTC)."
+        },
+        {
+          "name": "start_of_day",
+          "kind": "fn",
+          "sig": "fn start_of_day(t: Time) -> Time",
+          "sig_hash": "puug5v7dpvnkyq7aobnk3syfae",
+          "hash": "qvdrhtwsm2kwoahfnqsggj7suhqhtif6gm6pcxeieeah2dng3mja",
+          "effects": [],
+          "doc": "Midnight UTC at the start of `t`'s date."
+        },
+        {
+          "name": "end_of_day",
+          "kind": "fn",
+          "sig": "fn end_of_day(t: Time) -> Time",
+          "sig_hash": "a6eomzretuz6wzhkewtmdloodm",
+          "hash": "6drxdt5uxdef7zp3un6muza3hxgenxlkhwfttenenibfspcrt4eq",
+          "effects": [],
+          "doc": "The last millisecond of `t`'s UTC date (23:59:59.999)."
+        },
+        {
+          "name": "start_of_week",
+          "kind": "fn",
+          "sig": "fn start_of_week(t: Time, first: Int where _ >= 1 and _ <= 7) -> Time",
+          "sig_hash": "6xggsmr5vyiy7eiodrkhz5dvpe",
+          "hash": "5vqxqlvbtyccnka6fgair2mvhusuow4n7sfrywdog5wdg4va2iwa",
+          "effects": [],
+          "doc": "Midnight at the start of the week containing `t`, where weeks start on weekday `first`\n(1 is Monday, as in ISO 8601; 7 is Sunday, as in the US)."
+        },
+        {
+          "name": "end_of_week",
+          "kind": "fn",
+          "sig": "fn end_of_week(t: Time, first: Int where _ >= 1 and _ <= 7) -> Time",
+          "sig_hash": "errbtnrcnyybpcns6nskuwie7u",
+          "hash": "jjrnfomww44ojwrcenpeueynxrwhfrtgg7kg4vr57egdajstnixa",
+          "effects": [],
+          "doc": "The last millisecond of the week containing `t`, where weeks start on weekday `first`."
+        },
+        {
+          "name": "start_of_month",
+          "kind": "fn",
+          "sig": "fn start_of_month(t: Time) -> Time",
+          "sig_hash": "r52ymhvwmtiotetteueeju7svq",
+          "hash": "faws3656b3izzurkasagmj7btkljjvf67v5ra6w7c3c53buqbhia",
+          "effects": [],
+          "doc": "Midnight UTC on the first day of `t`'s month."
+        },
+        {
+          "name": "end_of_month",
+          "kind": "fn",
+          "sig": "fn end_of_month(t: Time) -> Time",
+          "sig_hash": "hzcznx6o72x2lep2dlnr37vfpq",
+          "hash": "cnsuhgipcumppjqbecuabhxy6hjo5z64w6f5h6tsfl3qjtkmht4a",
+          "effects": [],
+          "doc": "The last millisecond of `t`'s month (UTC)."
+        },
+        {
+          "name": "start_of_quarter",
+          "kind": "fn",
+          "sig": "fn start_of_quarter(t: Time) -> Time",
+          "sig_hash": "uadsmprjnyonialvlrwmb2jcdq",
+          "hash": "nkjyohfbwhimrpt4ls5kcw45anh5yk5ik2fearwous4sujpbop5q",
+          "effects": [],
+          "doc": "Midnight UTC on the first day of `t`'s quarter (January, April, July or October 1)."
+        },
+        {
+          "name": "end_of_quarter",
+          "kind": "fn",
+          "sig": "fn end_of_quarter(t: Time) -> Time",
+          "sig_hash": "jbszchxxzod54mf7rhpiamrdym",
+          "hash": "7ivo7uvh7ipvwkv65toe3uw2se6mpevcjxwp4wfx7yvrxiiercmq",
+          "effects": [],
+          "doc": "The last millisecond of `t`'s quarter (UTC)."
+        },
+        {
+          "name": "start_of_year",
+          "kind": "fn",
+          "sig": "fn start_of_year(t: Time) -> Time",
+          "sig_hash": "pkzay3lv2pvnwciwlstmacudhi",
+          "hash": "63cinwwxongcrek2enfsfrkdms5nz2iwi23mfbe7aefmpykaw24a",
+          "effects": [],
+          "doc": "Midnight UTC on January 1 of `t`'s year."
+        },
+        {
+          "name": "end_of_year",
+          "kind": "fn",
+          "sig": "fn end_of_year(t: Time) -> Time",
+          "sig_hash": "kfxjn6an44tmjemnvs3fok3xdm",
+          "hash": "bjxp3cvq64khslrzg33f2vz2t275tb7g6o23v634ula4pketptlq",
+          "effects": [],
+          "doc": "The last millisecond of `t`'s year (UTC): December 31, 23:59:59.999."
+        },
+        {
+          "name": "resolve_local",
+          "kind": "fn",
+          "sig": "fn resolve_local(z: Zone, wall: Time) -> Time",
+          "sig_hash": "7nezwmku4ifp26hhtg2actn65y",
+          "hash": "lxrn7yyy5tgce3vy5ffmeiyt3q5kg6ammufydregea2j7txlo64a",
+          "effects": [],
+          "doc": "The instant at which the wall clock of zone `z` shows `wall` (a Time whose UTC fields are read\nas local fields, as Zone.local returns). In an overlap (clocks turned back) it is the earlier\ninstant; in a gap (clocks turned forward, so `wall` never shows) it is the first instant after\nthe gap, the moment the clocks jump."
+        },
+        {
+          "name": "start_of_day_in",
+          "kind": "fn",
+          "sig": "fn start_of_day_in(t: Time, z: Zone) -> Time",
+          "sig_hash": "pzz5lyuletii67xlv3e2salqlm",
+          "hash": "c6yxx6upyajwl6r7at666r2lj723fuvqngl4iym6vlvrrqjr5wua",
+          "effects": [],
+          "doc": "The first instant of `t`'s local date in zone `z` (usually local midnight; where midnight\nfalls in a DST gap, the first instant after the gap)."
+        },
+        {
+          "name": "end_of_day_in",
+          "kind": "fn",
+          "sig": "fn end_of_day_in(t: Time, z: Zone) -> Time",
+          "sig_hash": "vzh5epomyywx3twmvldueeh2gm",
+          "hash": "zezqyrudc6zupfyzq5fakd3d6wew6n5kk6utaj333k4bicz75jiq",
+          "effects": [],
+          "doc": "The last millisecond of `t`'s local date in zone `z`: one millisecond before the start of the\nnext local date, so a day can be 23 or 25 hours long."
+        },
+        {
+          "name": "start_of_week_in",
+          "kind": "fn",
+          "sig": "fn start_of_week_in(t: Time, z: Zone, first: Int where _ >= 1 and _ <= 7) -> Time",
+          "sig_hash": "ujt6o3j6vbdxzxwddin5hoshqm",
+          "hash": "n4bbuunoi2msnkyx4272yydc7gjrzpvbhnwuccmg6vvgvs4mzhvq",
+          "effects": [],
+          "doc": "The first instant of the local week containing `t` in zone `z`, weeks starting on `first`."
+        },
+        {
+          "name": "end_of_week_in",
+          "kind": "fn",
+          "sig": "fn end_of_week_in(t: Time, z: Zone, first: Int where _ >= 1 and _ <= 7) -> Time",
+          "sig_hash": "3ben7sz6it5h5o2r374folxlfq",
+          "hash": "3d6b4ujzo24cza5jfktorjjvtwpeasrj7nyr2kfqxnpkobrji4qq",
+          "effects": [],
+          "doc": "The last millisecond of the local week containing `t` in zone `z`, weeks starting on `first`."
+        },
+        {
+          "name": "start_of_month_in",
+          "kind": "fn",
+          "sig": "fn start_of_month_in(t: Time, z: Zone) -> Time",
+          "sig_hash": "y26uczf7zmmnof5erkzdio5iuu",
+          "hash": "4nl5jhdzjk7chcsmknxxg3or3pvy36ukpekymzgoyqkb2qmypnwq",
+          "effects": [],
+          "doc": "The first instant of `t`'s local month in zone `z`."
+        },
+        {
+          "name": "end_of_month_in",
+          "kind": "fn",
+          "sig": "fn end_of_month_in(t: Time, z: Zone) -> Time",
+          "sig_hash": "opsd3ikk622j7vnbbr7u2rvhyu",
+          "hash": "5apbg2whrpzre27ygfgmwv7hihmne7u4dpoyawsargaclgh6iseq",
+          "effects": [],
+          "doc": "The last millisecond of `t`'s local month in zone `z`."
+        },
+        {
+          "name": "start_of_quarter_in",
+          "kind": "fn",
+          "sig": "fn start_of_quarter_in(t: Time, z: Zone) -> Time",
+          "sig_hash": "kg4p4zt3itznri3mrutzxlyfqa",
+          "hash": "dan2ff6y4gmsjxbtwywp3xtgg3inyn3qzlppekug2h6emozv35tq",
+          "effects": [],
+          "doc": "The first instant of `t`'s local quarter in zone `z`."
+        },
+        {
+          "name": "end_of_quarter_in",
+          "kind": "fn",
+          "sig": "fn end_of_quarter_in(t: Time, z: Zone) -> Time",
+          "sig_hash": "gqx7yhmhmnaglrtzisnye75ynu",
+          "hash": "fs33w3xkfshhzbs33aia65p2v27feibvhcylfrasd3bxp3k2rjfa",
+          "effects": [],
+          "doc": "The last millisecond of `t`'s local quarter in zone `z`."
+        },
+        {
+          "name": "start_of_year_in",
+          "kind": "fn",
+          "sig": "fn start_of_year_in(t: Time, z: Zone) -> Time",
+          "sig_hash": "e6ryipktqkexv2dovj2g5ukpfi",
+          "hash": "7hm4xsty2bcdoawtiubj3xd336o2yiaf53746ncc6euan43dpcwq",
+          "effects": [],
+          "doc": "The first instant of `t`'s local year in zone `z`."
+        },
+        {
+          "name": "end_of_year_in",
+          "kind": "fn",
+          "sig": "fn end_of_year_in(t: Time, z: Zone) -> Time",
+          "sig_hash": "zhi4erfmdakn2ljmwcdzegzc3a",
+          "hash": "al3jr6oscknhdaw5phtd7gnkqty227ihuduhwavjiqye3thdy7pa",
+          "effects": [],
+          "doc": "The last millisecond of `t`'s local year in zone `z`."
+        },
+        {
+          "name": "local_date",
+          "kind": "fn",
+          "sig": "fn local_date(t: Time, z: Zone) -> Time",
+          "sig_hash": "fqztkanqaydgtw2p3jairxfd3m",
+          "hash": "rb75exnevp773lw7xdzdba6u7nrru2tch5b6jkxbx7ecwjf74ita",
+          "effects": [],
+          "doc": "The local date of `t` in zone `z`, as midnight UTC of that date (for date arithmetic and\ncomparisons that should ignore the zone afterwards)."
+        },
+        {
+          "name": "standard_calendar",
+          "kind": "fn",
+          "sig": "fn standard_calendar(holidays: List[Time]) -> BusinessCalendar",
+          "sig_hash": "az4qvtd4viffdohyvmigfsa6g4",
+          "hash": "ktuxbdariop3krfhgwk5x5pfqx6cshtwd6ky7auyxbzjvtw275vq",
+          "effects": [],
+          "doc": "A calendar with Saturday and Sunday as the weekend and the given holidays."
+        },
+        {
+          "name": "is_business_day",
+          "kind": "fn",
+          "sig": "fn is_business_day(t: Time, cal: BusinessCalendar) -> Bool",
+          "sig_hash": "4qte4cukz2elfwsr4bdfm6qjue",
+          "hash": "vcjcdzuqdtcvb6gvijtopabejirufn6w75pp5dbulqnl6dv3umva",
+          "effects": [],
+          "doc": "Whether the UTC date of `t` is a business day of `cal`: not a weekend day and not a holiday."
+        },
+        {
+          "name": "add_business_days",
+          "kind": "fn",
+          "sig": "fn add_business_days(t: Time, n: Int, cal: BusinessCalendar) -> Time",
+          "sig_hash": "rw5zitsi24pudmzkse3tqk65ay",
+          "hash": "tzqhwt7qpavouqifutzpljyy4hjuff52ledyate6a453cgbzkd4q",
+          "effects": [],
+          "doc": "`t` moved by `n` business days of `cal` (backwards when `n` is negative), keeping the time of\nday. Counting starts from the day after (or before) `t`, so `t` itself need not be a business\nday; `n == 0` returns `t` unchanged. The weekend must leave at least one business day a week."
+        },
+        {
+          "name": "business_days_between",
+          "kind": "fn",
+          "sig": "fn business_days_between(a: Time, b: Time, cal: BusinessCalendar) -> Int",
+          "sig_hash": "b2is7ejjlzujomiqcku4vsjdma",
+          "hash": "fd2jahj5wgnowtmqpnfsiqhjpgx5lkggdunna7udcxpgz4xsqpdq",
+          "effects": [],
+          "doc": "The number of business days of `cal` from the date of `a` (included) to the date of `b`\n(excluded); negative when `b` is before `a`. Times of day are ignored."
+        },
+        {
+          "name": "next_business_day",
+          "kind": "fn",
+          "sig": "fn next_business_day(t: Time, cal: BusinessCalendar) -> Time",
+          "sig_hash": "5e2fajphw4xu5gjp6aoaw6jsuy",
+          "hash": "fdgg7qht3ncyaa3u23njufb5vs2nviyf6oanxack7nohs7qstb6q",
+          "effects": [],
+          "doc": "The first business day of `cal` strictly after `t`'s date, keeping the time of day."
+        },
+        {
+          "name": "previous_business_day",
+          "kind": "fn",
+          "sig": "fn previous_business_day(t: Time, cal: BusinessCalendar) -> Time",
+          "sig_hash": "aeovb7ua4lfadxtlhsklakq72a",
+          "hash": "hmg2exh47ocgxb6voqqmdsqfdvdt2t4z7epzgtom2c2yctlhgv5q",
+          "effects": [],
+          "doc": "The last business day of `cal` strictly before `t`'s date, keeping the time of day."
+        },
+        {
+          "name": "roll_forward",
+          "kind": "fn",
+          "sig": "fn roll_forward(t: Time, cal: BusinessCalendar) -> Time",
+          "sig_hash": "dakxobzwacn5dpyrzq3eau44r4",
+          "hash": "ef5ag3r5c3iba2lplotqvinasdyj2ocmu4mlyqic3i45siqyu3ua",
+          "effects": [],
+          "doc": "`t` if it is a business day of `cal`, else the next business day (the \"following\" convention)."
+        },
+        {
+          "name": "roll_backward",
+          "kind": "fn",
+          "sig": "fn roll_backward(t: Time, cal: BusinessCalendar) -> Time",
+          "sig_hash": "tw4ods2vdu5b4hhhw7muse5fru",
+          "hash": "x4ctddgx23c5zctzgjqy3qzc7til743yfhuk3tskwku2d6pykvbq",
+          "effects": [],
+          "doc": "`t` if it is a business day of `cal`, else the previous business day (\"preceding\")."
+        },
+        {
+          "name": "next_weekday",
+          "kind": "fn",
+          "sig": "fn next_weekday(t: Time, d: Int where _ >= 1 and _ <= 7) -> Time",
+          "sig_hash": "jh3pumqfmeledhqgvovhvfh3q4",
+          "hash": "tlywo7puxnjx3mkuhjtroveztffpdnnriexrlr6fs6pb5hev5tgq",
+          "effects": [],
+          "doc": "The first instant after `t` that is on weekday `d`, at the same time of day: 1 to 7 days later."
+        },
+        {
+          "name": "previous_weekday",
+          "kind": "fn",
+          "sig": "fn previous_weekday(t: Time, d: Int where _ >= 1 and _ <= 7) -> Time",
+          "sig_hash": "wkjenimbgqz7zixi6hvklah55e",
+          "hash": "3t2edn6jytf37wrjo6ryxvalov6akojudywbybvp7npcfv542lza",
+          "effects": [],
+          "doc": "The last instant before `t` that is on weekday `d`, at the same time of day: 1 to 7 days earlier."
+        },
+        {
+          "name": "next_or_same_weekday",
+          "kind": "fn",
+          "sig": "fn next_or_same_weekday(t: Time, d: Int where _ >= 1 and _ <= 7) -> Time",
+          "sig_hash": "case5wrgukhojcp7azbtpycyrq",
+          "hash": "eafn67xwppgdqynqlcmtkuuuwfv43sfmc72abkzqhkor65rk2jfa",
+          "effects": [],
+          "doc": "`t` if it is on weekday `d`, else next_weekday(t, d)."
+        },
+        {
+          "name": "previous_or_same_weekday",
+          "kind": "fn",
+          "sig": "fn previous_or_same_weekday(t: Time, d: Int where _ >= 1 and _ <= 7) -> Time",
+          "sig_hash": "njcmo7iatnhzu67v45nghbluoy",
+          "hash": "e2oy4ilng44qwpkn5kv7h6bythx5dh5gev366uztny5m3xyvdqfq",
+          "effects": [],
+          "doc": "`t` if it is on weekday `d`, else previous_weekday(t, d)."
+        },
+        {
+          "name": "nth_weekday",
+          "kind": "fn",
+          "sig": "fn nth_weekday(y: Int, m: Int where _ >= 1 and _ <= 12, d: Int where _ >= 1 and _ <= 7, n: Int where _ != 0 and _ >= -5 and _ <= 5) -> Opt[Time]",
+          "sig_hash": "ams54eh25n56bjfqvxn5sbjchm",
+          "hash": "zjl2saxwav3mmmm2teir57fluo2piiypklx6dq73gfszilfzg55a",
+          "effects": [],
+          "doc": "The `n`th weekday `d` of month `m` of year `y`, at midnight UTC: `n` is 1 to 5 counting from\nthe start (3 and Monday is the third Monday), or -1 to -5 counting from the end (-1 and Friday\nis the last Friday). `none` when the month has no such day (a fifth Monday)."
+        },
+        {
+          "name": "last_weekday",
+          "kind": "fn",
+          "sig": "fn last_weekday(y: Int, m: Int where _ >= 1 and _ <= 12, d: Int where _ >= 1 and _ <= 7) -> Time",
+          "sig_hash": "3dcgrs6te2evbphxajn5oicmxu",
+          "hash": "td7ya37mtbuecfsvcnkrayczyvaszxobknrdd5hoiqzluxxnqupq",
+          "effects": [],
+          "doc": "The last weekday `d` of month `m` of year `y`, at midnight UTC (the last Friday)."
+        },
+        {
+          "name": "easter",
+          "kind": "fn",
+          "sig": "fn easter(y: Int where _ >= 1) -> Time",
+          "sig_hash": "buxmqn2k3k23xpvgvd2obxyvfy",
+          "hash": "hyl4hm6uk5l6ly3r3ex6lr3qdmitaljbub5khwymgfpt4ypoce3q",
+          "effects": [],
+          "doc": "Western (Gregorian) Easter Sunday of year `y`, at midnight UTC, by the anonymous Gregorian\nalgorithm (Meeus, Jones, Butcher). It is computed for any year from 1, proleptically before 1583."
+        },
+        {
+          "name": "iso_week",
+          "kind": "fn",
+          "sig": "fn iso_week(t: Time) -> IsoWeek",
+          "sig_hash": "2fcrp46u7rqgzzg3nh4loog7n4",
+          "hash": "6jdab6lryk743lqf335wm5dgcpbvsmau6tv7fnfx5db4jbv6kdva",
+          "effects": [],
+          "doc": "The ISO 8601 week date of `t` (UTC): weeks start on Monday and week 1 is the week with the\nyear's first Thursday, so early January can be in the previous year's week 52 or 53 and late\nDecember in the next year's week 1."
+        },
+        {
+          "name": "iso_weeks_in_year",
+          "kind": "fn",
+          "sig": "fn iso_weeks_in_year(y: Int) -> Int",
+          "sig_hash": "hsjlzcmghasu6gmotfvqrauagm",
+          "hash": "twyt62vharomqnpphokyacfdcta23qenxjqt4k6hdgrruchjzkrq",
+          "effects": [],
+          "doc": "The number of ISO weeks in ISO year `y`: 53 when January 1 is a Thursday, or a Wednesday in a\nleap year, else 52."
+        },
+        {
+          "name": "from_iso_week",
+          "kind": "fn",
+          "sig": "fn from_iso_week(y: Int, w: Int, d: Int) -> Opt[Time]",
+          "sig_hash": "eo3qxtpp55jdgzdqr3q3ganefu",
+          "hash": "uw4b6zvgvngyo2yllcmsnf4bscoqwtpzhses7oxpl5psioabri2a",
+          "effects": [],
+          "doc": "Midnight UTC of ISO week date (`y`, `w`, `d`); `none` when the week or weekday is out of range."
+        },
+        {
+          "name": "format_iso_week",
+          "kind": "fn",
+          "sig": "fn format_iso_week(t: Time) -> Str",
+          "sig_hash": "xqfbeoinopyg2hzqlc54xffk3m",
+          "hash": "pypx77pe25igqmwuodxnwatctwwc5yi6w7jda23x4ziyyxtvqzrq",
+          "effects": [],
+          "doc": "The ISO week date of `t` as text: \"2026-W42-5\"."
+        },
+        {
+          "name": "parse_iso_week",
+          "kind": "fn",
+          "sig": "fn parse_iso_week(s: Str) -> Opt[Time]",
+          "sig_hash": "nqpmbdq5qj5uebpigxn3l4x3k4",
+          "hash": "b7kht2wp775ehopnk6ux2ch3j2h2zpzcahsvrdaxwfcagxnelr4q",
+          "effects": [],
+          "doc": "Parses an ISO week date, extended (\"2026-W42-5\", \"2026-W42\") or basic (\"2026W425\", \"2026W42\");\na missing weekday is Monday. `none` for anything else or a week the year doesn't have."
+        },
+        {
+          "name": "format_ordinal_date",
+          "kind": "fn",
+          "sig": "fn format_ordinal_date(t: Time) -> Str",
+          "sig_hash": "6mrq3otlgytk4ga3enj3sanqf4",
+          "hash": "wdusg6ofyyw4yzuwu3vtxd4qc5famgushwj6ahcbvzwrwxxi52xq",
+          "effects": [],
+          "doc": "The ordinal date of `t` (UTC) as text: year and day of the year, \"2026-289\"."
+        },
+        {
+          "name": "from_ordinal",
+          "kind": "fn",
+          "sig": "fn from_ordinal(y: Int, n: Int) -> Opt[Time]",
+          "sig_hash": "qfne4ctufjhfoeucb4e2jp4p6e",
+          "hash": "wtvvtlavtucqxqjtlg3zsolqibxtsavq77wtr2lmojrmvz4jf3pq",
+          "effects": [],
+          "doc": "Midnight UTC of day `n` (1 to 365 or 366) of year `y`; `none` when `n` is out of range."
+        },
+        {
+          "name": "parse_ordinal_date",
+          "kind": "fn",
+          "sig": "fn parse_ordinal_date(s: Str) -> Opt[Time]",
+          "sig_hash": "pqt4vnrf2kqayjijfsne6udx3u",
+          "hash": "sqfmy5tp7hiojtjkcqmfipyyvwys2gpyfxzf4cpy5cu3qtlcvkua",
+          "effects": [],
+          "doc": "Parses an ordinal date, \"2026-289\" or \"2026289\"."
+        },
+        {
+          "name": "add_units",
+          "kind": "fn",
+          "sig": "fn add_units(t: Time, n: Int, unit: CalUnit) -> Time",
+          "sig_hash": "e32p2uhxkaygj27aduul6owovy",
+          "hash": "5rlvfememmdxisqgjvmgc6s2mw4idhkyc7wctwvyzpms5wdk3qzq",
+          "effects": [],
+          "doc": "`t` moved by `n` units (backwards when negative). Months, quarters and years use\nTime.add_months, which clamps the day to the end of the month (January 31 plus one month is\nFebruary 28 or 29); days and weeks are exact multiples of 24 hours."
+        },
+        {
+          "name": "date_range",
+          "kind": "fn",
+          "sig": "fn date_range(start: Time, end: Time, every: Int where _ > 0, unit: CalUnit) -> List[Time]",
+          "sig_hash": "fijr2jyl7uehdx6hfzaaee2mxe",
+          "hash": "crvmkxen4adaq46l64cfgelpdxk2tthpeeeiakl5bnib4saqquxq",
+          "effects": [],
+          "doc": "The times `start`, `start + every units`, `start + 2 * every units`, ... that are before `end`\n(`end` excluded); empty when `end <= start`. Each element is computed from `start`\n(add_units(start, k * every, unit)), so a monthly range from January 31 gives February 28,\nMarch 31, April 30 rather than drifting to the 28th."
+        },
+        {
+          "name": "date_range_inclusive",
+          "kind": "fn",
+          "sig": "fn date_range_inclusive(start: Time, end: Time, every: Int where _ > 0, unit: CalUnit) -> List[Time]",
+          "sig_hash": "c565ku47alyf3su4agk4nw27hu",
+          "hash": "7dlfbye7epyw2gctlhdhi43sf77qt5byzk23ibud37vhibvls7ua",
+          "effects": [],
+          "doc": "Like date_range but `end` is included when the steps land on it exactly."
+        },
+        {
+          "name": "days_between",
+          "kind": "fn",
+          "sig": "fn days_between(a: Time, b: Time) -> Int",
+          "sig_hash": "oxtuiovgersgxtfozdgatguema",
+          "hash": "d57izyufoia3ssnq534eejsb4ulfio6qz3echcris6rxfgd3crcq",
+          "effects": [],
+          "doc": "The number of calendar days from the UTC date of `a` to the UTC date of `b` (negative when `b`\nis earlier); times of day are ignored."
+        },
+        {
+          "name": "months_between",
+          "kind": "fn",
+          "sig": "fn months_between(a: Time, b: Time) -> Int",
+          "sig_hash": "4u4f2oeavtpubijatcsngzstu4",
+          "hash": "ddde72jnm4tmjividk36kzitalwjk7dzivr6xgkgoqyhv2mfirna",
+          "effects": [],
+          "doc": "The number of whole months from `a` to `b`: the largest `m` with a.add_months(m) <= b, or the\nnegation of months_between(b, a) when `b` is before `a`."
+        },
+        {
+          "name": "years_between",
+          "kind": "fn",
+          "sig": "fn years_between(a: Time, b: Time) -> Int",
+          "sig_hash": "xn7ny3xrtmkzqpkidntu2wngne",
+          "hash": "ke6t2i4dzb5ac6ymsns423tfikft2hljna7ct5gjz6r4gnm2g32q",
+          "effects": [],
+          "doc": "The number of whole years from `a` to `b`, by the rule of months_between."
+        },
+        {
+          "name": "age",
+          "kind": "fn",
+          "sig": "fn age(birth: Time, on: Time) -> Int",
+          "sig_hash": "hry7ls6qj3wvjulugyxngxouhi",
+          "hash": "ijwry5iqwstrnozan3ggsqwrejgj4lzmzwnrq6bb2ll5lawwmrvq",
+          "effects": [],
+          "doc": "The age in whole years on date `on` of someone born on `birth`, from their dates (UTC; times\nof day are ignored). A February 29 birthday is reached on February 28 in common years.\nNegative when `on` is before `birth`."
+        },
+        {
+          "name": "diff",
+          "kind": "fn",
+          "sig": "fn diff(a: Time, b: Time) -> Period",
+          "sig_hash": "2kttexpw2r5yf3wmy4efjuqdee",
+          "hash": "gbal6dcdj3g7urunnu3kqqjj5mlexdlfjtw6y6m64drbciil2jgq",
+          "effects": [],
+          "doc": "The calendar difference from `a` to `b` as years, months, days, hours, minutes, seconds and\nmilliseconds (weeks 0), such that add_period(a, diff(a, b)) == b when `a <= b` (except when a\nmonth end clamps). When `b` is before `a` every part is negated from diff(b, a)."
+        },
+        {
+          "name": "interval",
+          "kind": "fn",
+          "sig": "fn interval(a: Time, b: Time) -> Opt[Interval]",
+          "sig_hash": "oxxrxzjfoy55cbubiiviprsklq",
+          "hash": "4igcixcwxofibczklfdbo26uwlikqky5ox6dhkxf5ctyq3lqrtja",
+          "effects": [],
+          "doc": "The interval from `a` to `b`; `none` when `b` is before `a`."
+        },
+        {
+          "name": "interval_length",
+          "kind": "fn",
+          "sig": "fn interval_length(iv: Interval) -> Duration",
+          "sig_hash": "lxeg2ifjbt5dy5co2c5gxkicyu",
+          "hash": "sgtlrwt5qjitowf6kw7nwpbnlahrpgnjy7censepryzlt3q5gc4a",
+          "effects": [],
+          "doc": "The length of interval `iv`."
+        },
+        {
+          "name": "interval_is_empty",
+          "kind": "fn",
+          "sig": "fn interval_is_empty(iv: Interval) -> Bool",
+          "sig_hash": "eyrdieek5w4bkodfdubnp2sz2a",
+          "hash": "j5c7oix3xwns4hezitomkca72vr37754s3guhphvlp7fvwv4i6kq",
+          "effects": [],
+          "doc": "Whether `iv` is empty (its start equals its end)."
+        },
+        {
+          "name": "covers",
+          "kind": "fn",
+          "sig": "fn covers(iv: Interval, t: Time) -> Bool",
+          "sig_hash": "nqd3aiovtj6sbdy3uzksu3wpvu",
+          "hash": "r5xpysuduqk55aoe4kmu36pxfirqfem7wnxt3qtmu7zswwmkh3fq",
+          "effects": [],
+          "doc": "Whether instant `t` is in `iv`: start <= t < end."
+        },
+        {
+          "name": "encloses",
+          "kind": "fn",
+          "sig": "fn encloses(outer: Interval, inner: Interval) -> Bool",
+          "sig_hash": "mx242t3fzsv4anz6v6mak2zkgy",
+          "hash": "5kvf5tjamuhxm6afg4vqvx6htkcsvdjc5jvpq2v6xfvbvsjvrmha",
+          "effects": [],
+          "doc": "Whether `outer` contains all of `inner`."
+        },
+        {
+          "name": "overlaps",
+          "kind": "fn",
+          "sig": "fn overlaps(a: Interval, b: Interval) -> Bool",
+          "sig_hash": "z4wvcllsnqcobz2wciajeugqlu",
+          "hash": "4gwuvsvppkltgtkpcjkd7gsfsxrzdmlhj3hgy5tlji3sk2hbl34a",
+          "effects": [],
+          "doc": "Whether `a` and `b` share some instant (empty intervals overlap nothing)."
+        },
+        {
+          "name": "abuts",
+          "kind": "fn",
+          "sig": "fn abuts(a: Interval, b: Interval) -> Bool",
+          "sig_hash": "zcqiqfkow3sie5s6ha7kzedqw4",
+          "hash": "lcizjovnaisgvt3ks5wbjtod4pgrqokkdrzdjmniyglvyfqgr5mq",
+          "effects": [],
+          "doc": "Whether one interval ends exactly where the other starts."
+        },
+        {
+          "name": "intersection",
+          "kind": "fn",
+          "sig": "fn intersection(a: Interval, b: Interval) -> Opt[Interval]",
+          "sig_hash": "4o6m5nowa35qpddixlp4azhnvu",
+          "hash": "p2s5vznkae4x7emfakpk2ldr5ngicviy7enjkzwqskgmuc2wiukq",
+          "effects": [],
+          "doc": "The part `a` and `b` share; `none` when they don't overlap."
+        },
+        {
+          "name": "gap",
+          "kind": "fn",
+          "sig": "fn gap(a: Interval, b: Interval) -> Opt[Interval]",
+          "sig_hash": "e4zyndc7qgob5rmmyhr3uxe2vm",
+          "hash": "v2ykkyosfj2d2pwqbvzijobvktocasb6oqnu2gfdluvtgzk6ilhq",
+          "effects": [],
+          "doc": "The interval between `a` and `b` when they are apart; `none` when they overlap or abut."
+        },
+        {
+          "name": "hull",
+          "kind": "fn",
+          "sig": "fn hull(a: Interval, b: Interval) -> Interval",
+          "sig_hash": "zypanemg73spy6xylix4roekku",
+          "hash": "jwgoxwcpdemcdw5aeujnxsqysefwtepv7srs3ylyjvf7r6p3kk4q",
+          "effects": [],
+          "doc": "The smallest interval that contains both `a` and `b`."
+        },
+        {
+          "name": "merge_intervals",
+          "kind": "fn",
+          "sig": "fn merge_intervals(xs: List[Interval]) -> List[Interval]",
+          "sig_hash": "yrkvqp4q2wr3hknwjikbyb756m",
+          "hash": "zi7pdjaymylm3nhskwdhhoe3o34rjoziub55nfkrdvoxzq6fdu5a",
+          "effects": [],
+          "doc": "The intervals sorted by start, with overlapping and abutting ones merged; empty ones dropped."
+        },
+        {
+          "name": "period_zero",
+          "kind": "fn",
+          "sig": "fn period_zero() -> Period",
+          "sig_hash": "ljcwcoxe5o4gp4ux7mrfyfwf3e",
+          "hash": "4k2ndzbjqrrmwk4cfz2k6ajxwtankrzkcff5jr3lrwp35xgk5mga",
+          "effects": [],
+          "doc": "The period with every part 0."
+        },
+        {
+          "name": "negate_period",
+          "kind": "fn",
+          "sig": "fn negate_period(p: Period) -> Period",
+          "sig_hash": "rtrqit7mghft37ofobijovaaf4",
+          "hash": "n2uvxnkwmk4xvoqx7wf5dzzrojmiovlck7t2mzhicfccrzee52ya",
+          "effects": [],
+          "doc": "The period with every part of `p` negated."
+        },
+        {
+          "name": "period_is_zero",
+          "kind": "fn",
+          "sig": "fn period_is_zero(p: Period) -> Bool",
+          "sig_hash": "zil5dcfm6sx2mvw7lnouh54ro4",
+          "hash": "wiy2n25bbxxje67x2w6jwzdq444qxf5ufu6d5qtj2lkyi63rojja",
+          "effects": [],
+          "doc": "Whether every part of `p` is 0."
+        },
+        {
+          "name": "add_period",
+          "kind": "fn",
+          "sig": "fn add_period(t: Time, p: Period) -> Time",
+          "sig_hash": "vdm7wuvuwgk2jbia2cnfqueb6y",
+          "hash": "vl2rkf5q7gpqyo274eo6qksessfklfyducr2uuo77722odiihwzq",
+          "effects": [],
+          "doc": "`t` moved by period `p`: first the years and months together with Time.add_months (clamping\nthe day to the month's end), then the weeks, days, hours, minutes, seconds and milliseconds as\nexact durations."
+        },
+        {
+          "name": "period_duration",
+          "kind": "fn",
+          "sig": "fn period_duration(p: Period) -> Opt[Duration]",
+          "sig_hash": "v5levzytktb4c3f5rau7mej3ni",
+          "hash": "7ejn2fcq4h5utkf36lagab2ieczib5kojirf5hympmetfbbmai2a",
+          "effects": [],
+          "doc": "The exact length of `p` when it has no years or months (days count 24 hours); `none` otherwise."
+        },
+        {
+          "name": "duration_period",
+          "kind": "fn",
+          "sig": "fn duration_period(d: Duration) -> Period",
+          "sig_hash": "3ilb4ytiffxxgo5vcnxd6ir2fi",
+          "hash": "h7q4nccxjg7gs3zkb2i2wtiwf4ww6ayu37f6jbdndq7tjatgc7ba",
+          "effects": [],
+          "doc": "Duration `d` split into days, hours, minutes, seconds and milliseconds (no weeks, months or\nyears); every part has the sign of `d`."
+        },
+        {
+          "name": "format_iso_duration",
+          "kind": "fn",
+          "sig": "fn format_iso_duration(p: Period) -> Str",
+          "sig_hash": "2uporlcoboknqqto3lmfxp6g2y",
+          "hash": "ric5psmc7vmtbhkyptcah4esojnhuo5jigv4wkol6m4rby5dlw4a",
+          "effects": [],
+          "doc": "`p` as an ISO 8601 duration: \"P1Y2M3DT4H5M6.5S\", \"P2W\", \"PT0S\" for zero. When every non-zero part\nis negative the text starts with \"-\" (\"-P1D\"); mixed signs are written per part (\"P1M-2D\"), as\njava.time does. Milliseconds are written as a fraction of the seconds."
+        },
+        {
+          "name": "parse_iso_duration",
+          "kind": "fn",
+          "sig": "fn parse_iso_duration(s: Str) -> Opt[Period]",
+          "sig_hash": "d6jt3s42dnaofjafwzf5ckf24y",
+          "hash": "ulov63dxarii3kt6uhj4zwksksxgo6dwcaqsfzqlt3hhcpwpecca",
+          "effects": [],
+          "doc": "Parses an ISO 8601 duration: \"P1Y2M10DT2H30M\", \"PT1.5S\", \"P3W\", \"-P1D\", \"P1M-2D\". Units must\ncome in the order Y M W D, then \"T\" and H M S; at least one part is required, and \"T\" must be\nfollowed by one. Only seconds may have a fraction (\".\" or \",\"), kept to milliseconds and\ntruncated beyond. A leading \"-\" negates every part. `none` for anything else, or for a value\nthat does not fit an Int."
+        },
+        {
+          "name": "unix_seconds",
+          "kind": "fn",
+          "sig": "fn unix_seconds(t: Time) -> Int",
+          "sig_hash": "6x6br6vrn2ufh5u5civse3ueti",
+          "hash": "j3ohr2xotctfoz3uqj64psx5l6nqazonjslyfa5wxst5b5jr2qsa",
+          "effects": [],
+          "doc": "The Unix time of `t` in whole seconds, rounded down."
+        },
+        {
+          "name": "from_unix_seconds",
+          "kind": "fn",
+          "sig": "fn from_unix_seconds(s: Int) -> Opt[Time]",
+          "sig_hash": "xbjtixyqfgo5cwgmngqpyxyvsi",
+          "hash": "yeshmxxtxdkh4qnumn7rh4qh3grifrlluzhmgqtfzl5dkjcm5nfq",
+          "effects": [],
+          "doc": "The time `s` seconds after 1970-01-01T00:00:00Z; `none` when `s * 1000` overflows an Int."
+        },
+        {
+          "name": "format_rfc3339",
+          "kind": "fn",
+          "sig": "fn format_rfc3339(t: Time, z: Zone) -> Str",
+          "sig_hash": "5bgwmiybpfgea5jnwyjntcympm",
+          "hash": "4c2mhqc2czbbeokdbr5oaygukvs4qne7en7equw6avofozccgwoq",
+          "effects": [],
+          "doc": "`t` as RFC 3339 text in zone `z`, with milliseconds only when they are not 0:\n\"2026-10-16T21:43:27+05:30\", \"2026-10-16T16:13:27.123Z\" in UTC."
+        },
+        {
+          "name": "parse_rfc3339",
+          "kind": "fn",
+          "sig": "fn parse_rfc3339(s: Str) -> Opt[Time]",
+          "sig_hash": "fqsiy5ecbw626ljpvd3taxouo4",
+          "hash": "4r35uke46uu7sk2j6kntbuhns3hrr5ykp6lnaehs5mhgrs4tw6ia",
+          "effects": [],
+          "doc": "Parses an RFC 3339 timestamp: date, \"T\" (or \"t\" or a space), hours, minutes and seconds, an\noptional fraction (kept to milliseconds, truncated beyond), and \"Z\" or an offset \"+05:30\". A\nleap second (\":60\") is rejected, as Time can't hold one. Stricter than the builtin parse_time,\nwhich also takes dates alone and offsets without minutes."
+        },
+        {
+          "name": "format_rfc2822",
+          "kind": "fn",
+          "sig": "fn format_rfc2822(t: Time, z: Zone) -> Str",
+          "sig_hash": "bqn6v66sffuhnfmrrxgz3aak7m",
+          "hash": "necqkrvknuwootihujvqo4sf3xdpw5e3ncxk7dsaw6glx3xn276a",
+          "effects": [],
+          "doc": "`t` as an RFC 5322 (RFC 2822) date in zone `z`: \"Fri, 16 Oct 2026 21:43:27 +0530\"."
+        },
+        {
+          "name": "parse_rfc2822",
+          "kind": "fn",
+          "sig": "fn parse_rfc2822(s: Str) -> Opt[Time]",
+          "sig_hash": "pejnsvqypsryei5pqtan6r5cye",
+          "hash": "xspcybrxkucl3iqrclg3pi7lidei5pgsgujoskcnsog66hfymxca",
+          "effects": [],
+          "doc": "Parses an RFC 5322 (RFC 2822) date: an optional weekday and comma, a day of one or two\ndigits, an English month abbreviation, a year (four digits; the obsolete two-digit years are\n2000 to 2049 for 00 to 49 and 1950 to 1999 for 50 to 99, three-digit years add 1900), hours\nand minutes with optional seconds, and a zone: \"+0530\", \"-0000\", or the obsolete \"UT\", \"GMT\",\n\"Z\", \"EST\", \"EDT\", \"CST\", \"CDT\", \"MST\", \"MDT\", \"PST\", \"PDT\" (military letters count as +0000,\nas RFC 5322 says). Names are case-insensitive, comments in parentheses and extra whitespace are\nignored. A weekday that doesn't match the date gives `none`."
+        },
+        {
+          "name": "format_http_date",
+          "kind": "fn",
+          "sig": "fn format_http_date(t: Time) -> Str",
+          "sig_hash": "mtqvjtxqhcnhei4iadbpqa5h2i",
+          "hash": "labxdxrwntfwaugb6letqy3ysxn2qnw2jdvpav7psvpf437uz6ka",
+          "effects": [],
+          "doc": "`t` as an HTTP date (IMF-fixdate, RFC 9110 section 5.6.7), always in GMT:\n\"Sun, 06 Nov 1994 08:49:37 GMT\"."
+        },
+        {
+          "name": "parse_http_date",
+          "kind": "fn",
+          "sig": "fn parse_http_date(s: Str) -> Opt[Time]",
+          "sig_hash": "buyfokx42tk3t3a2ihkztqfh4a",
+          "hash": "wm6r4kdvrvxw26hq2idoymcsq75tygvi3aljvb7d46mccc5kyvha",
+          "effects": [],
+          "doc": "Parses an HTTP date in the three forms RFC 9110 requires recipients to accept: IMF-fixdate\n(\"Sun, 06 Nov 1994 08:49:37 GMT\"), the obsolete RFC 850 form (\"Sunday, 06-Nov-94 08:49:37\nGMT\", two-digit years 00 to 69 are 2000 to 2069 and 70 to 99 are 1970 to 1999) and asctime\n(\"Sun Nov  6 08:49:37 1994\"). Names are case-sensitive, as the RFC specifies. A weekday that\ndoesn't match the date gives `none`."
+        },
+        {
+          "name": "parse_format",
+          "kind": "fn",
+          "sig": "fn parse_format(s: Str, pat: Str) -> Opt[Time]",
+          "sig_hash": "dxxewzhp5ovg6zgcdm2pc3to6a",
+          "hash": "yl5sk42zcxpsgkttgg72zviqhwkp3alh7zw2n3e6xxmblzsrsy6q",
+          "effects": [],
+          "doc": "Parses `s` by strftime pattern `pat`, the directives Time.format writes plus %z: %Y (four\ndigits), %m %d %H %M %S (two digits), %L (three-digit milliseconds), %j (three-digit day of the\nyear), %u (weekday digit, 1 is Monday), %a %A %b %B (English names, case-insensitive), %F\n(%Y-%m-%d), %T (%H:%M:%S), %z (\"Z\", \"+0530\" or \"+05:30\") and %%; every other character must\nmatch itself. Missing fields default to 1970-01-01 00:00:00.000 UTC; %j sets the month and day\nunless %m or %d is given, and then they must agree. A weekday that disagrees with the date,\nan unknown directive, an invalid date or leftover text gives `none`. Zone names (%Z) can't be\nparsed, since abbreviations are ambiguous."
+        },
+        {
+          "name": "relative_date",
+          "kind": "fn",
+          "sig": "fn relative_date(t: Time, now: Time, z: Zone) -> Str",
+          "sig_hash": "3putfp5g2osqejddcpcoqckixq",
+          "hash": "ch5w7ipne4wpep7ofuiwbvc6gbwp2d3m3zhx2n72wpsprvartz4q",
+          "effects": [],
+          "doc": "How the local date of `t` relates to the local date of `now` in zone `z`, in words: \"today\",\n\"yesterday\", \"tomorrow\", a weekday within six days (\"last Tuesday\", \"next Friday\"), \"last week\"\nor \"next week\" (7 to 13 days), \"3 weeks ago\" or \"in 2 weeks\" (under a month), \"last month\",\n\"in 5 months\", \"last year\", \"in 3 years\". Times of day are ignored; whole months and years are\ncounted by months_between of the local dates."
+        },
+        {
+          "name": "relative_days",
+          "kind": "fn",
+          "sig": "fn relative_days(t: Time, now: Time, z: Zone) -> Str",
+          "sig_hash": "2bd66qk537qgu3bex2jvtrvu7i",
+          "hash": "m6jsyhphma6c4t53eh3xndnnedtemj6o6m52zrgx4auyf5tzga5q",
+          "effects": [],
+          "doc": "Like relative_date but with numbers instead of weekday names and \"last\"/\"next\": \"today\",\n\"yesterday\", \"tomorrow\", \"3 days ago\", \"in 5 days\", \"1 week ago\", \"in 2 months\", \"4 years ago\"."
+        }
+      ]
+    }
+  ]
+}
