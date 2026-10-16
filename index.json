@@ -3,11 +3,11 @@
   "packages": [
     {
       "name": "pagination",
-      "description": "Offset pagination for list endpoints: clamped page requests and pages with a next offset",
-      "latest": "0.1.1",
-      "versions": 2,
+      "description": "Offset, page-number and keyset pagination: clamped requests, signed cursors, page ranges for UIs, Link headers and JSON envelopes",
+      "latest": "0.2.0",
+      "versions": 3,
       "keywords": [],
-      "updated": "2026-10-16T05:01:51Z",
+      "updated": "2026-10-16T19:19:15Z",
       "yanked": false,
       "deprecated": null
     },

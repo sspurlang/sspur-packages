@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "pagination",
-  "description": "Offset pagination for list endpoints: clamped page requests and pages with a next offset",
+  "description": "Offset, page-number and keyset pagination: clamped requests, signed cursors, page ranges for UIs, Link headers and JSON envelopes",
   "repository": "https://github.com/utkarshavardhana/sspur-pagination",
   "owners": [
     "utkarshavardhana"
@@ -139,6 +139,720 @@
           "hash": "sljv7t3i26k5ezr5yccgejm7omlhtosurbqpy6ix5sthtfvtuq7q",
           "effects": [],
           "doc": "The offset of the page before `p`, if there is one."
+        }
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "git": "https://github.com/sspurlang/sspur-pagination.git",
+      "tag": "v0.2.0",
+      "commit": "3f0a08f18d9ada3f88cda1988eed08cfa3132b97",
+      "hash": "jziuombunpaufpuoocmgoi2r33iupbcpt27o3zsruqzr7tyv2ewa",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/pagination-0.2.0/pagination-0.2.0.tar",
+        "sha256": "533b6065f517c0eb397c74a2163abe0429a817eaed2a5f62985abf279b9e2e8a",
+        "size": 64000
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T19:19:15Z",
+      "publisher": "utkarshavardhana",
+      "request": 13,
+      "api": [
+        {
+          "name": "Page",
+          "kind": "type",
+          "sig": "pub type Page[T] = {items: List[T], total: Int, limit: Int, offset: Int, next: Opt[Int]} derive Eq, Show",
+          "sig_hash": "evsogriznqaa4yox5f6oil46mm",
+          "hash": "zud642qawdzv3dcpmemd7obfiubr4ij34qxahawjwtvvol5mnnbq",
+          "effects": [],
+          "doc": "A page of `items` out of `total`, starting at `offset`; `next` is the offset of the next page."
+        },
+        {
+          "name": "PageReq",
+          "kind": "type",
+          "sig": "pub type PageReq = {limit: Int where _ >= 1 and _ <= 100, offset: Int where _ >= 0} derive Eq, Show",
+          "sig_hash": "jzq4rejska2jzjqbtwzfob2ski",
+          "hash": "zcecyyzvqktsugcaeppco5hpginiym34fmknlcp4l7uv3uv3zv3q",
+          "effects": [],
+          "doc": "A checked page request: a page size of 1 to 100 and an offset of at least 0."
+        },
+        {
+          "name": "request",
+          "kind": "fn",
+          "sig": "fn request(limit: Opt[Int], offset: Opt[Int]) -> PageReq",
+          "sig_hash": "zkfx4v62bp2wzffbpfu7ew3i3a",
+          "hash": "aodwacxcquq6n4vf6yk4s4zwvngljxuzuvqukl7x7w2lsqpvsamq",
+          "effects": [],
+          "doc": "The page request for query parameters that may be missing or out of range: `limit` defaults to\n20 and is kept within 1 to 100, `offset` defaults to 0 and is never negative."
+        },
+        {
+          "name": "page",
+          "kind": "fn",
+          "sig": "fn page[T](items: List[T], total: Int, r: PageReq) -> Page[T]",
+          "sig_hash": "2lwp2wnudrm6jioj3ayx2ftora",
+          "hash": "77dbiaemtptd6k7fcl3pcrcj547w6buur64tqlhildbwxuxqnlaa",
+          "effects": [],
+          "doc": "The page of `items` (already limited by the query) for request `r` out of `total` rows. `next`\nis the offset after the last item while rows remain; an empty page has no `next`, so a client\nthat reads past the end (rows deleted meanwhile) stops instead of asking for the same offset."
+        },
+        {
+          "name": "prev",
+          "kind": "fn",
+          "sig": "fn prev[T](p: Page[T]) -> Opt[Int]",
+          "sig_hash": "gdnjqtt7kddjbvmm2indhoxfne",
+          "hash": "xkxntqgvjg4tuz5xqahexdrk2qei3jbpwapdwzq7lvga7lloafva",
+          "effects": [],
+          "doc": "The offset of the page before `p`, if there is one: `none` on the first page, the start of the\nlast page when `p` lies past the end, else `limit` rows back (never below 0)."
+        },
+        {
+          "name": "Limits",
+          "kind": "type",
+          "sig": "pub type Limits = {default_limit: Int where _ >= 1 and _ <= 100, max_limit: Int where _ >= 1 and _ <= 100} derive Eq, Show",
+          "sig_hash": "nfwkaaaifsldixqojoycqxddb4",
+          "hash": "qbqmshawkprus2yymz3ql5iobxye3qiyrb76s6la3jduhc45dqsa",
+          "effects": [],
+          "doc": "Size limits for requests: the default page size and the largest one allowed, both within 1 to\n100 (the range of PageReq)."
+        },
+        {
+          "name": "request_in",
+          "kind": "fn",
+          "sig": "fn request_in(lim: Limits, limit: Opt[Int], offset: Opt[Int]) -> PageReq",
+          "sig_hash": "z5fyvtmbjrg7ddbfdkgkczwcf4",
+          "hash": "2kacvgpvklb5mtqiyynikp46nkhzcmyturbei5owcdxtprnme3na",
+          "effects": [],
+          "doc": "`request` with your own limits: `limit` defaults to `lim.default_limit` and is kept within 1 to\n`lim.max_limit`; `offset` defaults to 0 and is never negative."
+        },
+        {
+          "name": "request_str",
+          "kind": "fn",
+          "sig": "fn request_str(limit: Opt[Str], offset: Opt[Str]) -> PageReq",
+          "sig_hash": "ra4xdcmske4qy632bujxqjzhyu",
+          "hash": "pfivxtezt57j5cpdyume7pmel4xyl4c37iwxfsx6ltpgrv3jgnrq",
+          "effects": [],
+          "doc": "`request` for raw query strings: each value is trimmed and read as an integer, and text that\nisn't one (`\"abc\"`, `\"\"`, `\"1.5\"`) counts as missing, so it gets the default."
+        },
+        {
+          "name": "ParamErr",
+          "kind": "type",
+          "sig": "pub type ParamErr = NotANumber{param: Str, text: Str} | OutOfRange{param: Str, value: Int, low: Int, high: Int} derive Eq, Show",
+          "sig_hash": "jofbmm4wjknlaj23ztzlaif5ni",
+          "hash": "zzbogfx3rix6yvqeuv7ma44mx7tuc7ufevaibkietwidaf5crkxq",
+          "effects": [],
+          "doc": "Why a strict request was refused: a parameter that isn't an integer, or one outside its range\n(`low` to `high`, inclusive)."
+        },
+        {
+          "name": "strict_request",
+          "kind": "fn",
+          "sig": "fn strict_request(lim: Limits, limit: Opt[Str], offset: Opt[Str]) -> Res[PageReq, ParamErr]",
+          "sig_hash": "im6veaiploxa2pvsmpiefizo6e",
+          "hash": "orjim6ozlvv2fto7j6non7vjdwabxnyxwit72yxkcoxvdc73slzq",
+          "effects": [],
+          "doc": "The page request for raw query strings, refusing bad values instead of clamping them: `limit`\nmust be within 1 to `lim.max_limit` and `offset` at least 0; a missing value gets its default.\nThe limit is checked first."
+        },
+        {
+          "name": "paginate",
+          "kind": "fn",
+          "sig": "fn paginate[T](xs: List[T], r: PageReq) -> Page[T]",
+          "sig_hash": "6v5ppf2ngcto42nrav36zxinae",
+          "hash": "ae7khxqjeejfuf35l5ruxuznyryfaq7emn5dacnvjtkluhkruoqq",
+          "effects": [],
+          "doc": "The page of the in-memory list `xs` for request `r`: its slice, with `total` the length of `xs`."
+        },
+        {
+          "name": "bounds",
+          "kind": "fn",
+          "sig": "fn bounds(r: PageReq, total: Int where _ >= 0) -> (Int, Int)",
+          "sig_hash": "4hvsliuu36xeltvgzexhelmuy4",
+          "hash": "aqeguaxb7rhzzskc6unf62s4ohfdmspl7c2dsepk234nqjl5h5na",
+          "effects": [],
+          "doc": "The rows `[start, end)` that request `r` covers in a list of `total` rows, clamped to the list:\nboth are `total` when the offset lies past the end."
+        },
+        {
+          "name": "clamp_req",
+          "kind": "fn",
+          "sig": "fn clamp_req(r: PageReq, total: Int where _ >= 0) -> PageReq",
+          "sig_hash": "uhe4lvcvzd6fot5jvgximarecm",
+          "hash": "v7lvzfc57gcubwqdy7t3nnp56ibsk3jocv2lf6wrcbwodgnrlfmq",
+          "effects": [],
+          "doc": "The request moved back onto the list when its offset lies past the end of `total` rows: the\nstart of the last page (0 for an empty list). Other requests are returned unchanged."
+        },
+        {
+          "name": "last_offset",
+          "kind": "fn",
+          "sig": "fn last_offset(total: Int where _ >= 0, limit: Int where _ >= 1) -> Int",
+          "sig_hash": "oexjbrtyln4xatwx6nogrromhu",
+          "hash": "h6ekspphkvijfjd4h3k7nao3fxvayzqwcyqbs2jjqmowyobeop3a",
+          "effects": [],
+          "doc": "The offset of the last page of `total` rows in pages of `limit`: 0 for an empty list."
+        },
+        {
+          "name": "count_pages",
+          "kind": "fn",
+          "sig": "fn count_pages(total: Int where _ >= 0, limit: Int where _ >= 1) -> Int",
+          "sig_hash": "x7holbjoy226537jxu3qchheq4",
+          "hash": "4xg6sxevfz5qdgzefxdbslphwk2kwwxu65k66rmuqvohfcoeiwxa",
+          "effects": [],
+          "doc": "The number of pages `total` rows fill in pages of `limit`: 0 for an empty list."
+        },
+        {
+          "name": "page_count",
+          "kind": "fn",
+          "sig": "fn page_count[T](p: Page[T]) -> Int",
+          "sig_hash": "cvfrpy3qmzy7qeuymx7hhf46v4",
+          "hash": "mvl4nh3qrxnydpnfadxcgmwxjla4fs5c5igibwl5fw55ovjgnmrq",
+          "effects": [],
+          "doc": "The number of pages in `p`'s list: 0 when it is empty."
+        },
+        {
+          "name": "page_number",
+          "kind": "fn",
+          "sig": "fn page_number[T](p: Page[T]) -> Int",
+          "sig_hash": "kuaecnfw6zzmggzbia3y7nhada",
+          "hash": "op47exqkb2mvevxkmzplmhlrcdtkbxpbqdsokwg4uprflvwq7zbq",
+          "effects": [],
+          "doc": "The 1-based number of `p`: `offset / limit + 1`, so an offset that isn't a multiple of the limit\ncounts as the page it starts in. It can exceed `page_count` for a page past the end."
+        },
+        {
+          "name": "has_next",
+          "kind": "fn",
+          "sig": "fn has_next[T](p: Page[T]) -> Bool",
+          "sig_hash": "lwbiogmk4udbzu44pnsxn3r2wq",
+          "hash": "awycpkslkwb7zwovhiyantutigygvr7lwzarbxsr77ghyejkhnpq",
+          "effects": [],
+          "doc": "Whether a page follows `p` (its `next` is set)."
+        },
+        {
+          "name": "has_prev",
+          "kind": "fn",
+          "sig": "fn has_prev[T](p: Page[T]) -> Bool",
+          "sig_hash": "3fqhn6i5dhjuduneh247pvx6ua",
+          "hash": "raayhybvbqalswhbejmoclybbl65l5uytybamwggwpqwj6kzveza",
+          "effects": [],
+          "doc": "Whether a page comes before `p` (its offset is above 0)."
+        },
+        {
+          "name": "is_first",
+          "kind": "fn",
+          "sig": "fn is_first[T](p: Page[T]) -> Bool",
+          "sig_hash": "viq2mpjvxiov5sxqfrmeq6zvum",
+          "hash": "oco7nx6ykplhpqpkzmuu6piyrbyt7tner6shcb7rihvbostvemfq",
+          "effects": [],
+          "doc": "Whether `p` starts at offset 0."
+        },
+        {
+          "name": "is_last",
+          "kind": "fn",
+          "sig": "fn is_last[T](p: Page[T]) -> Bool",
+          "sig_hash": "w4f47cbmmkq643v5vu53rqv7jq",
+          "hash": "cyawcemdylunxzdsmzfq7oqvjapsvadq4i6a4qnyc4ec57cqnhxq",
+          "effects": [],
+          "doc": "Whether no page follows `p`."
+        },
+        {
+          "name": "is_empty_page",
+          "kind": "fn",
+          "sig": "fn is_empty_page[T](p: Page[T]) -> Bool",
+          "sig_hash": "3b5h6w3paw4qj5mw32okfetrke",
+          "hash": "kcodvwen46yz5a6zp4ff4cvvdwtjrcuyulwctqbtnsublwah63ja",
+          "effects": [],
+          "doc": "Whether `p` has no items."
+        },
+        {
+          "name": "out_of_range",
+          "kind": "fn",
+          "sig": "fn out_of_range[T](p: Page[T]) -> Bool",
+          "sig_hash": "g3jizxf6g3cxnv3kywzbghxecu",
+          "hash": "jwrnlhatn5lvgk2aefzkrjaum6j5qygqbn6zeudotdy6cy5shppa",
+          "effects": [],
+          "doc": "Whether `p` lies past the end of its list: an offset above 0 that is at least the total."
+        },
+        {
+          "name": "next_req",
+          "kind": "fn",
+          "sig": "fn next_req[T](p: Page[T]) -> Opt[PageReq]",
+          "sig_hash": "j72wkoapony2z6vram5aqmlko4",
+          "hash": "tivyia3rlltcje5fkbbsjcfuku4smogoiaz4uxitit4n6d2wnira",
+          "effects": [],
+          "doc": "The request for the page after `p`, if there is one."
+        },
+        {
+          "name": "prev_req",
+          "kind": "fn",
+          "sig": "fn prev_req[T](p: Page[T]) -> Opt[PageReq]",
+          "sig_hash": "kie5ulsksv2h5raosw5tksk7vu",
+          "hash": "vdfrridqmpvf7wkbbv7p5kf36yg23jebaktevj76gxcq4lwbxrua",
+          "effects": [],
+          "doc": "The request for the page before `p`, if there is one."
+        },
+        {
+          "name": "first_req",
+          "kind": "fn",
+          "sig": "fn first_req[T](p: Page[T]) -> PageReq",
+          "sig_hash": "6en6npsgr4pcsvk2iag2oxsstu",
+          "hash": "a2usnfupbxhbi4ivjdmtqr2phphedckp3ucwyeogbg4rulsyiyla",
+          "effects": [],
+          "doc": "The request for the first page of `p`'s list."
+        },
+        {
+          "name": "last_req",
+          "kind": "fn",
+          "sig": "fn last_req[T](p: Page[T]) -> PageReq",
+          "sig_hash": "xrmhjjlrqn6mwe7thsjeggoigy",
+          "hash": "xoxfjaatdpukbdz5vz7aebcepexcw73gttv5uqvterkdrfqnxdiq",
+          "effects": [],
+          "doc": "The request for the last page of `p`'s list (offset 0 when it is empty)."
+        },
+        {
+          "name": "shown_range",
+          "kind": "fn",
+          "sig": "fn shown_range[T](p: Page[T]) -> Opt[(Int, Int)]",
+          "sig_hash": "ziwq75scfzns6xiq545hffmgcq",
+          "hash": "r3gz4kveb5filj6tzoc6j6562n74wufvtbwsned6vgrzw6jw3vza",
+          "effects": [],
+          "doc": "The 1-based positions of the first and last item of `p` in its list, `none` when `p` is empty:\nrows 21 to 40 of a list are `some((21, 40))`."
+        },
+        {
+          "name": "range_label",
+          "kind": "fn",
+          "sig": "fn range_label[T](p: Page[T]) -> Str",
+          "sig_hash": "s3swahqkyefefi2r3ihc4n74lm",
+          "hash": "qmrgriaoxz4dwx5rm4b46hq4xhpaholyfq4zxdd6u3bglpxv4jbq",
+          "effects": [],
+          "doc": "A label for `p` such as `21-40 of 95`, `0 of 95` for an empty or out-of-range page, `0 of 0` for\nan empty list."
+        },
+        {
+          "name": "map_items",
+          "kind": "fn",
+          "sig": "fn map_items[A, B, e](p: Page[A], f: A -> B ! e) -> Page[B] ! e",
+          "sig_hash": "ay4puegmaocd625dkrnvjkarla",
+          "hash": "cx7bdyivbm3igeytuwhlcxvm6sjsfo43ia2p4jogtaev64xdh7va",
+          "effects": [
+            "e"
+          ],
+          "doc": "`p` with `f` applied to each item; everything else is kept."
+        },
+        {
+          "name": "NumReq",
+          "kind": "type",
+          "sig": "pub type NumReq = {number: Int where _ >= 1, size: Int where _ >= 1 and _ <= 100} derive Eq, Show",
+          "sig_hash": "ek5yvebdxgkpexy5tnnrnbmwxu",
+          "hash": "2sfo5oslwddryq5rar3dl644e4bxneendu6wpve4euvphmrwu74q",
+          "effects": [],
+          "doc": "A checked page-number request: a 1-based page `number` and a page `size` of 1 to 100."
+        },
+        {
+          "name": "numbered",
+          "kind": "fn",
+          "sig": "fn numbered(number: Opt[Int], size: Opt[Int]) -> NumReq",
+          "sig_hash": "i4vex32lscck6zbxo5ocmpyezq",
+          "hash": "shkkiuy6jvyxo3mwkoahgwktomoa6gr3y6mgmdp4caftplnhy4uq",
+          "effects": [],
+          "doc": "The page-number request for parameters that may be missing or out of range: `number` defaults to\n1 and is never below 1, `size` defaults to 20 and is kept within 1 to 100."
+        },
+        {
+          "name": "numbered_in",
+          "kind": "fn",
+          "sig": "fn numbered_in(lim: Limits, number: Opt[Int], size: Opt[Int]) -> NumReq",
+          "sig_hash": "ifsm6e5dlqqaztwed5mseuc4ny",
+          "hash": "6wbdncwgddmodr5ly7yq2u6xic5m7qofhgbtq6474nlnoty57xaa",
+          "effects": [],
+          "doc": "`numbered` with your own limits for the page size."
+        },
+        {
+          "name": "numbered_str",
+          "kind": "fn",
+          "sig": "fn numbered_str(number: Opt[Str], size: Opt[Str]) -> NumReq",
+          "sig_hash": "26p4jgzr3qwd2eotzls4ygi7ae",
+          "hash": "rykitemwjenppivfz7nsew6vj7kjzqxkmb4cmawhccf4qikz3y3q",
+          "effects": [],
+          "doc": "`numbered` for raw query strings; text that isn't an integer counts as missing."
+        },
+        {
+          "name": "strict_numbered",
+          "kind": "fn",
+          "sig": "fn strict_numbered(lim: Limits, number: Opt[Str], size: Opt[Str]) -> Res[NumReq, ParamErr]",
+          "sig_hash": "psyrd5gzwkrj7wnvzzjws7wgze",
+          "hash": "foe7qciu4o6hskctgqjnajqjyfpwxn66jm6dedfhik7pxz6x62sa",
+          "effects": [],
+          "doc": "The page-number request for raw query strings, refusing bad values: `number` must be at least 1\nand `size` within 1 to `lim.max_limit`; a missing value gets its default. The number is checked\nfirst."
+        },
+        {
+          "name": "offset_req",
+          "kind": "fn",
+          "sig": "fn offset_req(n: NumReq) -> PageReq",
+          "sig_hash": "gbnplbkcotk7hmcpyiyg2yizdq",
+          "hash": "3ue5u5bfry4pdhq2xksmvgrtlrs3xzyccqrfc6ftjgwzl37niodq",
+          "effects": [],
+          "doc": "The offset request for page-number request `n`: offset `(number - 1) * size`, saturating at the\nlargest Int."
+        },
+        {
+          "name": "num_req",
+          "kind": "fn",
+          "sig": "fn num_req(r: PageReq) -> NumReq",
+          "sig_hash": "cb5vv7sw752m2nlb4xjmoyg5fi",
+          "hash": "227j3e2wyfdygylpgnf45ewrh5lxuxhzh5wlvg6ahikfzjjzvrea",
+          "effects": [],
+          "doc": "The page-number request for offset request `r`: the page its offset starts in."
+        },
+        {
+          "name": "PageItem",
+          "kind": "type",
+          "sig": "pub type PageItem = PageNo{number: Int, current: Bool} | Ellipsis derive Eq, Show",
+          "sig_hash": "4xxloxdynynt3vl2kd3eolch44",
+          "hash": "ydmvjidgeducru7fhsbewnlpkmdgyep7fs3vvzxfbsggiy4jae5q",
+          "effects": [],
+          "doc": "One entry of a page-number range for a UI: a page (marked when it is the current one), or an\nellipsis standing for two or more hidden pages."
+        },
+        {
+          "name": "page_numbers",
+          "kind": "fn",
+          "sig": "fn page_numbers(current: Int, pages: Int where _ >= 0, window: Int where _ >= 0 and _ <= 1000, edges: Int where _ >= 0 and _ <= 1000) -> List[PageItem]",
+          "sig_hash": "kpeg5xlmu42acepm5xgt77ri5m",
+          "hash": "s7tielzzt66kjrllqsxjz5bm4u3uyialjtzr6vpsn7txeuledczq",
+          "effects": [],
+          "doc": "The page numbers to show for page `current` of `pages`: the first and last `edges` pages, and\n`window` pages on each side of the current one, with an ellipsis for each run of two or more\nhidden pages (a gap of one page shows that page instead). `current` is clamped into 1 to\n`pages`; no pages give `[]`. Page 8 of 20 with window 1 and edges 1 is `1 … 7 [8] 9 … 20`."
+        },
+        {
+          "name": "page_numbers_for",
+          "kind": "fn",
+          "sig": "fn page_numbers_for[T](p: Page[T], window: Int where _ >= 0 and _ <= 1000, edges: Int where _ >= 0 and _ <= 1000) -> List[PageItem]",
+          "sig_hash": "35euca3cmsfcrno3oxhi3x2ehe",
+          "hash": "5vkybpbpwsafmpkm3tbo6u2t6yiaeteko2tkbf6wbww3jc47hela",
+          "effects": [],
+          "doc": "`page_numbers` for page `p`."
+        },
+        {
+          "name": "page_numbers_text",
+          "kind": "fn",
+          "sig": "fn page_numbers_text(items: List[PageItem]) -> Str",
+          "sig_hash": "23ccz4y3uvsbmu5saujdww3syi",
+          "hash": "3bo2cpwmxpjlpwztdtshubv5r7mb4izeilbjba2t254pjx7ewr4q",
+          "effects": [],
+          "doc": "A page-number range as text: pages by number, the current one in brackets, and `…` for an\nellipsis, separated by spaces: `1 … 7 [8] 9 … 20`."
+        },
+        {
+          "name": "Dir",
+          "kind": "type",
+          "sig": "pub type Dir = Forward | Backward derive Eq, Show",
+          "sig_hash": "2qxoz7p35pda6z7jotby656uru",
+          "hash": "4ry4bxev6rggm45msjw3psfeagu2drh5ql6njk4mhn6zoadvevhq",
+          "effects": [],
+          "doc": "The direction a cursor reads in: `Forward` gives the rows after its keys, `Backward` the rows\nbefore them."
+        },
+        {
+          "name": "Cursor",
+          "kind": "type",
+          "sig": "pub type Cursor = {keys: List[Str], dir: Dir, expires_ms: Opt[Int]} derive Eq, Show",
+          "sig_hash": "r6k6pcw7jvagj4wb7lsjflbym4",
+          "hash": "5imrlectkhl3gx54uqtnnb6ebl76wsjztascug64lfljm3mkyxqa",
+          "effects": [],
+          "doc": "A position in a keyset-ordered list: the sort-key values of a row (as text, in the ORDER BY's\norder), the direction to read in, and an optional expiry in Unix milliseconds."
+        },
+        {
+          "name": "CursorErr",
+          "kind": "type",
+          "sig": "pub type CursorErr = Malformed{reason: Str} | BadSignature | Expired{at_ms: Int} | Unsupported{version: Int} derive Eq, Show",
+          "sig_hash": "pfjcdtr2j7onuwrgebtfgxrnya",
+          "hash": "thrkpqktsbom3o6kdxxj6sj46ea3wceeks5fkbqhjo2ykjlfjeua",
+          "effects": [],
+          "doc": "Why a cursor token was refused: it isn't a cursor (`reason` says why), its signature doesn't\ncheck (tampered with, another key, or another scope), it expired at `at_ms`, or it was written by\na newer version of the format."
+        },
+        {
+          "name": "after",
+          "kind": "fn",
+          "sig": "fn after(keys: List[Str]) -> Cursor",
+          "sig_hash": "wns22livqganj23n5tpalrcpiu",
+          "hash": "qf3dzo5nwz3nopwzym6k2a47nbtuyqx6germjheg3je4aqijpcpa",
+          "effects": [],
+          "doc": "The cursor for the rows after `keys`."
+        },
+        {
+          "name": "before",
+          "kind": "fn",
+          "sig": "fn before(keys: List[Str]) -> Cursor",
+          "sig_hash": "jdr5yi47us3cqe2dqhkp6gyape",
+          "hash": "chlkex26nt3xh7iid57hhiw2iaiuuszzo3dr7nuu6gr6zlvuypda",
+          "effects": [],
+          "doc": "The cursor for the rows before `keys`."
+        },
+        {
+          "name": "is_expired",
+          "kind": "fn",
+          "sig": "fn is_expired(c: Cursor, now_ms: Int) -> Bool",
+          "sig_hash": "q3yu3y4eumbktianedsjudpklq",
+          "hash": "au5awzn5jil5mcawoxndyznwml4voebm6cvlsphuyzjaxhnpaq4q",
+          "effects": [],
+          "doc": "Whether `c` has expired at `now_ms` (Unix milliseconds): its expiry is at or before `now_ms`."
+        },
+        {
+          "name": "encode_cursor",
+          "kind": "fn",
+          "sig": "fn encode_cursor(key: Secret[Bytes], scope: Str, c: Cursor) -> Str",
+          "sig_hash": "n6i2pquojm2hyi7kp4o4ven4sq",
+          "hash": "4luk2a3j4ogkjxxf4drtrqdm3v4mx7lwhjpenj7thdgwikdyinzq",
+          "effects": [],
+          "doc": "The opaque token for cursor `c`: base64url JSON, a `.`, and a 128-bit HMAC-SHA-256 tag over the\npayload and `scope`. The scope ties a token to one query (say `\"orders?status=open&sort=date\"`),\nso a cursor from another query or sort order is refused. Tokens are tamper-evident, not secret:\nanyone can read the keys, so don't put secrets in them."
+        },
+        {
+          "name": "decode_cursor",
+          "kind": "fn",
+          "sig": "fn decode_cursor(key: Secret[Bytes], scope: Str, token: Str) -> Res[Cursor, CursorErr]",
+          "sig_hash": "z5iwnw32ztjy62fvq3wd6eekq4",
+          "hash": "qexl4uluadzwffyaetzi2txh7dux7v2vszmhym5u5msaftuffqta",
+          "effects": [],
+          "doc": "The cursor in token `token`, checked against `key` and `scope`; expiry is not checked (see\n`decode_cursor_at`). Tokens over 4096 characters are `Malformed`."
+        },
+        {
+          "name": "decode_cursor_at",
+          "kind": "fn",
+          "sig": "fn decode_cursor_at(key: Secret[Bytes], scope: Str, token: Str, now_ms: Int) -> Res[Cursor, CursorErr]",
+          "sig_hash": "eihckcxl4bu5akqoapjfcvsyfy",
+          "hash": "fhw4vphcydtz3p4wudqf3q3unswhitfjcyxfw3iwo24gs525ejoa",
+          "effects": [],
+          "doc": "`decode_cursor`, also refusing a cursor that has expired at `now_ms` (Unix milliseconds)."
+        },
+        {
+          "name": "decode_cursor_any",
+          "kind": "fn",
+          "sig": "fn decode_cursor_any(keys: List[Secret[Bytes]], scope: Str, token: Str, now_ms: Opt[Int]) -> Res[Cursor, CursorErr]",
+          "sig_hash": "f73p2gnik77pm2zxuqjwph2omm",
+          "hash": "6jjqhe3lsr2pxxzctzddlzlcj43bufrftcnfnysf6g4aoh56nv3a",
+          "effects": [],
+          "doc": "`decode_cursor` for key rotation: the token is accepted when its tag checks under any of `keys`\n(newest first, say), and, when `now_ms` is given, it must not have expired. An empty `keys` list\nrefuses every token as `BadSignature`."
+        },
+        {
+          "name": "fetch_limit",
+          "kind": "fn",
+          "sig": "fn fetch_limit(limit: Int where _ >= 1 and _ <= 1000000) -> Int",
+          "sig_hash": "r4c6gdflxrfytggtimrmxkwyjm",
+          "hash": "vpyrvdhkz7e74zccaeqss4rr2nzmarbgxyn75lljn6hbxupvw7la",
+          "effects": [],
+          "doc": "The rows to fetch for a keyset page of `limit` (1 to a million): one more than the limit, so the\nextra row tells whether another page follows."
+        },
+        {
+          "name": "KeysetPage",
+          "kind": "type",
+          "sig": "pub type KeysetPage[T] = {items: List[T], next_page: Opt[Cursor], prev_page: Opt[Cursor]} derive Eq, Show",
+          "sig_hash": "s7k25t22w36b5d6fsvyj2vk2ca",
+          "hash": "w5ellxxnqu3s4wnhyedcsjobxfs2rieip6qtd3in67jvfi5x3ncq",
+          "effects": [],
+          "doc": "A keyset page before signing: its items in list order and the cursors of the next and previous\npages."
+        },
+        {
+          "name": "keyset",
+          "kind": "fn",
+          "sig": "fn keyset[T, e](rows: List[T], limit: Int where _ >= 1 and _ <= 1000000, req: Opt[Cursor], key_of: T -> List[Str] ! e) -> KeysetPage[T] ! e",
+          "sig_hash": "xlmvuvn47ho5wcsqrsp75jhcuq",
+          "hash": "jo6jzzvgekbpncf6qtqtd2rw3lrihcl5mb6nqvptw5gemcdh3wcq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The keyset page for `rows` fetched for request `req` (`none` for the first page) with\n`fetch_limit(limit)` rows: ascending after the cursor's keys for `Forward` (and the first page),\ndescending before them for `Backward`, as the database returns them. `key_of` gives a row's sort\nkeys. The extra row, if fetched, is dropped and only says another page follows; the items come\nback in ascending order either way. A page reached by a cursor always has a way back, and an\nempty page reached by a cursor points back at that cursor's keys."
+        },
+        {
+          "name": "seek",
+          "kind": "fn",
+          "sig": "fn seek[T, e](sorted: List[T], req: Opt[Cursor], limit: Int where _ >= 1 and _ <= 1000000, cmp: (T, List[Str]) -> Int ! e) -> List[T] ! e",
+          "sig_hash": "miciuv7avqtdu5upl4vimplbyi",
+          "hash": "f7zfzgupbfh4t4s62yar56cyv5cbzkyzouyt5ubejpraslpavdta",
+          "effects": [
+            "e"
+          ],
+          "doc": "The rows a database would return for `req` from the in-memory list `sorted` (ascending by sort\nkey): up to `fetch_limit(limit)` rows after the cursor's keys, or before them in descending\norder for `Backward`. `cmp(row, keys)` is negative, 0 or positive as the row sorts before, at or\nafter the keys. Pass the result to `keyset`."
+        },
+        {
+          "name": "CursorPage",
+          "kind": "type",
+          "sig": "pub type CursorPage[T] = {items: List[T], next_cursor: Opt[Str], prev_cursor: Opt[Str]} derive Eq, Show",
+          "sig_hash": "5blcjgaj3723foalov2hxsm254",
+          "hash": "6ek4r3kwqntksdoalrbdjsc73ry7w6hvyn7blexefdrabumifova",
+          "effects": [],
+          "doc": "A keyset page with signed cursor tokens, ready to send."
+        },
+        {
+          "name": "sign_page",
+          "kind": "fn",
+          "sig": "fn sign_page[T](key: Secret[Bytes], scope: Str, kp: KeysetPage[T], expires_ms: Opt[Int]) -> CursorPage[T]",
+          "sig_hash": "oil4j56ul7lap4kuu3q7bmmcwu",
+          "hash": "5h2ixog5j26c6zm3z2n4q4qztd5nw6anterusczskckthow4ldlq",
+          "effects": [],
+          "doc": "`kp` with its cursors signed by `encode_cursor` under `key` and `scope`, each expiring at\n`expires_ms` (Unix milliseconds) when given."
+        },
+        {
+          "name": "map_cursor_items",
+          "kind": "fn",
+          "sig": "fn map_cursor_items[A, B, e](cp: CursorPage[A], f: A -> B ! e) -> CursorPage[B] ! e",
+          "sig_hash": "4hsxioctrzyrzyz7s5et3lmst4",
+          "hash": "36sl5qhkx3mypgggw4hqmcd7ezuvlmbazp4su6hzgt7s5zt2tnwq",
+          "effects": [
+            "e"
+          ],
+          "doc": "`cp` with `f` applied to each item; the cursors are kept."
+        },
+        {
+          "name": "set_query",
+          "kind": "fn",
+          "sig": "fn set_query(url: Str, params: List[(Str, Str)]) -> Str",
+          "sig_hash": "fau5jzbwkvknpe2aipejausr34",
+          "hash": "76u4dhme3izbdwj6xkg3hgehqzmv4lm4mvunep7inz4ei66nur2q",
+          "effects": [],
+          "doc": "`url` with the query parameters `params` set: earlier values of those names are removed, the\nothers keep their order, the new ones are appended in order, and a fragment stays at the end.\nNames and values are percent-encoded (RFC 3986 unreserved characters are kept)."
+        },
+        {
+          "name": "offset_url",
+          "kind": "fn",
+          "sig": "fn offset_url(url: Str, r: PageReq) -> Str",
+          "sig_hash": "s6aqzkajidl7aldwsfkhwrns3i",
+          "hash": "do6curlldd2szh36p4tvpgw77v7pefw4ejy4lcwchlmdkq3m5p3q",
+          "effects": [],
+          "doc": "The URL of request `r` on `url`, with `limit` and `offset` query parameters."
+        },
+        {
+          "name": "page_url",
+          "kind": "fn",
+          "sig": "fn page_url(url: Str, number: Int, size: Int, page_param: Str, size_param: Str) -> Str",
+          "sig_hash": "6dpmemjb34ovhxpgn52zdgafde",
+          "hash": "si4uc4yeykuuspm7ui2nzq5l7romk227bq2ggn77mw4wxma62f3a",
+          "effects": [],
+          "doc": "The URL of page `number` of `size` on `url`, with the query parameters named `page_param` and\n`size_param`."
+        },
+        {
+          "name": "link_header",
+          "kind": "fn",
+          "sig": "fn link_header[T](url: Str, p: Page[T]) -> Str",
+          "sig_hash": "im7mhbwe2eli4qgxn4dpzru45a",
+          "hash": "vdbp54hs5tnpu672oz7wqi6grp4zgzrd6ahbw25n3prdflhjg5lq",
+          "effects": [],
+          "doc": "The RFC 8288 Link header for `p` on `url`, with `limit` and `offset` parameters: `first`, `prev`\n(when there is one), `next` (when there is one) and `last`, as `<url>; rel=\"next\"` joined by `, `."
+        },
+        {
+          "name": "link_header_numbered",
+          "kind": "fn",
+          "sig": "fn link_header_numbered[T](url: Str, p: Page[T], page_param: Str, size_param: Str) -> Str",
+          "sig_hash": "doef53zoyy24kzfzj4z7d4i6i4",
+          "hash": "2jwf3scpskiwhb5ndhszfi64dsqdhrwuvfj55ld6tndrs5tpikaa",
+          "effects": [],
+          "doc": "The Link header for `p` with page-number parameters named `page_param` and `size_param`\n(say `page` and `per_page`)."
+        },
+        {
+          "name": "cursor_link_header",
+          "kind": "fn",
+          "sig": "fn cursor_link_header[T](url: Str, param: Str, cp: CursorPage[T]) -> Str",
+          "sig_hash": "wvtjjtovskouhrygo62e7ur7lq",
+          "hash": "rva6nn274q7pakojxhjanvqaqlb2dnekk7tyncxvut6x4mo4stea",
+          "effects": [],
+          "doc": "The Link header for a cursor page: `prev` and `next` links that carry the cursor tokens in the\nquery parameter `param`; `\"\"` when there is neither."
+        },
+        {
+          "name": "WebLink",
+          "kind": "type",
+          "sig": "pub type WebLink = {uri: Str, rel: Str, params: List[(Str, Str)]} derive Eq, Show",
+          "sig_hash": "e6t5xkybfm3z7ye5tfv5ab2gq4",
+          "hash": "42bnpb7trrcuqmipn3tp5qdyrghclcmnwzvslu73axjr4ubujeta",
+          "effects": [],
+          "doc": "One link of a parsed Link header: its target, one relation type (lowercase), and its other\nparameters (names lowercase, quotes removed)."
+        },
+        {
+          "name": "parse_link_header",
+          "kind": "fn",
+          "sig": "fn parse_link_header(s: Str) -> List[WebLink]",
+          "sig_hash": "rv27w2dqowfcw7s2o52glckm74",
+          "hash": "4ki77dzssujspewglwqzyh6ilsext322z2yhqcaipxyloko7cl5q",
+          "effects": [],
+          "doc": "The links in an RFC 8288 Link header value, in order. A link with several relation types\n(`rel=\"next last\"`) gives one entry per type; links without `rel` or without `<...>` are\nskipped, and commas and semicolons inside quoted strings are kept."
+        },
+        {
+          "name": "rel_uri",
+          "kind": "fn",
+          "sig": "fn rel_uri(links: List[WebLink], rel: Str) -> Opt[Str]",
+          "sig_hash": "o3tnqjqikbmqjamxi3mu6s54ue",
+          "hash": "txbob3yysr6g3yz6g3uu4zswylvzsgjar6fubjjf3mbd4i7foiya",
+          "effects": [],
+          "doc": "The target of the first link with relation `rel` (compared case-insensitively)."
+        },
+        {
+          "name": "total_count_header",
+          "kind": "fn",
+          "sig": "fn total_count_header[T](p: Page[T]) -> (Str, Str)",
+          "sig_hash": "nvfgsgwbog3szsh56eyhepbqiu",
+          "hash": "hfgorpqb6mkrqrdi3fzvffyea4av6hn5oaaebki2cbmlp272pogq",
+          "effects": [],
+          "doc": "The `X-Total-Count` header for `p`."
+        },
+        {
+          "name": "Meta",
+          "kind": "type",
+          "sig": "pub type Meta = {total: Int, limit: Int, offset: Int, number: Int, pages: Int, next_offset: Opt[Int], prev_offset: Opt[Int]} derive Eq, Show",
+          "sig_hash": "2fq3gxen5x65sy4by7267mnldm",
+          "hash": "u5mopyhyibhuwul6p5plfzqd4ie34pijgvsx5d7nhvossvcejdmq",
+          "effects": [],
+          "doc": "The numbers of an offset page for a JSON body: total rows, page size, offset, the 1-based page\n`number`, the number of `pages`, and the offsets of the neighbouring pages."
+        },
+        {
+          "name": "Links",
+          "kind": "type",
+          "sig": "pub type Links = {self_url: Str, first_url: Str, prev_url: Opt[Str], next_url: Opt[Str], last_url: Str} derive Eq, Show",
+          "sig_hash": "5e2pbumvg35m3amcqcm2noqp3i",
+          "hash": "qwbyhzm2isydgjxcyxtjtflh2yksn6nooz7nlq25e5jz4x5s7qhq",
+          "effects": [],
+          "doc": "The URLs of an offset page and its neighbours for a JSON body."
+        },
+        {
+          "name": "Envelope",
+          "kind": "type",
+          "sig": "pub type Envelope[T] = {data: List[T], meta: Meta, links: Links} derive Eq, Show",
+          "sig_hash": "ugizadfyzrrpahvzn6tprcxjhi",
+          "hash": "rg74pjl52ujnavjfhx6cf4sdzeenuhfr2bx2kqelxsyu3bbusznq",
+          "effects": [],
+          "doc": "A JSON body for an offset page: `{\"data\": [...], \"meta\": {...}, \"links\": {...}}`."
+        },
+        {
+          "name": "page_meta",
+          "kind": "fn",
+          "sig": "fn page_meta[T](p: Page[T]) -> Meta",
+          "sig_hash": "vmotsyzb4yq6cvvuktzz6cdxxa",
+          "hash": "mu74alp7mjjumaprqf7jvunypcy6wgpkjmbxm63mbyazoxmc2m5a",
+          "effects": [],
+          "doc": "The `Meta` of `p`."
+        },
+        {
+          "name": "page_link_set",
+          "kind": "fn",
+          "sig": "fn page_link_set[T](url: Str, p: Page[T]) -> Links",
+          "sig_hash": "z4y2sr3i4o3kru3buyx5re7bqa",
+          "hash": "3dlhiw4iqeeqoqk6b7iyp57dfwe3zpgumd5zzhgdbyqaya5ec6cq",
+          "effects": [],
+          "doc": "The `Links` of `p` on `url`, with `limit` and `offset` parameters."
+        },
+        {
+          "name": "envelope",
+          "kind": "fn",
+          "sig": "fn envelope[T](url: Str, p: Page[T]) -> Envelope[T]",
+          "sig_hash": "pl2gc2caj6xgwv6xpmzqs56ehy",
+          "hash": "spgsrqpxcf3ijs7j66o4wglexirybkd6hmdrggwnqwzx7el2t5ja",
+          "effects": [],
+          "doc": "The JSON envelope of `p` on `url`; `json.encode` it for the response body."
+        },
+        {
+          "name": "CursorEnvelope",
+          "kind": "type",
+          "sig": "pub type CursorEnvelope[T] = {data: List[T], next_cursor: Opt[Str], prev_cursor: Opt[Str], next_url: Opt[Str], prev_url: Opt[Str]} derive Eq, Show",
+          "sig_hash": "bbylt4rvcn22mp6avnpnlzmwyu",
+          "hash": "xisq3qjswvfa6am63etdoz7in22hyiquc3nazvymecsjzsbz5qfa",
+          "effects": [],
+          "doc": "A JSON body for a cursor page: the items, the cursor tokens, and the URLs that carry them."
+        },
+        {
+          "name": "cursor_envelope",
+          "kind": "fn",
+          "sig": "fn cursor_envelope[T](url: Str, param: Str, cp: CursorPage[T]) -> CursorEnvelope[T]",
+          "sig_hash": "sdpjb24sjuwvjjrl2vqig6xljq",
+          "hash": "2nqmckbtyzj5hz3ese555o7uxrsl32k5ah2ufoa52o625amnyvwa",
+          "effects": [],
+          "doc": "The JSON envelope of cursor page `cp` on `url`, with the tokens in the query parameter `param`."
         }
       ]
     }
