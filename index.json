@@ -1,4 +1,15 @@
 {
   "schema": 1,
-  "packages": []
+  "packages": [
+    {
+      "name": "pagination",
+      "description": "Offset pagination for list endpoints: clamped page requests and pages with a next offset",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T04:30:37Z",
+      "yanked": false,
+      "deprecated": null
+    }
+  ]
 }
