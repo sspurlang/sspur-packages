@@ -1,0 +1,1188 @@
+{
+  "schema": 1,
+  "name": "sqlkit",
+  "description": "SQLite helpers over db: a parameters-only query builder, keyset pagination, upserts, batched inserts, up/down migrations with checksums, test fixtures",
+  "repository": "https://github.com/sspurlang/sspur-sqlkit",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-sqlkit.git",
+      "tag": "v0.1.0",
+      "commit": "ed96058c3b175ceeecd440956eb680885350a1fd",
+      "hash": "xzosytxumucxhsuworgqdcpfvqmrhmkes4vm247n2frdz4xbekda",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/sqlkit-0.1.0/sqlkit-0.1.0.tar",
+        "sha256": "ae18c7c44d731545bee24f35d82188e02cda1bf5a6bc2afb2aaee91fe2de3c43",
+        "size": 83456
+      },
+      "effects": [
+        "db"
+      ],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:29:28Z",
+      "publisher": "utkarshavardhana",
+      "request": 45,
+      "api": [
+        {
+          "name": "Value",
+          "kind": "type",
+          "sig": "pub type Value = SqlNull | SqlInt{v: Int} | SqlReal{v: F64} | SqlText{v: Str} | SqlBool{v: Bool} | SqlTime{v: Time} | SqlBlob{v: Bytes} | SqlDec{v: Dec} derive Eq, Show",
+          "sig_hash": "zdgycffaucgr5mikbgdtwt7hsm",
+          "hash": "g245pa2ipti46drz7ij7wbiswaqwhh2a5jircf7e3cpwdsatsosq",
+          "effects": [],
+          "doc": "A value bound to a `?` placeholder. `db.query` needs one element type in a non-literal parameter\nlist, so every value is sent as text (`Opt[Str]`) behind a typed placeholder: `CAST(? AS\nINTEGER)` for `SqlInt` and `SqlBool`, `CAST(? AS REAL)` for `SqlReal`, `unhex(?)` for\n`SqlBlob`, `?` for text, times (ISO 8601 with milliseconds, as the stdlib binds them) and\ndecimals, and `NULL` for `SqlNull`. The column receives the same type as with a native binding."
+        },
+        {
+          "name": "vint",
+          "kind": "fn",
+          "sig": "fn vint(n: Int) -> Value",
+          "sig_hash": "7f4rocnjoeqidig5nfftl3ybzu",
+          "hash": "knlhfyz4dsiepioe6tkqcj5roofujkmxqdkbmvs3yfxmuqmh7kha",
+          "effects": [],
+          "doc": "An integer value."
+        },
+        {
+          "name": "vreal",
+          "kind": "fn",
+          "sig": "fn vreal(x: F64) -> Value",
+          "sig_hash": "wst6otjaun5enpysy2q7vd34jy",
+          "hash": "hbbjvepbylwvr4xsei22hnvenrqzphsn2natvkblaueok4b76qla",
+          "effects": [],
+          "doc": "A real value. Infinities and NaN can't be stored by SQLite and are rejected when the query is\nbuilt."
+        },
+        {
+          "name": "vtext",
+          "kind": "fn",
+          "sig": "fn vtext(s: Str) -> Value",
+          "sig_hash": "z4wadaq5e7aclqqkjcszodriuq",
+          "hash": "zv5oyp7emjwsyyqw63byfotw3an66rf6fn6jh3oafgmmg4bbk47a",
+          "effects": [],
+          "doc": "A text value."
+        },
+        {
+          "name": "vbool",
+          "kind": "fn",
+          "sig": "fn vbool(b: Bool) -> Value",
+          "sig_hash": "dr2azdsmuwgw4bzcjnu2sbs72a",
+          "hash": "roeofxkys5urrbh5kht6dy4xggpf7ao2l4g72ynoic55us5ezotq",
+          "effects": [],
+          "doc": "A boolean value, stored as 0 or 1."
+        },
+        {
+          "name": "vtime",
+          "kind": "fn",
+          "sig": "fn vtime(t: Time) -> Value",
+          "sig_hash": "nqybotwazsmnvj4sabobhbukuy",
+          "hash": "hlfzefytn6xsjye44hckimyq3mxso4knkvo7bezenfdn762xinhq",
+          "effects": [],
+          "doc": "A time, stored as ISO 8601 text with milliseconds (`2026-10-15T09:30:00.000Z`), so text order\nis time order, exactly as the stdlib binds a `Time`."
+        },
+        {
+          "name": "vblob",
+          "kind": "fn",
+          "sig": "fn vblob(b: Bytes) -> Value",
+          "sig_hash": "fc65sq7es5a6wdbzfbxcoh53ym",
+          "hash": "pi25f5xotcncw4gsm2woplsodfwdv24ub4vnnyfjbnb4hducecwq",
+          "effects": [],
+          "doc": "A blob value."
+        },
+        {
+          "name": "vdec",
+          "kind": "fn",
+          "sig": "fn vdec(d: Dec) -> Value",
+          "sig_hash": "clihy6atjz5lll7b3aelty7zua",
+          "hash": "3ltvpjvurghzxhawnacg3gnzgecr452zj3ohq4dhq7pntqtwp67q",
+          "effects": [],
+          "doc": "A decimal, stored as its text (`12.50`), as the stdlib binds a `Dec`."
+        },
+        {
+          "name": "vnull",
+          "kind": "fn",
+          "sig": "fn vnull() -> Value",
+          "sig_hash": "hrucwn2lrgkbfoahsxov6nc6ny",
+          "hash": "5w3qkfqzgrmqirygzcsty5xtazlgyrhlyd26ssqajpfvolp2tlsa",
+          "effects": [],
+          "doc": "The NULL value."
+        },
+        {
+          "name": "vopt",
+          "kind": "fn",
+          "sig": "fn vopt(o: Opt[Value]) -> Value",
+          "sig_hash": "36kdqznekdp2vi4st5v2sbpf6e",
+          "hash": "hu4cz344tkaliquesdptc5ug337wt4tdwvfa2puinfpg2tn3vuxq",
+          "effects": [],
+          "doc": "`none` as NULL, `some(v)` as `v`: `vopt(email.map(vtext))`."
+        },
+        {
+          "name": "SqlkitErr",
+          "kind": "type",
+          "sig": "pub type SqlkitErr = BadIdent{name: Str, why: Str} | BadQuery{msg: Str} | BadCursor{msg: Str} derive Eq, Show",
+          "sig_hash": "32hllxrlotmgrs6hho6ysi525e",
+          "hash": "4lld3edsnfmpsc7xgo65twjn2monxdoqkpeulkw2sf6pqk636sjq",
+          "effects": [],
+          "doc": "Why a statement could not be built: an identifier that is not allowed, a statement that is not\nwell formed (or is unsafe, such as an UPDATE without WHERE), or a pagination cursor that does\nnot belong to the query."
+        },
+        {
+          "name": "Query",
+          "kind": "type",
+          "sig": "pub type Query = {sql: Str, params: List[Opt[Str]]} derive Eq, Show",
+          "sig_hash": "nyyq4rotbgc5oo3pqjb2g5wdna",
+          "hash": "sfr5bpyikaxi2c6ldehtb4xrzkm27wq3xi27cbhrichbhkow5ona",
+          "effects": [],
+          "doc": "SQL text and its parameters, ready for `db.query[T](c, q.sql, q.params)`, `db.one`, `db.opt`\nor `db.exec`."
+        },
+        {
+          "name": "placeholder",
+          "kind": "fn",
+          "sig": "fn placeholder(v: Value) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "ucdyegb5bzro7ovbapp2skbwwe",
+          "hash": "bilub2p7urvelpmues5w22jdk6bq3oqo3zc6ydc2j5gb3deo7qaq",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The placeholder and parameter for a value; see `Value`."
+        },
+        {
+          "name": "is_keyword",
+          "kind": "fn",
+          "sig": "fn is_keyword(s: Str) -> Bool",
+          "sig_hash": "dj3he5noika2b6ofr7seiajotq",
+          "hash": "kvt3wzjs6ogbiglobraclyblwycuyep4nrs6znefm4orqfryi7fa",
+          "effects": [],
+          "doc": "Whether `s` is one of SQLite's 147 keywords, in any case. The builder quotes every identifier,\nso a column named `order` or `key` works; use this when you write SQL by hand."
+        },
+        {
+          "name": "ident_problem",
+          "kind": "fn",
+          "sig": "fn ident_problem(s: Str) -> Opt[Str]",
+          "sig_hash": "rvtbbknr6mwqczoejmrpsirsby",
+          "hash": "ynrllinh27rv5purppe7y7ln62jfvhfchjniyrfi65tuzrqi2t5a",
+          "effects": [],
+          "doc": "Why `s` is not allowed as a plain identifier, or none: 1 to 128 ASCII letters, digits and\nunderscores, not starting with a digit, and not in SQLite's reserved `sqlite_` namespace."
+        },
+        {
+          "name": "is_ident",
+          "kind": "fn",
+          "sig": "fn is_ident(s: Str) -> Bool",
+          "sig_hash": "4nuxoczr5kd2lcclrzzsc53tjq",
+          "hash": "yf5vsjhan7mtoepr4clpejiguhcx5t7dg3sryduqp3gox27pmnrq",
+          "effects": [],
+          "doc": "Whether `s` is a valid plain identifier (see `ident_problem`)."
+        },
+        {
+          "name": "quote_ident",
+          "kind": "fn",
+          "sig": "fn quote_ident(s: Str) -> Str",
+          "sig_hash": "3xgbd7kghje5qj2faklqrnt3xe",
+          "hash": "pum7n6tvnmalc5t5ksh2fmtkrkwhsnif2sbawfpvwa4ip6yitqnq",
+          "effects": [],
+          "doc": "`s` as a quoted SQLite identifier: double quotes around it, with each `\"` doubled. This is safe\nfor any text; the builder uses it only on identifiers that passed `ident_problem`."
+        },
+        {
+          "name": "column_sql",
+          "kind": "fn",
+          "sig": "fn column_sql(s: Str) -> Str ! fail[SqlkitErr]",
+          "sig_hash": "dwmynkcdyhdwkvwuagtub7lh34",
+          "hash": "e5nju7it3exrbasxmy2usr67crdhzzcq2b3bga2z6iq4vtz2mika",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The SQL for one select-list column, checked: `*`, `t.*`, `name`, `t.name`, or any of those\nnames followed by ` as alias`."
+        },
+        {
+          "name": "name_sql",
+          "kind": "fn",
+          "sig": "fn name_sql(s: Str) -> Str ! fail[SqlkitErr]",
+          "sig_hash": "5rm4kanj3nehbyzcnhugzik36i",
+          "hash": "ojb7iimcl3xaljygxm4glhsghemlj7obm4ymxyrazqetfj6fywfq",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The SQL for a table or column name, `name` or `qualifier.name`, checked and quoted."
+        },
+        {
+          "name": "Op",
+          "kind": "type",
+          "sig": "pub type Op = OpEq | OpNe | OpLt | OpLe | OpGt | OpGe derive Eq, Show",
+          "sig_hash": "6sspxn6iilwowgftamvia3vnye",
+          "hash": "iri4jq65c4csdruw5gcznxpjj7tdzakkmyhyq34dqf3agvdphscq",
+          "effects": [],
+          "doc": "A comparison operator."
+        },
+        {
+          "name": "Cond",
+          "kind": "type",
+          "sig": "pub type Cond = Compare{col: Str, op: Op, v: Value} | CompareCols{a: Str, op: Op, b: Str} | RowCompare{cols: List[Str], op: Op, vs: List[Value]} | InList{col: Str, vs: List[Value], negated: Bool} | Like{col: Str, pattern: Str, negated: Bool} | NullTest{col: Str, negated: Bool} | Between{col: Str, lo: Value, hi: Value, negated: Bool} | AllOf{cs: List[Cond]} | AnyOf{cs: List[Cond]} | Negate{c: Cond} | RawCond{sql: Str, args: List[Value]} derive Eq, Show",
+          "sig_hash": "rg6mcbkbrwvbdrfgaganam5bmq",
+          "hash": "2q7lcr67fzkegzan4ogpdeslarj2b2au7hwv5qsnw3brum4x65uq",
+          "effects": [],
+          "doc": "A WHERE condition. Build them with the functions below (`eq`, `in_list`, `all_of`, ...); every\nvalue becomes a parameter."
+        },
+        {
+          "name": "eq",
+          "kind": "fn",
+          "sig": "fn eq(col: Str, v: Value) -> Cond",
+          "sig_hash": "vqqvk7zoyuqhfgdo7b42ci5ixu",
+          "hash": "f5ry4fbmm4emi7qlrurc7e3o7n5xy2bfgulfphnpdkliyopadjyq",
+          "effects": [],
+          "doc": "`col = v`. Comparing with NULL is never true in SQL: use `is_null` for that."
+        },
+        {
+          "name": "ne",
+          "kind": "fn",
+          "sig": "fn ne(col: Str, v: Value) -> Cond",
+          "sig_hash": "v722qq4b6oylu4gnhs7fqm6mre",
+          "hash": "tcqbyv4ivsfkxve7iejb3au7f7zmcp6usnxy6cjil3ceooj63baq",
+          "effects": [],
+          "doc": "`col <> v`."
+        },
+        {
+          "name": "lt",
+          "kind": "fn",
+          "sig": "fn lt(col: Str, v: Value) -> Cond",
+          "sig_hash": "x6dwzuctscel2k4mdfpidluohm",
+          "hash": "m3y3bb5k225bqtgby5hyzpjbvp4jovrmvv7pifrloe5tjgjt4ura",
+          "effects": [],
+          "doc": "`col < v`."
+        },
+        {
+          "name": "le",
+          "kind": "fn",
+          "sig": "fn le(col: Str, v: Value) -> Cond",
+          "sig_hash": "miymzz2pruxfontvmw2xkhzrse",
+          "hash": "3xzvywbvi52dhdj66z6gwwn4m7yp5c4ff3bcnjads7l5b5p4tdaa",
+          "effects": [],
+          "doc": "`col <= v`."
+        },
+        {
+          "name": "gt",
+          "kind": "fn",
+          "sig": "fn gt(col: Str, v: Value) -> Cond",
+          "sig_hash": "suwwx3kynsfwp4rhxbyvmhfrdq",
+          "hash": "zpjgikdjqnngkgflsmnj2wsicn4zl4xbbgyjzarelubwpc4hr35q",
+          "effects": [],
+          "doc": "`col > v`."
+        },
+        {
+          "name": "ge",
+          "kind": "fn",
+          "sig": "fn ge(col: Str, v: Value) -> Cond",
+          "sig_hash": "j5jdsrj6vcdy5jbdfzk3aftxsi",
+          "hash": "mvqn6il2qrkddqm3vqzirryyopw7xwhih6icc65bqmrocwpxbyja",
+          "effects": [],
+          "doc": "`col >= v`."
+        },
+        {
+          "name": "cols_compare",
+          "kind": "fn",
+          "sig": "fn cols_compare(a: Str, op: Op, b: Str) -> Cond",
+          "sig_hash": "7bgszq37x74v5i6n5si3afv3tm",
+          "hash": "2is3haivkfcztgzffaqdx2xloixwytk5kqnptcsi37g7prtra22q",
+          "effects": [],
+          "doc": "`a op b` for two columns, such as `excluded.version > items.version` in an upsert."
+        },
+        {
+          "name": "row_compare",
+          "kind": "fn",
+          "sig": "fn row_compare(cols: List[Str], op: Op, vs: List[Value]) -> Cond",
+          "sig_hash": "btduixanqnvm2c4xbmy24qrmxa",
+          "hash": "vj472ai3axmehnv2zmtb6unjmdjxqe5udftqkbb3wnxbze2nul4q",
+          "effects": [],
+          "doc": "`(c1, c2, ...) op (v1, v2, ...)`, SQLite's row-value comparison (lexicographic), which can use an\nindex on those columns."
+        },
+        {
+          "name": "in_list",
+          "kind": "fn",
+          "sig": "fn in_list(col: Str, vs: List[Value]) -> Cond",
+          "sig_hash": "wrppjbwzm36ny2aufl64vrroyq",
+          "hash": "y5kgngk5tbehjsev7yqj5udca26ymj7uxqqpqso6fmo3me7unxmq",
+          "effects": [],
+          "doc": "`col IN (v1, v2, ...)`. An empty list matches nothing."
+        },
+        {
+          "name": "not_in",
+          "kind": "fn",
+          "sig": "fn not_in(col: Str, vs: List[Value]) -> Cond",
+          "sig_hash": "rdmpjbziob5x7wueedfyj75aei",
+          "hash": "lxepzi7bja3lhpoaoynrvzkxn2lp2eo4nd3ubg3i4mktyeeybpna",
+          "effects": [],
+          "doc": "`col NOT IN (v1, v2, ...)`. An empty list matches every row. As in SQL, a NULL in the list\nmakes the test unknown (false) for every row."
+        },
+        {
+          "name": "like",
+          "kind": "fn",
+          "sig": "fn like(col: Str, pattern: Str) -> Cond",
+          "sig_hash": "odesjvkis7tx5geq5istsdprgy",
+          "hash": "4tq4ohjb7aqoy5qjsuicnli2r47wpcl7ccgso7nbmdhagf347gmq",
+          "effects": [],
+          "doc": "`col LIKE pattern ESCAPE '\\'` with a pattern you wrote, where `%` and `_` are wildcards (escape\nliteral text with `escape_like`). SQLite's LIKE ignores ASCII case."
+        },
+        {
+          "name": "not_like",
+          "kind": "fn",
+          "sig": "fn not_like(col: Str, pattern: Str) -> Cond",
+          "sig_hash": "m2pjhirs5ttec7t3osww6uclua",
+          "hash": "v2adtb27lqjwaud3mpqpa3k2crcmdbmghsyzyhuv4pwne24xkq4q",
+          "effects": [],
+          "doc": "`col NOT LIKE pattern ESCAPE '\\'`."
+        },
+        {
+          "name": "escape_like",
+          "kind": "fn",
+          "sig": "fn escape_like(s: Str) -> Str",
+          "sig_hash": "behztsoigzshgn73ktu2vtfmku",
+          "hash": "3j5hpuit3idzgiqiu37ivkmal5k3mnnz67qpehdv4oedgxjv2myq",
+          "effects": [],
+          "doc": "`s` with the LIKE wildcards `%` and `_` and the escape character `\\` escaped, so it matches\nitself literally."
+        },
+        {
+          "name": "like_substr",
+          "kind": "fn",
+          "sig": "fn like_substr(col: Str, s: Str) -> Cond",
+          "sig_hash": "v2qnyxpfyrmx5dgkjww4x2mmj4",
+          "hash": "lvvswvjsh3afyarujooi2k3edhk7nap6eaoynmnpakpukozzbuxa",
+          "effects": [],
+          "doc": "Rows whose `col` contains `s` literally (ASCII case ignored)."
+        },
+        {
+          "name": "like_prefix",
+          "kind": "fn",
+          "sig": "fn like_prefix(col: Str, s: Str) -> Cond",
+          "sig_hash": "r556owxqbs72s6skxhf7iqhr4e",
+          "hash": "5c4dkinvn6uvc7ihyxsfmd4cqpjkn5u5sjni3o7xw555ptxixheq",
+          "effects": [],
+          "doc": "Rows whose `col` starts with `s` literally (ASCII case ignored)."
+        },
+        {
+          "name": "like_suffix",
+          "kind": "fn",
+          "sig": "fn like_suffix(col: Str, s: Str) -> Cond",
+          "sig_hash": "25ob55ppdkfew6ruaipuvxep5u",
+          "hash": "vmvnfrzveqkmdfjifjuprhfncq3drqabby7gv6t473xbu4kxowlq",
+          "effects": [],
+          "doc": "Rows whose `col` ends with `s` literally (ASCII case ignored)."
+        },
+        {
+          "name": "is_null",
+          "kind": "fn",
+          "sig": "fn is_null(col: Str) -> Cond",
+          "sig_hash": "7yqpzcn6glyrapl2gkvd7p3dhi",
+          "hash": "uk5wpra365tt4z366u66oxms4557s52zucyq5pbfdm7whoxmhsta",
+          "effects": [],
+          "doc": "`col IS NULL`."
+        },
+        {
+          "name": "not_null",
+          "kind": "fn",
+          "sig": "fn not_null(col: Str) -> Cond",
+          "sig_hash": "qicgxuntjqxji22slb6avn5diq",
+          "hash": "7vcu3wkeaxt34vcezbhiu5qphiecziwwfbfmvlhveeysxhmzkvrq",
+          "effects": [],
+          "doc": "`col IS NOT NULL`."
+        },
+        {
+          "name": "between",
+          "kind": "fn",
+          "sig": "fn between(col: Str, lo: Value, hi: Value) -> Cond",
+          "sig_hash": "ucjgmldcrwqnmqejgrriceeg2m",
+          "hash": "vultfxhihqldpojupqc4hf3ooebk5nngssg2pltev7q7uvjsnu5a",
+          "effects": [],
+          "doc": "`col BETWEEN lo AND hi`, both ends included."
+        },
+        {
+          "name": "not_between",
+          "kind": "fn",
+          "sig": "fn not_between(col: Str, lo: Value, hi: Value) -> Cond",
+          "sig_hash": "jhg6pykme5rtjyvoy2vom2k6ge",
+          "hash": "uvn265h7atdzfwqprgv2z77gm3pyl5eneeimpsbvi53pdaf6wkha",
+          "effects": [],
+          "doc": "`col NOT BETWEEN lo AND hi`."
+        },
+        {
+          "name": "all_of",
+          "kind": "fn",
+          "sig": "fn all_of(cs: List[Cond]) -> Cond",
+          "sig_hash": "z7244qpybxxvdwsnp4gy5jdmqy",
+          "hash": "ldiamqxbbz6pmvwh5je5cy3vfcbvvkmqpj77lh3yqvifdtzwrcva",
+          "effects": [],
+          "doc": "Every condition holds; an empty list is true."
+        },
+        {
+          "name": "any_of",
+          "kind": "fn",
+          "sig": "fn any_of(cs: List[Cond]) -> Cond",
+          "sig_hash": "jtom4bmb2ahhu4ey4tmdh473ty",
+          "hash": "c6c6jk27dwlzul4t6eocr2fwq2q4chekeggqby47n4kntjsg2fpq",
+          "effects": [],
+          "doc": "At least one condition holds; an empty list is false."
+        },
+        {
+          "name": "negate",
+          "kind": "fn",
+          "sig": "fn negate(c: Cond) -> Cond",
+          "sig_hash": "hm5fgtfx2fuyjujftjsfxsev3e",
+          "hash": "4pqy77yzdmqqp6d2edvtfyh6rlbzwbend6ecuowx5c2rj2xwyf7a",
+          "effects": [],
+          "doc": "`NOT (c)`."
+        },
+        {
+          "name": "raw",
+          "kind": "fn",
+          "sig": "fn raw(sql: Str, args: List[Value]) -> Cond",
+          "sig_hash": "vix2pdzxhjpzqco6sn343q3j7y",
+          "hash": "xq5a6442kyrhyrkoxu6supqkjy3ivpgovc5535gghgtxonvezxda",
+          "effects": [],
+          "doc": "An escape hatch: SQL you wrote, with one bare `?` per argument (outside quoted text), such as\n`raw(\"lower(email) = ?\", [vtext(e)])`. Each `?` becomes the argument's typed placeholder. Never\nbuild `sql` from input; that is what the arguments are for."
+        },
+        {
+          "name": "cond_sql",
+          "kind": "fn",
+          "sig": "fn cond_sql(c: Cond) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "5zrcobj6vry654lqmswjibxg7i",
+          "hash": "ddb5hkk6bdydrfrcshutb5fewk36nvdmsq76wkzq22g4ts27qvea",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The SQL and parameters of a condition."
+        },
+        {
+          "name": "Nulls",
+          "kind": "type",
+          "sig": "pub type Nulls = NullsDefault | NullsFirst | NullsLast derive Eq, Show",
+          "sig_hash": "om4doovwzck22vmuvd2jydq73u",
+          "hash": "yx4hs6f6swl2ffyehukqyrecozkllf4zwjomgwt4eczib3q5wjzq",
+          "effects": [],
+          "doc": "Where NULLs sort."
+        },
+        {
+          "name": "Order",
+          "kind": "type",
+          "sig": "pub type Order = {col: Str, desc: Bool, nulls: Nulls} derive Eq, Show",
+          "sig_hash": "y3ocdgrgepaudkn4jbrczqgkqe",
+          "hash": "32xneumepskwcfvzsg3cp5diuz7hph5je4kfs4z2oiwg5i66boaq",
+          "effects": [],
+          "doc": "One ORDER BY term."
+        },
+        {
+          "name": "asc",
+          "kind": "fn",
+          "sig": "fn asc(col: Str) -> Order",
+          "sig_hash": "s4d7ddo5wfnmjejlgbj4vzu5oq",
+          "hash": "dhvgdw7hs47abx64qyoipb3mm6yv232udbus5zbc6v54jdpzssrq",
+          "effects": [],
+          "doc": "Ascending by `col`."
+        },
+        {
+          "name": "desc",
+          "kind": "fn",
+          "sig": "fn desc(col: Str) -> Order",
+          "sig_hash": "dxlvdmapggybbwg6nl3qtscbwe",
+          "hash": "3cppu77n6hpzh236tgrdxfnsrwr4zcix4j4rkcqdzftru4dlrsrq",
+          "effects": [],
+          "doc": "Descending by `col`."
+        },
+        {
+          "name": "nulls_first",
+          "kind": "fn",
+          "sig": "fn nulls_first(o: Order) -> Order",
+          "sig_hash": "ejhcqfoxf4n6msjjv4rb26cqsy",
+          "hash": "aezqj4otp7tf6vw6juyr3lxejgqyfyfitz7tkaasrahbr6drdola",
+          "effects": [],
+          "doc": "The same order with NULLs first."
+        },
+        {
+          "name": "nulls_last",
+          "kind": "fn",
+          "sig": "fn nulls_last(o: Order) -> Order",
+          "sig_hash": "3q2c4yuqy3uzrnj34r24twe6ee",
+          "hash": "74evze7pll3wm5ba4vhnojedqwlk5fktzo7vnaluqvanudrhalxq",
+          "effects": [],
+          "doc": "The same order with NULLs last."
+        },
+        {
+          "name": "Select",
+          "kind": "type",
+          "sig": "pub type Select = {table: Str, column_list: List[Str], is_distinct: Bool, where_cond: Opt[Cond], order_terms: List[Order], row_limit: Opt[Int], row_offset: Opt[Int]} derive Eq, Show",
+          "sig_hash": "pgoc3cdgzpce2p2bui3ggsfxzi",
+          "hash": "nilnkmrptwzsprg5qpqygviecjw6tqiaoqar5265knqyptcqxz7a",
+          "effects": [],
+          "doc": "A SELECT. Build one with `select` and the functions after it, or with a literal and `with`."
+        },
+        {
+          "name": "select",
+          "kind": "fn",
+          "sig": "fn select(table: Str) -> Select",
+          "sig_hash": "rwjx4bkoqhosycecixrr2iq4ru",
+          "hash": "mryon7goa7vwztz5dyfl7a3s77gvrbdqn2il7yfxi5za4m5iboka",
+          "effects": [],
+          "doc": "`SELECT * FROM table`."
+        },
+        {
+          "name": "columns",
+          "kind": "fn",
+          "sig": "fn columns(s: Select, cols: List[Str]) -> Select",
+          "sig_hash": "nqlpxguz7tn63tz2hnfmw62fo4",
+          "hash": "sk3nk3wp7gci53tdq2wqbcg7xewmqiolp5evlizugtk6cdz2i3ga",
+          "effects": [],
+          "doc": "The columns to select (see `column_sql`); an empty list is `*`."
+        },
+        {
+          "name": "distinct",
+          "kind": "fn",
+          "sig": "fn distinct(s: Select) -> Select",
+          "sig_hash": "syc37pua7wjmnlbiain6s3jevu",
+          "hash": "xmgzxlqdbmfdlwiau6iv4txdccjys3c727khgcmnynh6uahlo7sa",
+          "effects": [],
+          "doc": "SELECT DISTINCT."
+        },
+        {
+          "name": "select_where",
+          "kind": "fn",
+          "sig": "fn select_where(s: Select, c: Cond) -> Select",
+          "sig_hash": "6rw724mqe4wi7363zpxqg7kr2q",
+          "hash": "yjczy4ym34pvbsbwtmaypnxvo5fswt42pgpyijttnpfflzynpleq",
+          "effects": [],
+          "doc": "Adds a condition, joined with AND to any condition already there."
+        },
+        {
+          "name": "order_by",
+          "kind": "fn",
+          "sig": "fn order_by(s: Select, os: List[Order]) -> Select",
+          "sig_hash": "wza5zftmvpucbimyywh2tbjo3q",
+          "hash": "uk3sqet2xq2j2q3ahl3at6fi4w6bcqinixlk6iozz3ior64oagxa",
+          "effects": [],
+          "doc": "Adds ORDER BY terms after those already there."
+        },
+        {
+          "name": "limit",
+          "kind": "fn",
+          "sig": "fn limit(s: Select, n: Int where _ >= 0) -> Select",
+          "sig_hash": "zfahvcjwhfiikhxw7nhrs2isvu",
+          "hash": "cv3yxpolnnqhjps3qwhula7jwqin46v64hhycrklmzfgjidfupoa",
+          "effects": [],
+          "doc": "At most `n` rows."
+        },
+        {
+          "name": "offset",
+          "kind": "fn",
+          "sig": "fn offset(s: Select, n: Int where _ >= 0) -> Select",
+          "sig_hash": "ljealb3jnl4khze6dt2pyayoiy",
+          "hash": "6qley7vqegtd75odawiuasuwp5fjr57gwttzbvkjr3rimqpxpm6q",
+          "effects": [],
+          "doc": "Skips the first `n` rows (`LIMIT -1 OFFSET n` when there is no limit)."
+        },
+        {
+          "name": "select_sql",
+          "kind": "fn",
+          "sig": "fn select_sql(s: Select) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "5simdhvbhpg6uzukwpkgzl6k7a",
+          "hash": "e4jz43hmxi7gydyw6gss2lxlivgylx7ho5tnjqpqjsu43sstafpq",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The SQL and parameters of a SELECT."
+        },
+        {
+          "name": "count_sql",
+          "kind": "fn",
+          "sig": "fn count_sql(s: Select) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "hy6zbrm34yudcchrkeju7gv264",
+          "hash": "i5j25mvq75y7y34kcaxmbka2lgadiahz4m6t2bqxzsubstb2gkcq",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "`SELECT count(*)` over the rows `s` selects, ignoring its order, limit and offset; read it with\n`db.one[Int]`."
+        },
+        {
+          "name": "exists_sql",
+          "kind": "fn",
+          "sig": "fn exists_sql(s: Select) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "ffwowwj7fpeex3rbfi3hcf5aqi",
+          "hash": "yxg64owpo54idm7pdtfjsvkxmitigvzpzcgwuaaaimtamt6de64q",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "`SELECT EXISTS (...)` over the rows `s` selects, 0 or 1; read it with `db.one[Bool]`."
+        },
+        {
+          "name": "Conflict",
+          "kind": "type",
+          "sig": "pub type Conflict = ConflictFail | DoNothing{target: List[Str]} | DoUpdate{target: List[Str], from_excluded: List[Str], assign: List[(Str, Value)], only_if: Opt[Cond]} derive Eq, Show",
+          "sig_hash": "ei7ktg54dfj7pt4l2pmx6q3nl4",
+          "hash": "dp2vq2y7vrj4mwirhrirbmlimpw2jdtydegpsa235tcdjr6rgtvq",
+          "effects": [],
+          "doc": "What an INSERT does when a row conflicts with a unique key: fail (the default), do nothing, or\nupdate. `DoUpdate` sets each of `from_excluded` to the value the insert proposed\n(`excluded.col`), each pair of `assign` to a value, and applies only where `only_if` holds."
+        },
+        {
+          "name": "Insert",
+          "kind": "type",
+          "sig": "pub type Insert = {into: Str, cols: List[Str], rows: List[List[Value]], on_conflict: Conflict, returning_cols: List[Str]} derive Eq, Show",
+          "sig_hash": "cntyig7oaegvclzvkvsyiofs74",
+          "hash": "mgxigom6llgpd2xs35nnraqyqfehjcxr3o37qubxdvmbmcohs6ta",
+          "effects": [],
+          "doc": "An INSERT of one or more rows."
+        },
+        {
+          "name": "insert",
+          "kind": "fn",
+          "sig": "fn insert(table: Str, cols: List[Str]) -> Insert",
+          "sig_hash": "luet4zmxu4o7xhhhytwcfcu74i",
+          "hash": "avpw6hqu6iwly5hdjschfy6jv6xi4snm3m7qwzzhy64aarnlljxq",
+          "effects": [],
+          "doc": "`INSERT INTO table (cols...)` with no rows yet."
+        },
+        {
+          "name": "values",
+          "kind": "fn",
+          "sig": "fn values(i: Insert, row: List[Value]) -> Insert",
+          "sig_hash": "hxids5cbc5sahrjs6hegvfjm4e",
+          "hash": "i4tbmzhj5r2ejhtp2rvjq3okjng2kmjjncegc7yazpjqypqflbma",
+          "effects": [],
+          "doc": "Adds a row; it must have one value per column."
+        },
+        {
+          "name": "values_all",
+          "kind": "fn",
+          "sig": "fn values_all(i: Insert, rows: List[List[Value]]) -> Insert",
+          "sig_hash": "kvdsqhmzzufrxxirxyspuwbuxq",
+          "hash": "igsxvpddyeimszpqurnkbj4x3dgm2zpv77ygdgh26rnn6y7gnosq",
+          "effects": [],
+          "doc": "Adds rows."
+        },
+        {
+          "name": "on_conflict_nothing",
+          "kind": "fn",
+          "sig": "fn on_conflict_nothing(i: Insert, target: List[Str]) -> Insert",
+          "sig_hash": "vzsjnjyuam6gnkchc7m7cckuna",
+          "hash": "qyxjy2ibtzbrsaamtgxnztqkcchy3if7clx5ttccoj5urm5iystq",
+          "effects": [],
+          "doc": "`ON CONFLICT (target) DO NOTHING`; an empty target is any uniqueness conflict."
+        },
+        {
+          "name": "on_conflict_update",
+          "kind": "fn",
+          "sig": "fn on_conflict_update(i: Insert, target: List[Str], set_cols: List[Str]) -> Insert",
+          "sig_hash": "3s4hfh7444qghssdofj2ibgdgi",
+          "hash": "4ygaqzwgq3gad6vg5vklirb22uzudg73exouaoxulst2wqymhzaa",
+          "effects": [],
+          "doc": "`ON CONFLICT (target) DO UPDATE SET c = excluded.c` for each of `set_cols`."
+        },
+        {
+          "name": "upsert",
+          "kind": "fn",
+          "sig": "fn upsert(table: Str, cols: List[Str], row: List[Value], key: List[Str]) -> Insert",
+          "sig_hash": "zbkgoclubj2phgpw3ga3wdk5i4",
+          "hash": "gkzzbhivxtxqogtcx2k4xeabouq7bhfa3sdifl4mzvs56lkv7n3q",
+          "effects": [],
+          "doc": "The upsert of `row` into `table` keyed by `key`: inserts it, or updates every other column of\nthe existing row."
+        },
+        {
+          "name": "insert_returning",
+          "kind": "fn",
+          "sig": "fn insert_returning(i: Insert, cols: List[Str]) -> Insert",
+          "sig_hash": "4gy4edqc3zf67myi7t4ki2lrwq",
+          "hash": "p5anaw6nib5imwnknnx7izy5ndje2cam3unyrp2hqz7wbfc3umga",
+          "effects": [],
+          "doc": "RETURNING these columns (see `column_sql`); read the rows with `db.query[T]` or `db.one[T]`."
+        },
+        {
+          "name": "insert_sql",
+          "kind": "fn",
+          "sig": "fn insert_sql(i: Insert) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "xcl56v6odv7ayfeuwkfvqkftwe",
+          "hash": "4edzvu3qgwz4qaxdkyykq7frih3xg6j5llxotpw3imkkm744swva",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The SQL and parameters of an INSERT."
+        },
+        {
+          "name": "insert_chunks",
+          "kind": "fn",
+          "sig": "fn insert_chunks(i: Insert, max_params: Int where _ > 0) -> List[Insert] ! fail[SqlkitErr]",
+          "sig_hash": "krdzb7nloiyzsqvpemyj2wfaw4",
+          "hash": "ce3ejacd7ghbmkq66qc2bcxmypbtz4v3omz32u3j7hkct27xykcq",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The insert split into inserts of consecutive rows, each with at most `max_params` parameters\n(SQLite's limit is 32766). A single row with more parameters is an error."
+        },
+        {
+          "name": "max_params",
+          "kind": "fn",
+          "sig": "fn max_params() -> Int",
+          "sig_hash": "boxsoklwlx3k5akalvnppfgem4",
+          "hash": "ph73hse6y4mduu55pnwkkdkzugpjqut2ibeqzk2ot2br2svcwflq",
+          "effects": [],
+          "doc": "SQLite's limit on parameters in one statement."
+        },
+        {
+          "name": "insert_batch",
+          "kind": "fn",
+          "sig": "fn insert_batch(c: Db, i: Insert) -> Int ! db, fail[DbErr], fail[SqlkitErr]",
+          "sig_hash": "gzmavlvygjjjnymdtms2ihqz2q",
+          "hash": "c2nj4jshe4pfre2gwnvwne2zjdmslbcca5nkhztjotmepimgr7jq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[SqlkitErr]"
+          ],
+          "doc": "Inserts all the rows of `i` in one transaction, in statements under SQLite's parameter limit,\nand returns the number of rows changed."
+        },
+        {
+          "name": "Update",
+          "kind": "type",
+          "sig": "pub type Update = {table: Str, set_list: List[(Str, Value)], where_cond: Opt[Cond], returning_cols: List[Str], all_rows: Bool} derive Eq, Show",
+          "sig_hash": "cj7sfldib76l6jrsxvddd5f2hi",
+          "hash": "v2lh7pwa72c6p65jrlzba6qrf5yelv7i2a2ik2n25p5el33mekkq",
+          "effects": [],
+          "doc": "An UPDATE. Without a condition it is refused unless `all_rows` is set (`update_all`)."
+        },
+        {
+          "name": "update",
+          "kind": "fn",
+          "sig": "fn update(table: Str, sets: List[(Str, Value)]) -> Update",
+          "sig_hash": "szvhmsocte76offhhrplqcssbi",
+          "hash": "4lt3qugs34b62jjabyet3mt7idllpk2yrwvqo3rgu3but2gg277q",
+          "effects": [],
+          "doc": "`UPDATE table SET col = value, ...`."
+        },
+        {
+          "name": "update_where",
+          "kind": "fn",
+          "sig": "fn update_where(u: Update, c: Cond) -> Update",
+          "sig_hash": "b7bg6javu6b7wwv3cns5cwgz3q",
+          "hash": "hcmgmqm5j3c6m6kvsculdhso3g5z426gfdfsnhh5brdrdherf5wq",
+          "effects": [],
+          "doc": "Adds a condition, joined with AND to any condition already there."
+        },
+        {
+          "name": "update_all",
+          "kind": "fn",
+          "sig": "fn update_all(u: Update) -> Update",
+          "sig_hash": "t6sdemtr6yuy2xyowp6rqktk6a",
+          "hash": "5t7rempisvnuwaac53lm7mqfkjpbrjam3pbxvuhh4n6hb266jzua",
+          "effects": [],
+          "doc": "Allows the update to change every row (no WHERE)."
+        },
+        {
+          "name": "update_returning",
+          "kind": "fn",
+          "sig": "fn update_returning(u: Update, cols: List[Str]) -> Update",
+          "sig_hash": "b3yx3wdsc4ilz2twfmbazkt5da",
+          "hash": "wpxqri6cfuxmekxvq6xgij5j3zihv7fxvsbuko44gyv7ughfoeya",
+          "effects": [],
+          "doc": "RETURNING these columns."
+        },
+        {
+          "name": "update_sql",
+          "kind": "fn",
+          "sig": "fn update_sql(u: Update) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "o35fjlruozbrgjpptrloleuph4",
+          "hash": "qt7eeoam7ytco36qdareg3qugfmacztiewxwyvlylul2zye4mspa",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The SQL and parameters of an UPDATE."
+        },
+        {
+          "name": "Delete",
+          "kind": "type",
+          "sig": "pub type Delete = {table: Str, where_cond: Opt[Cond], returning_cols: List[Str], all_rows: Bool} derive Eq, Show",
+          "sig_hash": "vuqg4turaqkojfi4mt75f5sdne",
+          "hash": "lenzbz5ua6yzy4upc5v7quclzopngaatqqd32ovribyhixsctria",
+          "effects": [],
+          "doc": "A DELETE. Without a condition it is refused unless `all_rows` is set (`delete_all`)."
+        },
+        {
+          "name": "delete",
+          "kind": "fn",
+          "sig": "fn delete(table: Str) -> Delete",
+          "sig_hash": "sbvib5vpyx3t22fisqu5poszki",
+          "hash": "e4yzwb4xu5kya7dh4lvobjneh2zlhz32rswlzybv7f3rxt6ordmq",
+          "effects": [],
+          "doc": "`DELETE FROM table`."
+        },
+        {
+          "name": "delete_where",
+          "kind": "fn",
+          "sig": "fn delete_where(d: Delete, c: Cond) -> Delete",
+          "sig_hash": "7ax65pworxdrqmbugkp3a57x3e",
+          "hash": "6owqm6lctouji6nttd2zkfjfwoqlx42adjqt53uorspzrskzzrpq",
+          "effects": [],
+          "doc": "Adds a condition, joined with AND to any condition already there."
+        },
+        {
+          "name": "delete_all",
+          "kind": "fn",
+          "sig": "fn delete_all(d: Delete) -> Delete",
+          "sig_hash": "nmup4rd4dzfhxttltt7xudeobu",
+          "hash": "z33w5b2vsg5gdpupwt67gajsk2kpfnpcfnvbvqkytk5pypc5adha",
+          "effects": [],
+          "doc": "Allows the delete to remove every row (no WHERE)."
+        },
+        {
+          "name": "delete_returning",
+          "kind": "fn",
+          "sig": "fn delete_returning(d: Delete, cols: List[Str]) -> Delete",
+          "sig_hash": "smt2cs7so3rlnqwhjs5uyl6jne",
+          "hash": "42qytaogq3cwejmxir7dos2pwaqdm7iwwhj6eefecqsq42lc6p6a",
+          "effects": [],
+          "doc": "RETURNING these columns."
+        },
+        {
+          "name": "delete_sql",
+          "kind": "fn",
+          "sig": "fn delete_sql(d: Delete) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "77hjknjr2jflnjkcirvwyxrg3q",
+          "hash": "2ki36l2vu6orx65rc2djajoy3r4ycqbzgk2q3a62vzgl7o62n6nq",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The SQL and parameters of a DELETE."
+        },
+        {
+          "name": "exec",
+          "kind": "fn",
+          "sig": "fn exec(c: Db, x: Query) -> Int ! db, fail[DbErr]",
+          "sig_hash": "lhakel3fwpudtoxwhvqhojgcgy",
+          "hash": "kowhjlflqw7prn43g45vj4vtyheh47kad4umba5evoumi7icjrka",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Runs a statement that returns no rows (`db.exec` with its parameters) and returns the number of\nrows changed."
+        },
+        {
+          "name": "Keyset",
+          "kind": "type",
+          "sig": "pub type Keyset = {base: Select, keys: List[Order], page_size: Int where _ > 0} derive Eq, Show",
+          "sig_hash": "gaki2f55srigfgofojxhyzjfl4",
+          "hash": "uwzqthx5iwsdia5ktnjwuc2hpgqscjvfuh666d7qg25yujo64irq",
+          "effects": [],
+          "doc": "Keyset (seek) pagination over `base` ordered by `keys`: each page starts after (or before) the\nkey of a row instead of at an offset, so pages are stable under inserts and cost the same deep\ninto the table. The keys must identify a row (end them with the primary key) and must not be\nNULL; directions may be mixed. `base` gives the table, columns and filter, and must not set its\nown order, limit or offset."
+        },
+        {
+          "name": "keyset",
+          "kind": "fn",
+          "sig": "fn keyset(base: Select, keys: List[Order], page_size: Int where _ > 0) -> Keyset",
+          "sig_hash": "dwxejx64bmnynsc7qtm76t4ika",
+          "hash": "e25lmui47jg4nrijo6ubkowbagtnoldwihvwhqxbx3ndt2aax57q",
+          "effects": [],
+          "doc": "Keyset pagination of `base` by `keys`, `page_size` rows a page."
+        },
+        {
+          "name": "KeyPage",
+          "kind": "type",
+          "sig": "pub type KeyPage[T] = {items: List[T], after: Opt[Str], before: Opt[Str]} derive Eq, Show",
+          "sig_hash": "atm227txr5qud2vdb6apbuukcm",
+          "hash": "rvvfubdpiey6hv47uakmbvfnfkywuv4imcffhisbz3qxastkcekq",
+          "effects": [],
+          "doc": "A page: its rows in key order, the cursor for the page after it (`after`, when there may be\nmore rows) and the cursor for the page before it (`before`, when this page was reached through a\ncursor)."
+        },
+        {
+          "name": "cursor",
+          "kind": "fn",
+          "sig": "fn cursor(k: Keyset, key: List[Value]) -> Str ! fail[SqlkitErr]",
+          "sig_hash": "vtlmb23cr6oysfdoq6xkihmrvq",
+          "hash": "fflymkk765cn773gq64z5shckafhd45cwcjumrvvwq6zmmsirj4a",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The opaque cursor for a row whose key columns hold `key` (one value per key, in order). It is\nbase64url JSON, not signed: a changed cursor can only select another page of the same query."
+        },
+        {
+          "name": "decode_cursor",
+          "kind": "fn",
+          "sig": "fn decode_cursor(k: Keyset, c: Str) -> List[Value] ! fail[SqlkitErr]",
+          "sig_hash": "4ocguv5masvvkqohr6vdo5updu",
+          "hash": "34qsoljuqiwg5gqy4vlo4bveronzo6k7upwdvshu6tfemsluruma",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The key values in a cursor, checked against the keyset it must belong to."
+        },
+        {
+          "name": "keyset_sql",
+          "kind": "fn",
+          "sig": "fn keyset_sql(k: Keyset, after: Opt[Str]) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "u6pd3xfwzwbhuu45afmritpop4",
+          "hash": "7r455744qz37a3h37wpehievpsnbtwwksx44sufz4qm6jwjxhf7a",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The query for the page after `after` (the first page for `none`), ordered by the keys, with one\nrow more than a page so `keyset_page` can tell whether more follow."
+        },
+        {
+          "name": "keyset_before_sql",
+          "kind": "fn",
+          "sig": "fn keyset_before_sql(k: Keyset, before: Opt[Str]) -> Query ! fail[SqlkitErr]",
+          "sig_hash": "ymhjg436g5hs5fuahwci25j6sq",
+          "hash": "djettm2bqgxfdpbiluajzslvwkvc3k5ql6qvmzoacjamacgkxxya",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The query for the page before `before` (the last page for `none`). Its rows come in reverse\nkey order; `keyset_page_before` puts them back."
+        },
+        {
+          "name": "keyset_page",
+          "kind": "fn",
+          "sig": "fn keyset_page[T](k: Keyset, after: Opt[Str], rows: List[T], key: T -> List[Value]) -> KeyPage[T] ! fail[SqlkitErr]",
+          "sig_hash": "taxmyuzjpxme2jlpklprk4kiwi",
+          "hash": "mp7ex5avbfe7gj6i7m6oysgzyl55asugmveux2wom7flsk33f7zq",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The page from the rows `keyset_sql(k, after)` returned; `key` gives a row's key values."
+        },
+        {
+          "name": "keyset_page_before",
+          "kind": "fn",
+          "sig": "fn keyset_page_before[T](k: Keyset, before: Opt[Str], rows: List[T], key: T -> List[Value]) -> KeyPage[T] ! fail[SqlkitErr]",
+          "sig_hash": "7wphwftk33ikorb6vm742mt6nm",
+          "hash": "zyg5pvijtkwwuxm36tqtj446aru647giz6cibdmderzisumdbibq",
+          "effects": [
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The page from the rows `keyset_before_sql(k, before)` returned, in key order."
+        },
+        {
+          "name": "Migration",
+          "kind": "type",
+          "sig": "pub type Migration = {version: Int where _ > 0, name: Str, up: Str, down: Str} derive Eq, Show",
+          "sig_hash": "f6pdwvnrw2v37i63tbp2x7zi7m",
+          "hash": "u23vjoyaxla7olfjollgictqvkdgut3npizueku2wugyolmixfza",
+          "effects": [],
+          "doc": "One versioned schema change: `up` applies it and `down` undoes it (`\"\"` when it can't be\nundone). Each may hold several statements. Versions are positive and increase along the list;\nthey need not be consecutive (timestamps work)."
+        },
+        {
+          "name": "migration",
+          "kind": "fn",
+          "sig": "fn migration(version: Int where _ > 0, name: Str, up: Str, down: Str) -> Migration",
+          "sig_hash": "zp7wf6f7k26y5cl4zykzi7wnpm",
+          "hash": "pqesovg4phg7ub4y33ozo33hkgmqg2kh5hqtzhif6nbyvomky7wa",
+          "effects": [],
+          "doc": "A migration."
+        },
+        {
+          "name": "MigrateErr",
+          "kind": "type",
+          "sig": "pub type MigrateErr = DuplicateVersion{version: Int} | UnorderedVersion{version: Int} | ChangedMigration{version: Int, name: Str} | UnknownApplied{version: Int} | OutOfOrder{version: Int} | Irreversible{version: Int, name: Str} | NoSuchTarget{version: Int} derive Eq, Show",
+          "sig_hash": "ulnvakfe5nnblfdzrtxo7yxxcy",
+          "hash": "my5etqqqijjnthscajy62qo6iokblppgtnkerf6h25bbi4gxwo2a",
+          "effects": [],
+          "doc": "Why migrations can't run: the list is not in order or repeats a version; an applied migration\nwas edited since (its checksum differs) or is no longer in the list; a pending one is older\nthan one already applied; a step down has no `down`; or the target version is not in the list."
+        },
+        {
+          "name": "Direction",
+          "kind": "type",
+          "sig": "pub type Direction = StepUp | StepDown derive Eq, Show",
+          "sig_hash": "zmoo5vt2wwb7iiqunqr5ezp4wy",
+          "hash": "4ry4bxev6rggm45msjw3psfeagu2drh5ql6njk4mhn6zoadvevhq",
+          "effects": [],
+          "doc": "Whether a step applies or undoes its migration."
+        },
+        {
+          "name": "Step",
+          "kind": "type",
+          "sig": "pub type Step = {version: Int, name: Str, direction: Direction, sql: Str} derive Eq, Show",
+          "sig_hash": "nanckw662hvlr4hdwfwql7lp6a",
+          "hash": "klgo45tkhfzqdvybeonbnuzygr27knxtpnojntk7l5e4ggbjed3a",
+          "effects": [],
+          "doc": "One step of a plan: the migration, which way, and the SQL that runs."
+        },
+        {
+          "name": "MigrationState",
+          "kind": "type",
+          "sig": "pub type MigrationState = Applied{at: Str} | Pending | Changed{at: Str} | Missing{at: Str} derive Eq, Show",
+          "sig_hash": "5vduupzcti6ady2haxtgezi7uy",
+          "hash": "vl6om5xxqsh2o2csqrawxsoi7gfezwj5qpvgpgyqjep434zsswjq",
+          "effects": [],
+          "doc": "Where a migration stands in a database: applied (with the time it was applied), pending,\napplied but edited since, or applied but missing from the list."
+        },
+        {
+          "name": "MigrationStatus",
+          "kind": "type",
+          "sig": "pub type MigrationStatus = {version: Int, name: Str, state: MigrationState} derive Eq, Show",
+          "sig_hash": "wefemnruokj3g5x6g5dukm36ly",
+          "hash": "6yk3l4kdvydkv7yucnqta575bkeel2j2xaiqusopeancajv7j2ea",
+          "effects": [],
+          "doc": "One migration's state."
+        },
+        {
+          "name": "migrations_table",
+          "kind": "fn",
+          "sig": "fn migrations_table() -> Str",
+          "sig_hash": "dxinshsznqkpxbqyic6toxfd4e",
+          "hash": "qdmza5myo64hm6dqrsfpfgodf5regj24oqx5tnawrkdytqyrg6ha",
+          "effects": [],
+          "doc": "The table sqlkit records applied migrations in (db.migrate uses its own, `sspur_migrations`)."
+        },
+        {
+          "name": "checksum",
+          "kind": "fn",
+          "sig": "fn checksum(m: Migration) -> Str",
+          "sig_hash": "heoxa4xvctnymjmn66sttbompm",
+          "hash": "pjkxyxdgrxdwqwqfip5fafvnnobsp76a55bnqm5z5fg6h3h2undq",
+          "effects": [],
+          "doc": "The SHA-256 of a migration's `up` SQL, in hex: what is recorded when it is applied and compared\nafterwards. Editing `down` later is allowed; editing `up` is `ChangedMigration`."
+        },
+        {
+          "name": "validate",
+          "kind": "fn",
+          "sig": "fn validate(ms: List[Migration]) -> Unit ! fail[MigrateErr]",
+          "sig_hash": "kpw6caswkkf3nnv6b6tbvsxyji",
+          "hash": "je5ehernzumbhg2bbgobtutw3vsf2xowvtupvnfh6rp4i2pdsafa",
+          "effects": [
+            "fail[MigrateErr]"
+          ],
+          "doc": "Checks that versions increase strictly along the list."
+        },
+        {
+          "name": "latest",
+          "kind": "fn",
+          "sig": "fn latest(ms: List[Migration]) -> Int",
+          "sig_hash": "tbjvneurxdulwp3bjyukzp3ayy",
+          "hash": "oxnhgcosbeqqmfhltgn2csr2hkfbcuvxdxm55n7yxy77ztxjhvyq",
+          "effects": [],
+          "doc": "The newest version in the list, or 0 for none."
+        },
+        {
+          "name": "current_version",
+          "kind": "fn",
+          "sig": "fn current_version(c: Db) -> Int ! db, fail[DbErr]",
+          "sig_hash": "k7fkg4liypijlcohl24swmcuki",
+          "hash": "c44gt3ccw2nxy2n6byasuubpgmdcschfrtzb3doiuw3awkus5zlq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "The newest applied version, or 0 for none."
+        },
+        {
+          "name": "status",
+          "kind": "fn",
+          "sig": "fn status(c: Db, ms: List[Migration]) -> List[MigrationStatus] ! db, fail[DbErr]",
+          "sig_hash": "rj4o5gny3yf5wpgbmz66smbe6i",
+          "hash": "bu73xknitmjxstjyczp2jplg37kwq2d2jidslmvpguwzvgb4pdqa",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Each migration of the list with its state, then applied versions the list doesn't have."
+        },
+        {
+          "name": "plan",
+          "kind": "fn",
+          "sig": "fn plan(c: Db, ms: List[Migration], target: Int where _ >= 0) -> List[Step] ! db, fail[DbErr], fail[MigrateErr]",
+          "sig_hash": "mogw64qks47c3o2zvmylnaizqe",
+          "hash": "eyqnrlpii476433vd2cuuukdkqgikhmdwkn5uj37in5mgws5rrfq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[MigrateErr]"
+          ],
+          "doc": "The steps that would bring the database to `target` (0 undoes everything), without changing\nanything: the dry run. Up steps run oldest first, down steps newest first."
+        },
+        {
+          "name": "migrate_to",
+          "kind": "fn",
+          "sig": "fn migrate_to(c: Db, ms: List[Migration], target: Int where _ >= 0) -> List[Step] ! db, fail[DbErr], fail[MigrateErr]",
+          "sig_hash": "ozdtrfehbbznjx5pl2xwvubo5q",
+          "hash": "qoapawyhensv4z5ic3dkkr6g4c2qbmgo7j2w5avtwlxfd7ewp2xq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[MigrateErr]"
+          ],
+          "doc": "Brings the database to `target`: applies or undoes migrations, each step in its own\ntransaction with its record, and returns the steps that ran. The whole plan is checked before\nthe first step, so an error changes nothing. A step another process ran meanwhile is skipped."
+        },
+        {
+          "name": "migrate_latest",
+          "kind": "fn",
+          "sig": "fn migrate_latest(c: Db, ms: List[Migration]) -> List[Step] ! db, fail[DbErr], fail[MigrateErr]",
+          "sig_hash": "jseka5b2hfpeeynxaxj75qscpm",
+          "hash": "mysfavuvqvfxbr6dvqhsl247ilvgw2bjsoik32k4xpbfvwgca6nq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[MigrateErr]"
+          ],
+          "doc": "Applies every pending migration."
+        },
+        {
+          "name": "rollback",
+          "kind": "fn",
+          "sig": "fn rollback(c: Db, ms: List[Migration], n: Int where _ >= 0) -> List[Step] ! db, fail[DbErr], fail[MigrateErr]",
+          "sig_hash": "gphcstphpuwuhdrpddqhdobdsq",
+          "hash": "5gabatdipnir4zi3uqhfmxtbsvqkc4rvls4zff2usri2hjsswdyq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[MigrateErr]"
+          ],
+          "doc": "Undoes the newest `n` applied migrations."
+        },
+        {
+          "name": "test_db",
+          "kind": "fn",
+          "sig": "fn test_db(ms: List[Migration]) -> Db ! db, fail[DbErr], fail[MigrateErr]",
+          "sig_hash": "isk7p3jiw4nyj75pwvffxm5isi",
+          "hash": "boeruk3newpd7wq3ka7bbuvtxgzmdnzcuwrejhorwutdfgy2577q",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[MigrateErr]"
+          ],
+          "doc": "A fresh in-memory database with every migration applied."
+        },
+        {
+          "name": "load_fixtures",
+          "kind": "fn",
+          "sig": "fn load_fixtures(c: Db, fixtures: List[Insert]) -> Int ! db, fail[DbErr], fail[SqlkitErr]",
+          "sig_hash": "gxnbrmolflao6y4lcxoyebgyzq",
+          "hash": "mn7763jou5azti6rwlbrfijrzvrsluyua4yvjyihwynetibplilq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[SqlkitErr]"
+          ],
+          "doc": "Inserts fixture rows in one transaction and returns the number of rows changed."
+        },
+        {
+          "name": "row_count",
+          "kind": "fn",
+          "sig": "fn row_count(c: Db, table: Str) -> Int ! db, fail[DbErr], fail[SqlkitErr]",
+          "sig_hash": "f67bryx7nqvmnjoa2d4nxk2gd4",
+          "hash": "6go3x67zd3nixtzyfyagj53wpctf54vcx3kvse5ja7qrbbsuwpqq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[SqlkitErr]"
+          ],
+          "doc": "The number of rows in `table`."
+        },
+        {
+          "name": "rolled_back",
+          "kind": "fn",
+          "sig": "fn rolled_back[e](c: Db, f: () -> Bool ! e) -> Bool ! db, fail[DbErr], e",
+          "sig_hash": "aowa7jggvikyihccswxecvr6ia",
+          "hash": "lcoum3m5nswjh4y7r52tgkdy73bzmtnwqpea7a4wiqmbkulxueoa",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "e"
+          ],
+          "doc": "Runs a test body inside a transaction that is always rolled back, and returns its result, so\ntests can share one database without seeing each other's writes. Nested `db.tx` calls in `f`\nbecome savepoints. (The result is a `Bool`, what a test needs: `db.tx` can't yet be wrapped\nby a function generic in its result type.)"
+        }
+      ]
+    }
+  ]
+}

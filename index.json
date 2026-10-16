@@ -192,6 +192,16 @@
       "deprecated": null
     },
     {
+      "name": "sqlkit",
+      "description": "SQLite helpers over db: a parameters-only query builder, keyset pagination, upserts, batched inserts, up/down migrations with checksums, test fixtures",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:29:28Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "strings",
       "description": "String utilities in the spirit of Apache Commons StringUtils: case, padding, graphemes, distances, wrapping, slugs, escaping",
       "latest": "0.1.0",
