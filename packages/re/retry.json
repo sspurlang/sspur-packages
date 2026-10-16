@@ -1,0 +1,453 @@
+{
+  "schema": 1,
+  "name": "retry",
+  "description": "Retries with exponential backoff and jitter, retry budgets, a circuit breaker and rate limiters, on a clock effect that tests run virtually",
+  "repository": "https://github.com/sspurlang/sspur-retry",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-retry.git",
+      "tag": "v0.1.0",
+      "commit": "31c0b0cdd7236062b246a44f019c61067b0e90b8",
+      "hash": "ugty5mkcjiglpgnchpngcyffcmwna76q7625ibsff5qq5mdx3qwa",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/retry-0.1.0/retry-0.1.0.tar",
+        "sha256": "fcf0b5230c7818006c0adf38625855744878a72f75e866ee469bb0dbf0bb4581",
+        "size": 37888
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:12:37Z",
+      "publisher": "utkarshavardhana",
+      "request": 30,
+      "api": [
+        {
+          "name": "clock",
+          "kind": "effect",
+          "sig": "pub effect clock\n  retry_sleep(ms: Int)\n  retry_now() -> Int",
+          "sig_hash": "q3o3oipysyxosvjfuqpaklou2a",
+          "hash": "ovjnbc7riajzyx7wvbflm6mq4ne5jxk6brsibreo4no3j4yfctua",
+          "effects": [],
+          "doc": "The clock the runners use. `retry_sleep(ms)` waits, `retry_now()` is the time in\nmilliseconds. The `_now` runners handle it with the real clock and `simulate` with a virtual\none; a handler of your own can do anything else (see the README)."
+        },
+        {
+          "name": "Jitter",
+          "kind": "type",
+          "sig": "pub type Jitter = NoJitter | FullJitter | EqualJitter | DecorrelatedJitter derive Eq, Show",
+          "sig_hash": "7ath6vreaedaw2wjxkmyvqy7oi",
+          "hash": "vzxj3bho2wfhvdhpeh4u7urnz64jmdtkumobjr3iodvnlkbovczq",
+          "effects": [],
+          "doc": "How the delay before each retry is randomized (see the AWS Architecture Blog's\n\"Exponential Backoff And Jitter\"): none, uniform in [0, d] (full), d/2 plus uniform in\n[0, d/2] (equal), or uniform in [base, 3 * previous delay] (decorrelated)."
+        },
+        {
+          "name": "Policy",
+          "kind": "type",
+          "sig": "pub type Policy = {max_attempts: Int where _ >= 1, base_ms: Int where _ >= 0, multiplier: F64 where _ >= 1.0, max_delay_ms: Int where _ >= 0, jitter: Jitter, budget_ms: Opt[Int], seed: Opt[Int]} derive Eq, Show",
+          "sig_hash": "kkgidg3s5pdssjonzezlidrgzm",
+          "hash": "vbxv3ubwsfwopje4yfzruytzh7gyaz6o2eeytbcxcqtwvxo3ogwq",
+          "effects": [],
+          "doc": "A retry policy. Attempt `n` (from 1) is followed, when it fails and may be retried, by a\ndelay of `base_ms * multiplier ** (n - 1)` capped at `max_delay_ms`, then jittered.\n`budget_ms` bounds the total time from the first attempt: a retry whose delay would end past\nit is not made. `seed` seeds the jitter; `none` takes the clock's time at the start."
+        },
+        {
+          "name": "Stop",
+          "kind": "type",
+          "sig": "pub type Stop = Succeeded | Exhausted | NotRetryable | BudgetExceeded derive Eq, Show",
+          "sig_hash": "vjgyn55gpfexfrq7ircabsubza",
+          "hash": "vzxj3bho2wfhvdhpeh4u7urnz64jmdtkumobjr3iodvnlkbovczq",
+          "effects": [],
+          "doc": "Why a run stopped."
+        },
+        {
+          "name": "Outcome",
+          "kind": "type",
+          "sig": "pub type Outcome[T, E] = {result: Res[T, E], attempts: Int, delays: List[Int], waited_ms: Int, stop: Stop} derive Eq, Show",
+          "sig_hash": "w5b2bz5yadragtttjsunlm72py",
+          "hash": "7tebtgstqmhytg6ro6su6h4w5jhjjslpwf6avs4whhxoh6bjqt2a",
+          "effects": [],
+          "doc": "The result of a run: the last result, the number of attempts made, each delay slept, their\nsum, and why it stopped."
+        },
+        {
+          "name": "default_policy",
+          "kind": "fn",
+          "sig": "fn default_policy() -> Policy",
+          "sig_hash": "daux7b4myqtqx6zefne4iuukj4",
+          "hash": "rhhbo4eddwwcxcbvwccdwts4mb3ekr3erzqpknvh52tfv5fncria",
+          "effects": [],
+          "doc": "The default policy: 3 attempts, 100 ms doubling up to 10 s, full jitter, no budget."
+        },
+        {
+          "name": "constant",
+          "kind": "fn",
+          "sig": "fn constant(delay_ms: Int where _ >= 0, attempts: Int where _ >= 1) -> Policy",
+          "sig_hash": "ynmkeiv6niqe6cwm3fvpiz6uhy",
+          "hash": "22q4iuny2nsnknq7bmu5a3s3kp2627h47mdrkmhvfsmbvq6cyikq",
+          "effects": [],
+          "doc": "`attempts` attempts with the same `delay_ms` between them and no jitter."
+        },
+        {
+          "name": "exponential",
+          "kind": "fn",
+          "sig": "fn exponential(base_ms: Int where _ >= 0, attempts: Int where _ >= 1) -> Policy",
+          "sig_hash": "qk5566xj7to2h3rcwgflfyri7q",
+          "hash": "2gupcvmhpxgze7vq3cxrqs523deqdbidt55ppodtsynj6apr6xxa",
+          "effects": [],
+          "doc": "`attempts` attempts with delays doubling from `base_ms` up to 30 s, without jitter."
+        },
+        {
+          "name": "no_retry",
+          "kind": "fn",
+          "sig": "fn no_retry() -> Policy",
+          "sig_hash": "fjvfbxdr3t4q7n2usmnti5kkvi",
+          "hash": "nyxgvd3kziuddwn7yqufj3ui4tfpeqrmp5dh3jzqh3vp4slc6wnq",
+          "effects": [],
+          "doc": "One attempt and no retries."
+        },
+        {
+          "name": "base_delay",
+          "kind": "fn",
+          "sig": "fn base_delay(p: Policy, attempt: Int where _ >= 1) -> Int",
+          "sig_hash": "ja24wppxzaw6egdefhft6h6viq",
+          "hash": "qi6rijd3u55yuaeqxsvviea7iblya45sggxfxkxnwy6dhg7cki2q",
+          "effects": [],
+          "doc": "The delay after failed attempt `attempt` before jitter: `base_ms * multiplier ** (attempt - 1)`\ncapped at `max_delay_ms` (never overflowing)."
+        },
+        {
+          "name": "next_delay",
+          "kind": "fn",
+          "sig": "fn next_delay(p: Policy, attempt: Int where _ >= 1, prev_ms: Int, seed: Int) -> (Int, Int)",
+          "sig_hash": "rnd7ah3pipikouugmdaehgtdhi",
+          "hash": "326niu3nfh4kdpgotm3ol6ykllv5jgue24par26b33ucjmdlicea",
+          "effects": [],
+          "doc": "The jittered delay after failed attempt `attempt`, given the previous delay (`base_ms` before\nthe first retry; only decorrelated jitter uses it) and a seed. Gives the delay and the next\nseed; the same inputs always give the same delay, which is never above `max_delay_ms`."
+        },
+        {
+          "name": "schedule",
+          "kind": "fn",
+          "sig": "fn schedule(p: Policy) -> List[Int]",
+          "sig_hash": "2h3f6u6duf5kzaw7zh5quie7o4",
+          "hash": "aoe2vqobolrqtwpb5j6ionz4wjst522vurfshrx55f75hz7bpdoa",
+          "effects": [],
+          "doc": "The delays a run sleeps when every attempt fails: one per retry, `max_attempts - 1` in all,\nfrom `seed` (or 0 when the policy has none). Ignores the budget."
+        },
+        {
+          "name": "worst_case_ms",
+          "kind": "fn",
+          "sig": "fn worst_case_ms(p: Policy) -> Int",
+          "sig_hash": "ntybjrqhvdftvuvs3dvf5gcyga",
+          "hash": "ruuf2wlw4pur6fkvce3skaanpzmo2mhhtwx2pwosu74tiola74bq",
+          "effects": [],
+          "doc": "The longest total time a run can sleep: the sum of the delays before jitter (decorrelated\njitter can reach `max_delay_ms` on every retry, so it counts that)."
+        },
+        {
+          "name": "run_hinted",
+          "kind": "fn",
+          "sig": "fn run_hinted[T, E, e](p: Policy, op: Int -> Res[T, E] ! e, retryable: E -> Bool, after: E -> Opt[Int]) -> Outcome[T, E] ! clock, e",
+          "sig_hash": "lukreixutwmteyhly6yrzkz5pm",
+          "hash": "acyvkmti3sayjqvrn37bk3xz7sdcilles4jmbcqnpozeuhnjrneq",
+          "effects": [
+            "clock",
+            "e"
+          ],
+          "doc": "Runs `op(attempt)` (attempts count from 1) until it succeeds, `retryable` says an error is\nfinal, the attempts run out or the budget would be exceeded. `after(e)` may give a delay the\nerror asks for, such as an HTTP Retry-After, which replaces the computed one (negative values\ncount as 0); it is still bounded by the budget."
+        },
+        {
+          "name": "run_when",
+          "kind": "fn",
+          "sig": "fn run_when[T, E, e](p: Policy, op: Int -> Res[T, E] ! e, retryable: E -> Bool) -> Outcome[T, E] ! clock, e",
+          "sig_hash": "o2zbbmzsjwab6jgmmwfeorjlye",
+          "hash": "i3ila3ufyh6ffgarykjwqyxuuxenekg22xx526bxsaf5rli2l6qa",
+          "effects": [
+            "clock",
+            "e"
+          ],
+          "doc": "`run_hinted` without delay hints."
+        },
+        {
+          "name": "run",
+          "kind": "fn",
+          "sig": "fn run[T, E, e](p: Policy, op: Int -> Res[T, E] ! e) -> Outcome[T, E] ! clock, e",
+          "sig_hash": "rdg5d4thiuje54klaidlhsioba",
+          "hash": "thu5ur5ji2w6hd73327beqsp6qyknyqqvpy5rhfsr4okdqnfyfia",
+          "effects": [
+            "clock",
+            "e"
+          ],
+          "doc": "`run_hinted` retrying every error, without delay hints."
+        },
+        {
+          "name": "run_hinted_now",
+          "kind": "fn",
+          "sig": "fn run_hinted_now[T, E, e](p: Policy, op: Int -> Res[T, E] ! e, retryable: E -> Bool, after: E -> Opt[Int]) -> Outcome[T, E] ! time, e",
+          "sig_hash": "rzjbnw5casuhvrur7jwhckdfu4",
+          "hash": "psundgqtaq6foyauhuhuxblhgeiw64xmco5ut6avnvwlupgz4nka",
+          "effects": [
+            "time",
+            "e"
+          ],
+          "doc": "`run_hinted` on the real clock: it sleeps with `sleep_ms` and reads `now_ms`."
+        },
+        {
+          "name": "run_now",
+          "kind": "fn",
+          "sig": "fn run_now[T, E, e](p: Policy, op: Int -> Res[T, E] ! e) -> Outcome[T, E] ! time, e",
+          "sig_hash": "sb4kicininknnb6doa4d5nm444",
+          "hash": "efqs4os2mf7vg5am7lbe3b5dyih675bd5c5ypzojulyfy3ie2paq",
+          "effects": [
+            "time",
+            "e"
+          ],
+          "doc": "`run` on the real clock."
+        },
+        {
+          "name": "simulate_hinted",
+          "kind": "fn",
+          "sig": "fn simulate_hinted[T, E, e](start_ms: Int, p: Policy, op: Int -> Res[T, E] ! e, retryable: E -> Bool, after: E -> Opt[Int]) -> (Outcome[T, E], Int) ! e",
+          "sig_hash": "dqilgtvimvclrc64mcewjktymy",
+          "hash": "zoj3ml6hu7lshjl4nv2osmpzwo2oyl2g2cptlpinfkjsfbofiylq",
+          "effects": [
+            "e"
+          ],
+          "doc": "`run_hinted` on a virtual clock that starts at `start_ms` and moves only when the runner\nsleeps, so nothing really waits. Gives the outcome and the virtual time at the end."
+        },
+        {
+          "name": "simulate",
+          "kind": "fn",
+          "sig": "fn simulate[T, E, e](start_ms: Int, p: Policy, op: Int -> Res[T, E] ! e) -> (Outcome[T, E], Int) ! e",
+          "sig_hash": "xy6ttjagaynf4w2hngivnqe2fe",
+          "hash": "4xhf4q72ikwwh4wxu6x3mio4khqdc4wmll7xmzqqwyainrf3g2mq",
+          "effects": [
+            "e"
+          ],
+          "doc": "`run` on a virtual clock that starts at `start_ms` (see `simulate_hinted`)."
+        },
+        {
+          "name": "BreakerConfig",
+          "kind": "type",
+          "sig": "pub type BreakerConfig = {failure_threshold: Int where _ >= 1, failure_rate: F64 where _ > 0.0 and _ <= 1.0, min_calls: Int where _ >= 1, window_ms: Int where _ >= 1, cooldown_ms: Int where _ >= 0, half_open_trials: Int where _ >= 1} derive Eq, Show",
+          "sig_hash": "6nwib3r7h3tas3y3szvpgvzknm",
+          "hash": "3cscksxi6ivabfotcaa6who63ri6lj5xxwkeaqzrfiuvuew5nwiq",
+          "effects": [],
+          "doc": "When a breaker trips and how it recovers. It opens when, among the calls of the last\n`window_ms`, there are `failure_threshold` failures, or at least `min_calls` calls of which\na `failure_rate` share or more failed. It stays open for `cooldown_ms`, then lets\n`half_open_trials` calls through: all of them succeeding closes it, any failure opens it again."
+        },
+        {
+          "name": "BreakerState",
+          "kind": "type",
+          "sig": "pub type BreakerState = Closed | Open{until_ms: Int} | HalfOpen{started: Int, succeeded: Int} derive Eq, Show",
+          "sig_hash": "jtqccfa5zn5k7vpzrfqlkoq5he",
+          "hash": "cuig6fjep5l44pvc33vpp2xljji66bzy5fpoayrdrpqbwsq3wkwa",
+          "effects": [],
+          "doc": "A breaker's state: closed (calls go through), open until a time, or half open with the number\nof trial calls let through and the number that succeeded."
+        },
+        {
+          "name": "Breaker",
+          "kind": "type",
+          "sig": "pub type Breaker = {config: BreakerConfig, state: BreakerState, events: List[(Int, Bool)]} derive Eq, Show",
+          "sig_hash": "wuryaef23btcwqpeb3xkjesuc4",
+          "hash": "nzbproikrtr7r4xphnvzrbvowv7k6nr57h5vcswb3vfoio35jxua",
+          "effects": [],
+          "doc": "A circuit breaker: its configuration, its state and the recent calls `(time_ms, succeeded)`."
+        },
+        {
+          "name": "Called",
+          "kind": "type",
+          "sig": "pub type Called[T, E] = Rejected{wait_ms: Int} | Ran{result: Res[T, E]} derive Eq, Show",
+          "sig_hash": "ixzjsh5e73epropcz4tweqat4m",
+          "hash": "xk6443fpheivsdcxlvkburfmd4qesd24uqkc32at4pf4ybeutzwa",
+          "effects": [],
+          "doc": "What `call` did: refused the call (the breaker is open; a call may go through in `wait_ms`),\nor ran it with this result."
+        },
+        {
+          "name": "default_breaker_config",
+          "kind": "fn",
+          "sig": "fn default_breaker_config() -> BreakerConfig",
+          "sig_hash": "sdfq2g6cjixtzknuhevkxlxru4",
+          "hash": "2eb3p2gukmric5tjanuztyniumcbmncwb3ffdenucpwduohri74q",
+          "effects": [],
+          "doc": "The default breaker configuration: 5 failures, or half of at least 20 calls, within 60 s;\nopen for 30 s; one trial call."
+        },
+        {
+          "name": "breaker",
+          "kind": "fn",
+          "sig": "fn breaker(config: BreakerConfig) -> Breaker",
+          "sig_hash": "kwa633jfnetsl6wcvw5346pyu4",
+          "hash": "d2vqmyoza64yrroa2ahld6rnohfwurlebvovfae3jutrvl2uudxq",
+          "effects": [],
+          "doc": "A closed breaker with no history."
+        },
+        {
+          "name": "window_counts",
+          "kind": "fn",
+          "sig": "fn window_counts(b: Breaker, now: Int) -> (Int, Int)",
+          "sig_hash": "67wabyh5jwugbp3tfx5m4mur7e",
+          "hash": "d2smcgxomdiaq2nkrwcg3hyysz5fihckvwvmxhrvc3jfq7k7ccra",
+          "effects": [],
+          "doc": "The calls and failures the breaker counts at `now`, those of the last `window_ms`."
+        },
+        {
+          "name": "current_state",
+          "kind": "fn",
+          "sig": "fn current_state(b: Breaker, now: Int) -> BreakerState",
+          "sig_hash": "flfg26bcuekdmbqrkympjfzhlm",
+          "hash": "ixq366jv2edlevfop2k2twzv4yfs2z2rav575c67rnutgf5feetq",
+          "effects": [],
+          "doc": "The state at `now`: an open breaker whose cool-down has passed reads as half open."
+        },
+        {
+          "name": "ms_until_allowed",
+          "kind": "fn",
+          "sig": "fn ms_until_allowed(b: Breaker, now: Int) -> Int",
+          "sig_hash": "6bq2kt3v4xo7narr6vmsjaed6m",
+          "hash": "r4r6vbkogl5ry77wkikwsypuizz5jorwtt2r3okvqtobvzajjetq",
+          "effects": [],
+          "doc": "How long until a call may go through: 0 when it may now. While every half-open trial is in\nflight their results decide, and it gives `cooldown_ms`, the wait if one of them fails."
+        },
+        {
+          "name": "allow",
+          "kind": "fn",
+          "sig": "fn allow(b: Breaker, now: Int) -> (Bool, Breaker)",
+          "sig_hash": "vsupnuy3x5xz6vaysoz3hxtxwe",
+          "hash": "h37ixgx2mfymrmveczvttsrthwqhqpmo6km75nngfecxa4fajseq",
+          "effects": [],
+          "doc": "Asks to make a call at `now`: whether it may go through, and the breaker after counting it\n(an open breaker past its cool-down becomes half open and starts a trial)."
+        },
+        {
+          "name": "record_success",
+          "kind": "fn",
+          "sig": "fn record_success(b: Breaker, now: Int) -> Breaker",
+          "sig_hash": "njfpw5vmxtjmtayky6xdata7di",
+          "hash": "26uqj6frspltkhla6p3fwxu2lp6lw4egsjgg5zs7cu2hiruh27ca",
+          "effects": [],
+          "doc": "Records a successful call at `now`. In the half-open state the last needed trial success\ncloses the breaker and clears its history."
+        },
+        {
+          "name": "record_failure",
+          "kind": "fn",
+          "sig": "fn record_failure(b: Breaker, now: Int) -> Breaker",
+          "sig_hash": "4aanum4jf4m2j2hdd66n7icgsi",
+          "hash": "nks5yzowicnbtyq6jlmwtpw37x67ydx3xh4nmrfa2kfkab3uxkqq",
+          "effects": [],
+          "doc": "Records a failed call at `now`: a closed breaker opens when the failures reach the limits, a\nhalf-open one opens again at once."
+        },
+        {
+          "name": "call_when",
+          "kind": "fn",
+          "sig": "fn call_when[T, E, e](b: Breaker, now: Int, op: () -> Res[T, E] ! e, counts: E -> Bool) -> (Called[T, E], Breaker) ! e",
+          "sig_hash": "rrmhupquj2ifganpnzitk6p4te",
+          "hash": "bny7rvexnihckqvrixyuu3fndgthv3vosefiqa4h6jpkfja3sheq",
+          "effects": [
+            "e"
+          ],
+          "doc": "Runs `op` through the breaker at `now`, counting the errors for which `counts(e)` holds as\nfailures and every other result as a success (so a \"not found\" need not trip it)."
+        },
+        {
+          "name": "call",
+          "kind": "fn",
+          "sig": "fn call[T, E, e](b: Breaker, now: Int, op: () -> Res[T, E] ! e) -> (Called[T, E], Breaker) ! e",
+          "sig_hash": "7ax3khiimq4uyzevqhgprrifyu",
+          "hash": "v2cqfqcpeeseimn5cupop2bzkxrgrvmcfusfrzp5erambdukihdq",
+          "effects": [
+            "e"
+          ],
+          "doc": "`call_when` counting every error as a failure."
+        },
+        {
+          "name": "Bucket",
+          "kind": "type",
+          "sig": "pub type Bucket = {capacity: Int where _ >= 1, per_sec: F64 where _ > 0.0, tokens: F64, updated_ms: Int} derive Eq, Show",
+          "sig_hash": "vkbh4llpekesulyphzb2ps455i",
+          "hash": "kxubvcxnxt255wnjmrxrsw43wi3omr5ocd4cgbbhbswfsaoq3mlq",
+          "effects": [],
+          "doc": "A token bucket: up to `capacity` tokens, refilled continuously at `per_sec` tokens a second;\n`tokens` were left at `updated_ms`."
+        },
+        {
+          "name": "Window",
+          "kind": "type",
+          "sig": "pub type Window = {limit: Int where _ >= 1, window_ms: Int where _ >= 1, hits: List[Int]} derive Eq, Show",
+          "sig_hash": "xjk74g5jxtsskhign4xafi6zbm",
+          "hash": "atl7nrdw23dqhs7zdkh3txiiupeqv5ueoliprmtus3rmygjwav3a",
+          "effects": [],
+          "doc": "A sliding window limiter: at most `limit` calls in any `window_ms`; `hits` are the times of the\ncalls still in the window."
+        },
+        {
+          "name": "bucket",
+          "kind": "fn",
+          "sig": "fn bucket(capacity: Int where _ >= 1, per_sec: F64 where _ > 0.0, now: Int) -> Bucket",
+          "sig_hash": "ddps2nk2kqwjwirjfprzbx46vi",
+          "hash": "6llzhcyajegva243bhuxlw32ztilphxriwq6czqb5y4njvzsicna",
+          "effects": [],
+          "doc": "A full bucket of `capacity` tokens at `now`."
+        },
+        {
+          "name": "bucket_tokens",
+          "kind": "fn",
+          "sig": "fn bucket_tokens(b: Bucket, now: Int) -> F64",
+          "sig_hash": "73pzpvfyx5p5kted6ql2ckeyqe",
+          "hash": "gdhp7jymcspxitnq4u72bzelycdnuy7xk72i37ngbj2kamhjpteq",
+          "effects": [],
+          "doc": "The tokens available at `now` (a time before `updated_ms` refills nothing)."
+        },
+        {
+          "name": "bucket_take",
+          "kind": "fn",
+          "sig": "fn bucket_take(b: Bucket, now: Int, n: Int where _ >= 0) -> (Bool, Bucket)",
+          "sig_hash": "wrj2v7a72wy4nzpn6doezdyzz4",
+          "hash": "jxrmy77hswg5zvmegjxkgk6ryamd2vckc7pm47flhs4fsgervs7a",
+          "effects": [],
+          "doc": "Takes `n` tokens at `now` if they are there: whether it did, and the bucket after."
+        },
+        {
+          "name": "bucket_wait_ms",
+          "kind": "fn",
+          "sig": "fn bucket_wait_ms(b: Bucket, now: Int, n: Int where _ >= 0) -> Opt[Int]",
+          "sig_hash": "bi7gln3h777hppoicfsakn63sa",
+          "hash": "7ymccidxrw7vb6jvtjdldriexlr3z7m3fr4mdnsuzaqxrughadqa",
+          "effects": [],
+          "doc": "How long until `n` tokens are there: 0 when they are now, `none` when `n` is more than the\ncapacity (they never will be)."
+        },
+        {
+          "name": "window_limiter",
+          "kind": "fn",
+          "sig": "fn window_limiter(limit: Int where _ >= 1, window_ms: Int where _ >= 1) -> Window",
+          "sig_hash": "qhwgbytwcjrceg6gx3uhvwpnny",
+          "hash": "k3vohobezjij4gp4o3gfhax3yglfayuzlldfslrnnbdmxney64dq",
+          "effects": [],
+          "doc": "An empty sliding window limiter."
+        },
+        {
+          "name": "window_remaining",
+          "kind": "fn",
+          "sig": "fn window_remaining(w: Window, now: Int) -> Int",
+          "sig_hash": "g7mm7gopmtqyfb4o3yzhsvn4lu",
+          "hash": "e47kzlblzlkameveunkfcuowovbn73mqpzsupf2v25w5h72suhda",
+          "effects": [],
+          "doc": "How many more calls the window allows at `now`."
+        },
+        {
+          "name": "window_take",
+          "kind": "fn",
+          "sig": "fn window_take(w: Window, now: Int) -> (Bool, Window)",
+          "sig_hash": "j6eni333kkjqnlqb7huqzvijnm",
+          "hash": "gxu2e33u7sjb66zezicqup23z76kfhrrw3zx5wkyzssftfw33saq",
+          "effects": [],
+          "doc": "Counts a call at `now` if the window allows it: whether it did, and the limiter after."
+        },
+        {
+          "name": "window_wait_ms",
+          "kind": "fn",
+          "sig": "fn window_wait_ms(w: Window, now: Int) -> Int",
+          "sig_hash": "ma4uwsjddo72ocrxl64esghzpa",
+          "hash": "u6nhyj5w4licebr4sadjfsbxkqypxgl5nhgy5bkvknukqmxlahra",
+          "effects": [],
+          "doc": "How long until the window allows a call: 0 when it does now."
+        }
+      ]
+    }
+  ]
+}

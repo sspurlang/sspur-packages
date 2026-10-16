@@ -92,6 +92,16 @@
       "deprecated": null
     },
     {
+      "name": "retry",
+      "description": "Retries with exponential backoff and jitter, retry budgets, a circuit breaker and rate limiters, on a clock effect that tests run virtually",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:12:37Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "semver",
       "description": "Semantic Versioning 2.0.0: parse, compare, sort and bump versions, and match Cargo and npm version ranges",
       "latest": "0.1.0",
