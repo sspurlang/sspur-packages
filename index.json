@@ -112,6 +112,16 @@
       "deprecated": null
     },
     {
+      "name": "router",
+      "description": "Path routing beyond svc: typed and wildcard parameters, most-specific matching, 404/405/OPTIONS, path cleaning, trailing slashes, groups, hosts, mounting and reverse URLs",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:16:18Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "semver",
       "description": "Semantic Versioning 2.0.0: parse, compare, sort and bump versions, and match Cargo and npm version ranges",
       "latest": "0.1.0",

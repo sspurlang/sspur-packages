@@ -1,0 +1,358 @@
+{
+  "schema": 1,
+  "name": "router",
+  "description": "Path routing beyond svc: typed and wildcard parameters, most-specific matching, 404/405/OPTIONS, path cleaning, trailing slashes, groups, hosts, mounting and reverse URLs",
+  "repository": "https://github.com/sspurlang/sspur-router",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-router.git",
+      "tag": "v0.1.0",
+      "commit": "ca65280a494573b8c974ac44e2d6eb2036a0b7eb",
+      "hash": "af77uli26u5oq7drnb2lto7kyiybh3b2qrt66iqe7tr2x5vldk6q",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/router-0.1.0/router-0.1.0.tar",
+        "sha256": "719b2c6c524f5a137843dd6fb58cabee6dc9699c32db3d261444452d68877fad",
+        "size": 56832
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:16:18Z",
+      "publisher": "utkarshavardhana",
+      "request": 34,
+      "api": [
+        {
+          "name": "Segment",
+          "kind": "type",
+          "sig": "pub type Segment = Lit{text: Str} | Param{name: Str, kind: Kind} | Rest{name: Str} derive Eq, Show",
+          "sig_hash": "sfrpmkmq25nhgo6f3cgxvtc5bm",
+          "hash": "sk5hfculxoe3c46f33xdagehkij2fkql26sredlrxqym7rlh2ava",
+          "effects": [],
+          "doc": "One segment of a compiled pattern: literal text, a parameter of a kind, or the rest of the path."
+        },
+        {
+          "name": "Kind",
+          "kind": "type",
+          "sig": "pub type Kind = AnyText | Digits | UuidText | Letters | Matching{source: Str, re: Regex} derive Eq, Show",
+          "sig_hash": "elwgr5fc425dhcybkv5enldpem",
+          "hash": "6t4ak7hac26p3z4zukal6ox7m33p42pubi3tf6bskb5uym7f2hhq",
+          "effects": [],
+          "doc": "What a `{name:kind}` parameter accepts: any non-empty segment, decimal digits (a non-negative\n`Int`), a UUID in its 8-4-4-4-12 hex form, letters only, or a regular expression that must match\nthe whole segment."
+        },
+        {
+          "name": "Slash",
+          "kind": "type",
+          "sig": "pub type Slash = SlashStrict | SlashRedirect | SlashIgnore derive Eq, Show",
+          "sig_hash": "gmgmbgjpurdltatpqlfzheh6bm",
+          "hash": "yx4hs6f6swl2ffyehukqyrecozkllf4zwjomgwt4eczib3q5wjzq",
+          "effects": [],
+          "doc": "What to do when a path matches a route only with its trailing slash added or removed:\n`SlashStrict` answers `404`, `SlashRedirect` redirects to the other form, `SlashIgnore` routes it."
+        },
+        {
+          "name": "Options",
+          "kind": "type",
+          "sig": "pub type Options = {slash: Slash, clean_paths: Bool, case_insensitive: Bool, auto_options: Bool, auto_head: Bool} derive Eq, Show",
+          "sig_hash": "5jwu4zu75iii3r3r4ct4bykqii",
+          "hash": "ff4v2ovdmau43hb4mtcpu7cokcdv363u5bbozcbuu4tbp5cq577q",
+          "effects": [],
+          "doc": "How the table behaves: trailing slashes, redirecting unclean paths (`//`, `.`, `..`) to their\nclean form, literal segments compared case-insensitively, `OPTIONS` answered with `Allow`, and\n`HEAD` served by `GET` routes."
+        },
+        {
+          "name": "Route",
+          "kind": "type",
+          "sig": "pub type Route[T] = {methods: List[Str], pattern: Str, host: Str, tags: List[Str], id: T} derive Eq, Show",
+          "sig_hash": "hp7bvbivi5oqols5ef3jgf6rka",
+          "hash": "uhrj3waa63jbb2si44lebk72gjzlknljeachvoklzub633ihykeq",
+          "effects": [],
+          "doc": "A route: the methods it serves (empty for any), its pattern, the host it is limited to (\"\"\nfor any, `api.example.com`, or `*.example.com` for subdomains), tags for grouping and the id\nthe router answers with."
+        },
+        {
+          "name": "Entry",
+          "kind": "type",
+          "sig": "pub type Entry[T] = {route: Route[T], segments: List[Segment]} derive Eq, Show",
+          "sig_hash": "zuabczyrhwad5lhcquldu2dgoi",
+          "hash": "pvwn5xzn65a7p2jmm2ckdrgzl24geid4artjbndhh4fs5nks7spq",
+          "effects": [],
+          "doc": "A compiled route: the route and its parsed segments."
+        },
+        {
+          "name": "Table",
+          "kind": "type",
+          "sig": "pub type Table[T] = {entries: List[Entry[T]], options: Options} derive Eq, Show",
+          "sig_hash": "pvos57mezuj2hfmq6pttrnnzj4",
+          "hash": "gcu4ebgs7oykmz6femtgk77nrpm3vcpsxn62q2gz6icstmgyhpdq",
+          "effects": [],
+          "doc": "A compiled routing table."
+        },
+        {
+          "name": "Match",
+          "kind": "type",
+          "sig": "pub type Match[T] = {id: T, pattern: Str, tags: List[Str], params: List[(Str, Str)]} derive Eq, Show",
+          "sig_hash": "abgrcasfkzunwe2pgyhyqrzbim",
+          "hash": "sazbli4nni2hawtw766xw4xvx4tbcflo2lrxjjkoxiiy67b3wxkq",
+          "effects": [],
+          "doc": "A route that matched: its id, its pattern, its tags and the decoded parameters in pattern order."
+        },
+        {
+          "name": "Resolution",
+          "kind": "type",
+          "sig": "pub type Resolution[T] = Matched{found: Match[T]} | Redirected{status: Int, location: Str} | NoRoute | WrongMethod{allow: List[Str]} | OptionsAnswer{allow: List[Str]} | BadPath{why: Str} derive Eq, Show",
+          "sig_hash": "xc36nweuxlpw3iarp2a6pgi2xe",
+          "hash": "z4wxjyue5aanoxv4vjvmxwwuefgln5j5tmayywwl4anzrg4624qa",
+          "effects": [],
+          "doc": "Where a request goes: a route, a redirect (to the clean path or the other trailing-slash form),\nno route, a route for other methods (with the methods to put in `Allow`), an automatic `OPTIONS`\nanswer, or a malformed path."
+        },
+        {
+          "name": "default_options",
+          "kind": "fn",
+          "sig": "fn default_options() -> Options",
+          "sig_hash": "dog44vyiynlpmhwdvjolm34hnu",
+          "hash": "mmt6hfkr5sxiwchytk5e3l5pvyyyyhc5vlhukxn7hcsmtzmqnatq",
+          "effects": [],
+          "doc": "The defaults: redirect between trailing-slash forms and to clean paths, case-sensitive literal\nsegments, automatic `OPTIONS` and `HEAD`."
+        },
+        {
+          "name": "route",
+          "kind": "fn",
+          "sig": "fn route[T](methods: List[Str], pattern: Str, id: T) -> Route[T]",
+          "sig_hash": "zj3cjwrgzi2nfrczrtm2bu3oka",
+          "hash": "gtnl2lqdxyxs35to2xhjl3yfrqbkg5g7y6wnwmdxghgrurqlplea",
+          "effects": [],
+          "doc": "A route for `methods` (empty for any method) at `pattern`, answering `id`. Methods are\ncase-sensitive, as RFC 9110 says, so they are written in capitals; `compile` reports others."
+        },
+        {
+          "name": "get",
+          "kind": "fn",
+          "sig": "fn get[T](pattern: Str, id: T) -> Route[T]",
+          "sig_hash": "7zhtqxr5tqgtvaxezzp6zkdu2i",
+          "hash": "j3c2mtf2r77gdhubqnovcxc7ufyqr5i23anrj66omdty56zptuhq",
+          "effects": [],
+          "doc": "A `GET` route (also serving `HEAD` when the table's `auto_head` is on)."
+        },
+        {
+          "name": "post",
+          "kind": "fn",
+          "sig": "fn post[T](pattern: Str, id: T) -> Route[T]",
+          "sig_hash": "b7dfo4hjdkmv2jsxs2kwe6y7xe",
+          "hash": "n2pzq2enlua433njytsfghjayu525f37xdxgtbcwbi2n525eg2pq",
+          "effects": [],
+          "doc": "A `POST` route."
+        },
+        {
+          "name": "put",
+          "kind": "fn",
+          "sig": "fn put[T](pattern: Str, id: T) -> Route[T]",
+          "sig_hash": "mrmv732hz6scqrzv6jckwitebm",
+          "hash": "5melhtgxp6xjpofnxeqjdzrdo6z57oe5nfozqkqbcz43r5warlxa",
+          "effects": [],
+          "doc": "A `PUT` route."
+        },
+        {
+          "name": "patch",
+          "kind": "fn",
+          "sig": "fn patch[T](pattern: Str, id: T) -> Route[T]",
+          "sig_hash": "qoxjxsenrge4kx3xj6gyc3734m",
+          "hash": "htvmnv54umf7dbb2h6oth7pldnc5cjxmq3iffb6fdyd2u6uwrnpa",
+          "effects": [],
+          "doc": "A `PATCH` route."
+        },
+        {
+          "name": "delete",
+          "kind": "fn",
+          "sig": "fn delete[T](pattern: Str, id: T) -> Route[T]",
+          "sig_hash": "qjaal5ane6763di4z5uuxsk3zy",
+          "hash": "kpjpudpdd4vvodgjhzucz6wma6hqsm4llyb33zbbp3sfi22k47fq",
+          "effects": [],
+          "doc": "A `DELETE` route."
+        },
+        {
+          "name": "any_method",
+          "kind": "fn",
+          "sig": "fn any_method[T](pattern: Str, id: T) -> Route[T]",
+          "sig_hash": "7syh4pl2royvwi4i7w3i6j7ozi",
+          "hash": "ih6nepkoon7qbsvvaqquyypnkinm4tgwb2nbwql4wilzjnb3bs4a",
+          "effects": [],
+          "doc": "A route for every method."
+        },
+        {
+          "name": "on_host",
+          "kind": "fn",
+          "sig": "fn on_host[T](r: Route[T], host: Str) -> Route[T]",
+          "sig_hash": "oux5zaupksqoxkh3sczietmrya",
+          "hash": "vxn52hlauh4dcpzywwvzdigqfqvbqfnrsbrdcfiydrject7nfitq",
+          "effects": [],
+          "doc": "`r` limited to `host`: an exact host or `*.example.com` for its subdomains."
+        },
+        {
+          "name": "tagged",
+          "kind": "fn",
+          "sig": "fn tagged[T](r: Route[T], tag: Str) -> Route[T]",
+          "sig_hash": "7isffwhpd5xwzexl4bl66l26r4",
+          "hash": "22pyfoj3bqrmo42fauxsbaol7dgjceilqvpinb7z6ilw4twiqh3a",
+          "effects": [],
+          "doc": "`r` with `tag` added."
+        },
+        {
+          "name": "group",
+          "kind": "fn",
+          "sig": "fn group[T](prefix: Str, tags: List[Str], routes: List[Route[T]]) -> List[Route[T]]",
+          "sig_hash": "blp6zkiok35rhn4ger3q4m32ha",
+          "hash": "z6dthwenrcf6xhl6axftw2eaouozv2blhsbntrthj3fdqju5wjma",
+          "effects": [],
+          "doc": "`routes` under `prefix` (`/admin` turns `/users` into `/admin/users` and `/` into `/admin/`),\neach tagged with `tags`. Groups nest."
+        },
+        {
+          "name": "parse_pattern",
+          "kind": "fn",
+          "sig": "fn parse_pattern(pattern: Str) -> Res[List[Segment], Str]",
+          "sig_hash": "cb5ehxus55ifajgp2lmwyojzma",
+          "hash": "h5lczsawm7mnti7xpbgree7qjoiwxpz5ekbvfebnj22l5ze6bmoa",
+          "effects": [],
+          "doc": "The segments of `pattern`, or what is wrong with it: it must start with `/`; each segment is\ntext or one `{name}`, `{name:int}`, `{name:uuid}`, `{name:alpha}`, `{name:regex}` parameter;\n`{name...}` takes the rest of the path and must be last; names are unique."
+        },
+        {
+          "name": "compile",
+          "kind": "fn",
+          "sig": "fn compile[T](routes: List[Route[T]], opts: Options) -> Res[Table[T], List[Str]]",
+          "sig_hash": "7xl5k2raapmq3i2bzg5hpj5sdi",
+          "hash": "be5odyeax336hh676u3yppu2f73iljsba5t7cewrsalvycu7k2ra",
+          "effects": [],
+          "doc": "The table for `routes` under `opts`, or every problem found: bad patterns, bad methods, and\nroutes that can never be chosen because an earlier route has the same shape, host and an\noverlapping method."
+        },
+        {
+          "name": "decode_segment",
+          "kind": "fn",
+          "sig": "fn decode_segment(s: Str) -> Opt[Str]",
+          "sig_hash": "p6byp2l4vxpc47ibrzqyu6spgi",
+          "hash": "acjqtflqrcj7xuuxqsqszf6ffarif6jhhfonnlx2m3yplz3z5zpq",
+          "effects": [],
+          "doc": "`s` with `%XX` escapes decoded (a `+` stays a `+`), or `none` for a bad escape or bytes that are\nnot UTF-8."
+        },
+        {
+          "name": "encode_segment",
+          "kind": "fn",
+          "sig": "fn encode_segment(s: Str) -> Str",
+          "sig_hash": "hk56bpngjx6epxbuhxmm3yslbu",
+          "hash": "gpqxbrzm7fluz2ws5nts66k5zdzlcpcp74x754niqtwasvtb6nrq",
+          "effects": [],
+          "doc": "`s` percent-encoded as one path segment: everything but letters, digits and `-._~!$&'()*+,;=:@`\nbecomes `%XX`, so a `/` inside a parameter stays inside it."
+        },
+        {
+          "name": "kind_accepts",
+          "kind": "fn",
+          "sig": "fn kind_accepts(k: Kind, s: Str) -> Bool",
+          "sig_hash": "2gchk4q5q2xnmmzhumucfgqta4",
+          "hash": "v5pbhylm2y3ykegxwy2rgtzlkxgto32xuzsy2zw3vivfiayhx5xa",
+          "effects": [],
+          "doc": "Whether the decoded segment `s` is acceptable to `k`."
+        },
+        {
+          "name": "clean_path",
+          "kind": "fn",
+          "sig": "fn clean_path(path: Str) -> Str",
+          "sig_hash": "rjfrgzgslwd4b7gkzdyhze5qdi",
+          "hash": "w642vk6bmtadxyef6gyt6utkdqusinlyk64yt5jzdrywokvqku6a",
+          "effects": [],
+          "doc": "`path` with empty segments, `.` and `..` removed (never above the root), keeping a trailing\nslash, as Go's `path.Clean` does for request paths."
+        },
+        {
+          "name": "resolve",
+          "kind": "fn",
+          "sig": "fn resolve[T](t: Table[T], req: Request) -> Resolution[T]",
+          "sig_hash": "pyjmjctqd37fcesznghmsfz56m",
+          "hash": "tj2bkwqrlw7ukya7cqtaswufy4e22c6rndadxobkgeyeqmu3pyna",
+          "effects": [],
+          "doc": "Where `req` goes in `t`. `OPTIONS *` lists every method the table serves."
+        },
+        {
+          "name": "answer",
+          "kind": "fn",
+          "sig": "fn answer[T](r: Resolution[T]) -> Opt[Response]",
+          "sig_hash": "eslyppn5nclra4jobniueugbji",
+          "hash": "o5kllc55fhbozt7hk3fpn5vp7t742vmr3n4xnukevitjeb4ktbkq",
+          "effects": [],
+          "doc": "The response for a resolution that is not a match: `404`, `405` with `Allow`, `204` with\n`Allow` for `OPTIONS`, the redirect, or `400`, as RFC 9457 problem details. A match gives `none`."
+        },
+        {
+          "name": "route_request",
+          "kind": "fn",
+          "sig": "fn route_request[T](t: Table[T], req: Request) -> Res[Match[T], Response]",
+          "sig_hash": "hi3ggsb3nczlkwcf76qu4dlz7m",
+          "hash": "czskc7imzvasqbbr3stwconbmdstlc2oxofg4gczua4t3i2jrkja",
+          "effects": [],
+          "doc": "The match for `req`, or the response to send when there is none (see `answer`), for a handler\nthat dispatches with `match router.route(table, req) | ok(m) => ... | err(r) => r`."
+        },
+        {
+          "name": "param",
+          "kind": "fn",
+          "sig": "fn param[T](m: Match[T], name: Str) -> Opt[Str]",
+          "sig_hash": "gz6bn3l74cjrboisnlhhnrtx7e",
+          "hash": "xqdd4xdizqy43pgo42mqxunrpahuwwejnvoxxovye4qm4dtf77aa",
+          "effects": [],
+          "doc": "The value of the parameter `name` of `m`."
+        },
+        {
+          "name": "param_int",
+          "kind": "fn",
+          "sig": "fn param_int[T](m: Match[T], name: Str) -> Opt[Int]",
+          "sig_hash": "ktgvcfpnveqzar3ep4wmk445dm",
+          "hash": "wcdjfgiluksky24jqhasw3oyemktppfnub7boutghsr6umpcqlua",
+          "effects": [],
+          "doc": "The parameter `name` of `m` as an `Int`, or `none` when missing or not a number."
+        },
+        {
+          "name": "has_tag",
+          "kind": "fn",
+          "sig": "fn has_tag[T](m: Match[T], tag: Str) -> Bool",
+          "sig_hash": "4u7hxmfc5o2a4s3zmi6binzyyi",
+          "hash": "2qf22dnmb4vyajtdvgtrcog5eradwr36jldvaynv723kfuao6sla",
+          "effects": [],
+          "doc": "Whether `m`'s route carries `tag`, for applying a group's middleware."
+        },
+        {
+          "name": "allowed_methods",
+          "kind": "fn",
+          "sig": "fn allowed_methods[T](t: Table[T], path: Str) -> List[Str]",
+          "sig_hash": "x5za3dogtn3qr6zfkmdoy42k7i",
+          "hash": "pmct6xwkhcyxmi5s2wsmljtgsywtalaut4cii7hu575i72txc2zq",
+          "effects": [],
+          "doc": "The methods `t` serves at `path` (what `Allow` would say), empty when no route has the path."
+        },
+        {
+          "name": "describe",
+          "kind": "fn",
+          "sig": "fn describe[T](t: Table[T]) -> List[Str]",
+          "sig_hash": "ptmpqkihxwkzt7oaxktntylwc4",
+          "hash": "xv5xapmuu7ha3nv2sb75soozwe26bgbgugpgt7wkktrvqbuw5ypa",
+          "effects": [],
+          "doc": "One line per route, `METHODS pattern [host] -> id`, in table order, for logs and debugging."
+        },
+        {
+          "name": "strip_prefix",
+          "kind": "fn",
+          "sig": "fn strip_prefix(prefix: Str, req: Request) -> Opt[Request]",
+          "sig_hash": "qyy732iai7ostbdugp6hcb5o3u",
+          "hash": "qqhjgkr6qukhhplsfwrmb3d65d23ajbrk235s64mhf4pjasqbqwa",
+          "effects": [],
+          "doc": "`req` with `prefix` removed from its path (keeping the query), for passing a request on to a\n`svc` or another handler mounted there: `/api/users?x=1` under `/api` is `/users?x=1`, and `/api`\nitself is `/`. `none` when the path is not under the prefix."
+        },
+        {
+          "name": "url_for",
+          "kind": "fn",
+          "sig": "fn url_for[T](t: Table[T], id: T, params: List[(Str, Str)], query: List[(Str, Str)]) -> Opt[Str]",
+          "sig_hash": "44x6ok6o6frurzatmhqame5qr4",
+          "hash": "giskgguqzhac5hi3fsbh2hbbcy6ljhs4qppptnfywkcrdrlno6wq",
+          "effects": [],
+          "doc": "The path of the first route in `t` with id `id`, with `params` filled in (each checked against\nits kind and percent-encoded; a rest parameter keeps its slashes) and `query` appended. `none`\nwhen there is no such route or a parameter is missing or doesn't fit."
+        }
+      ]
+    }
+  ]
+}
