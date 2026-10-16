@@ -1,0 +1,1024 @@
+{
+  "schema": 1,
+  "name": "validate",
+  "description": "Validators that say why: email, URL, UUID, dates, IPv4/IPv6 and CIDR, host names, cards, IBAN, ISBN, semver, JSON and more",
+  "repository": "https://github.com/sspurlang/sspur-validate",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-validate.git",
+      "tag": "v0.1.0",
+      "commit": "a80d58411a8c29773ab3233aeea75c5ec971034b",
+      "hash": "aatoejmshaccd3bqzqhtsrhvo5rtpmsughnsevln3jyqxvvwuria",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/validate-0.1.0/validate-0.1.0.tar",
+        "sha256": "7229566226d9e23672eae38e6da0f1d8e2a4b088fda4321ca63f0b2730c11719",
+        "size": 97280
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:08:49Z",
+      "publisher": "utkarshavardhana",
+      "request": 24,
+      "api": [
+        {
+          "name": "Invalid",
+          "kind": "type",
+          "sig": "pub type Invalid = {code: Str, message: Str} derive Eq, Show",
+          "sig_hash": "djrt6owhhqlk4ejpesiyohxncy",
+          "hash": "klfqpeav3dpkjvvo7hmayj53et5irbrkaouglhbm23wq3ovzaxuq",
+          "effects": [],
+          "doc": "Why a value was rejected: a stable, machine-readable `code` (such as `too_long` or `bad_char`)\nand a human-readable `message`."
+        },
+        {
+          "name": "FieldError",
+          "kind": "type",
+          "sig": "pub type FieldError = {field: Str, code: Str, message: Str} derive Eq, Show",
+          "sig_hash": "qnznxsbki6n6eetkg2moztdkwa",
+          "hash": "73cf6uwxnjcy2cjoc4v4hw5cqejhtfvuja2zlmlwjwhpo7j4aqza",
+          "effects": [],
+          "doc": "A rejection tied to the name of the field it came from, as `on_field` builds it."
+        },
+        {
+          "name": "on_field",
+          "kind": "fn",
+          "sig": "fn on_field[T](name: Str, r: Res[T, Invalid]) -> List[FieldError]",
+          "sig_hash": "2hhlfkk3ce6b6ei4hqnmdowbqa",
+          "hash": "zn6m7vmiiu3szzsgxxxidivpi6swhj2qtpzggqozexxlwy2o6tvq",
+          "effects": [],
+          "doc": "The failure of `r`, if any, as a list of one `FieldError` named `name`; an `ok` gives `[]`.\nConcatenate the lists of several fields, or pass them to `errors`."
+        },
+        {
+          "name": "errors",
+          "kind": "fn",
+          "sig": "fn errors(groups: List[List[FieldError]]) -> List[FieldError]",
+          "sig_hash": "s5z7lnl6a52novtdwfttkqrkpa",
+          "hash": "kgyczh5ueowbjzfnrlg52pkgesoney3w72lm47ogv4oi775qhgza",
+          "effects": [],
+          "doc": "Every failure of several fields, in order: `errors([on_field(\"email\", check_email(f.email)),\non_field(\"age\", check_range(f.age, 0, 150))])`. An empty result means the record is valid."
+        },
+        {
+          "name": "error_lines",
+          "kind": "fn",
+          "sig": "fn error_lines(es: List[FieldError]) -> List[Str]",
+          "sig_hash": "a5soqbrucqm5xm277wmroi7cfq",
+          "hash": "pd5ghto4lymvwmyhi3glhjfw6jtctn7cgljl6us7xwsyjqvcf3ba",
+          "effects": [],
+          "doc": "The failures as `field: message` lines, for showing to a person."
+        },
+        {
+          "name": "optional",
+          "kind": "fn",
+          "sig": "fn optional[T](o: Opt[Str], check: Str -> Res[T, Invalid]) -> Res[Opt[T], Invalid]",
+          "sig_hash": "q5wnviakc6sehsalhticsjgmiq",
+          "hash": "la5gffqglvodvd6ndsdw5htztimobi5jfwn5fuusxux3hv6ejywq",
+          "effects": [],
+          "doc": "Checks an optional value: `none` is valid and stays `none`, `some(s)` is checked with `check`."
+        },
+        {
+          "name": "reason",
+          "kind": "fn",
+          "sig": "fn reason[T](r: Res[T, Invalid]) -> Opt[Invalid]",
+          "sig_hash": "4qygqfkzrbfmgssq4xq55yj3fe",
+          "hash": "7bfe5oo3tu5akpachebtrf6shdyazk4uft2oy4maj6i7hyhbx23a",
+          "effects": [],
+          "doc": "The reason `r` failed, or `none` when it passed."
+        },
+        {
+          "name": "with_message",
+          "kind": "fn",
+          "sig": "fn with_message[T](r: Res[T, Invalid], msg: Str) -> Res[T, Invalid]",
+          "sig_hash": "comhgxaysnmcygz2c3i3bj6lwa",
+          "hash": "6wdqhkh3ikyfzemspaw4a763hstpz6ktlpiacqtgn4tfwhm3nkfq",
+          "effects": [],
+          "doc": "`r` with its failure message replaced by `msg` (the code stays), for messages in your own words."
+        },
+        {
+          "name": "check_length",
+          "kind": "fn",
+          "sig": "fn check_length(s: Str, lo: Int where _ >= 0, hi: Int) -> Res[Str, Invalid]",
+          "sig_hash": "nxudu2ba2vzopa2lb4tod2jpmi",
+          "hash": "cszum5y7ub3jqv4ecpdm4rp5zy4b6ppslkm75do5axddgsqtkcta",
+          "effects": [],
+          "doc": "`s` when its length in characters is within `lo` to `hi` (both inclusive); codes `too_short`\nand `too_long`."
+        },
+        {
+          "name": "check_range",
+          "kind": "fn",
+          "sig": "fn check_range(n: Int, lo: Int, hi: Int) -> Res[Int, Invalid]",
+          "sig_hash": "enuoq3tljlhvlnw2c3zzuzmxle",
+          "hash": "zo4uaxnx2gqeixteg2s3mhzqjinbau2hiu2nwb2bmmkc5wkgimca",
+          "effects": [],
+          "doc": "`n` when it is within `lo` to `hi` (both inclusive); codes `too_small` and `too_large`."
+        },
+        {
+          "name": "check_int",
+          "kind": "fn",
+          "sig": "fn check_int(s: Str) -> Res[Int, Invalid]",
+          "sig_hash": "rpnxzxyoffwp6pymw75lygnpta",
+          "hash": "sbm55q47fpswrq5ff5n5hj3wyjn5klqtjm77uxd6nztf4bhm7xcq",
+          "effects": [],
+          "doc": "The integer `s` spells: an optional `+` or `-` and ASCII digits, nothing else (no spaces, no\n`_`). Codes `empty`, `not_integer` and `out_of_range` (outside the 64-bit range)."
+        },
+        {
+          "name": "check_not_blank",
+          "kind": "fn",
+          "sig": "fn check_not_blank(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "3vi2ugddxqln25wrivnz2swopa",
+          "hash": "m75sbfinrmbi3pfkur23s5onriebtb56mfw5nisawv75gere4vva",
+          "effects": [],
+          "doc": "The trimmed `s` when it has a character other than white space; code `blank`."
+        },
+        {
+          "name": "check_one_of",
+          "kind": "fn",
+          "sig": "fn check_one_of(s: Str, options: List[Str]) -> Res[Str, Invalid]",
+          "sig_hash": "4hnfdzpuy6xmuuwvq4suvpqzwa",
+          "hash": "kw2g3dl6aoavuhyjtp5ps27xruof2d2ktayhg6dmic4an33vfeoa",
+          "effects": [],
+          "doc": "`s` when it is one of `options` (exact, case-sensitive); code `not_allowed`."
+        },
+        {
+          "name": "check_matches",
+          "kind": "fn",
+          "sig": "fn check_matches(s: Str, re: Regex) -> Res[Str, Invalid]",
+          "sig_hash": "ajcwf2vhmuynmao32w7am6lg3a",
+          "hash": "423apzloofaxohpe6io6wzdxb3w7c7xi7f62wdp5ukjfady6ab6a",
+          "effects": [],
+          "doc": "`s` when `re` matches somewhere in it (anchor the pattern with `^` and `$` to match the whole\ntext); code `no_match`."
+        },
+        {
+          "name": "check_hostname",
+          "kind": "fn",
+          "sig": "fn check_hostname(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "x4ngmnieg2bpusdqj5pzmcnktu",
+          "hash": "fd6hgw2mhytpjbhiq6xno62syltrwmjy7hafhvdrd56ue5pl46ta",
+          "effects": [],
+          "doc": "A host name by RFC 1123: dot-separated labels of 1 to 63 ASCII letters, digits and hyphens, not\nstarting or ending with a hyphen, at most 253 characters in all. One trailing dot (the root) is\nallowed and removed. Internationalized names are accepted in their ASCII (`xn--`) form only.\nThe result is lower-cased. Codes `empty`, `too_long`, `empty_label`, `label_too_long`,\n`bad_char`, `hyphen_edge`."
+        },
+        {
+          "name": "is_hostname",
+          "kind": "fn",
+          "sig": "fn is_hostname(s: Str) -> Bool",
+          "sig_hash": "6l6hl4m5bc6hac5266kocd2pee",
+          "hash": "ffdfe3kphdu4owfjzrt3hzg6wy4hl5qjdfoulxjdtqpjmvggseaq",
+          "effects": [],
+          "doc": "Whether `s` is a host name (`check_hostname`)."
+        },
+        {
+          "name": "check_domain",
+          "kind": "fn",
+          "sig": "fn check_domain(s: Str, require_tld: Bool) -> Res[Str, Invalid]",
+          "sig_hash": "vgiaaf4b56ejlvkws54b54pequ",
+          "hash": "7idzzpqg5ynmi5wfcv32teqtvi46vh732f7bmrirus5ztkxhraoa",
+          "effects": [],
+          "doc": "A domain name: a host name (`check_hostname`) whose last label is not all digits, so an IPv4\naddress is never a domain. With `require_tld` it needs at least two labels and a top-level\nlabel of 2 or more letters or an `xn--` label (`example.com`, not `localhost`). Codes of\n`check_hostname`, and `no_tld`, `bad_tld`."
+        },
+        {
+          "name": "is_domain",
+          "kind": "fn",
+          "sig": "fn is_domain(s: Str) -> Bool",
+          "sig_hash": "ppyd62elrjzzknmcsav3p6lvfq",
+          "hash": "nmsephxfm73rc3mh5zqh7uyqn6rrv7z646qayyukzxlzo7rooebq",
+          "effects": [],
+          "doc": "Whether `s` is a domain with a top-level domain (`check_domain(s, true)`)."
+        },
+        {
+          "name": "Ip",
+          "kind": "type",
+          "sig": "pub type Ip = {family: Int, octets: List[Int], zone: Opt[Str]} derive Eq, Show",
+          "sig_hash": "tr4ovbysgi3rzigeqrusttpxki",
+          "hash": "lyqk7xsk6hgweel5ucnoqimf4buhwrwsgjy4p6gioi5lsqxgtc6q",
+          "effects": [],
+          "doc": "An IP address: `family` 4 or 6, its 4 or 16 `octets` (0 to 255) in network order, and the zone\n(scope) of an IPv6 address such as `fe80::1%eth0`."
+        },
+        {
+          "name": "Cidr",
+          "kind": "type",
+          "sig": "pub type Cidr = {addr: Ip, prefix: Int} derive Eq, Show",
+          "sig_hash": "titvsjuafbpmicn5k624nuz7n4",
+          "hash": "lset7dkb3znsbtboc6mv4hrffyhvm7phgvogzy7nr2tpfipdtrpa",
+          "effects": [],
+          "doc": "An address block: an address and a prefix length (0 to 32 for IPv4, 0 to 128 for IPv6)."
+        },
+        {
+          "name": "IpKind",
+          "kind": "type",
+          "sig": "pub type IpKind = Unspecified | Loopback | Private | SharedAddress | LinkLocal | Multicast | Broadcast | Documentation | UniqueLocal | Reserved | Global derive Eq, Show",
+          "sig_hash": "wd2l4iybwh3og7qygfrlqh7fjq",
+          "hash": "ebzs3x22tvptv26hcxdyon5f5hzyefu7elvmcwt6z3nqfp7jvuja",
+          "effects": [],
+          "doc": "What an address is for, from the IANA special-purpose registries. `SharedAddress` is the\ncarrier-grade NAT block 100.64.0.0/10, `UniqueLocal` is IPv6 fc00::/7, `Reserved` covers the\nremaining special blocks (0.0.0.0/8, 192.0.0.0/24, 198.18.0.0/15, 240.0.0.0/4, ::/8,\n100::/64, 2001::/23), and `Global` is everything else."
+        },
+        {
+          "name": "check_ipv4",
+          "kind": "fn",
+          "sig": "fn check_ipv4(s: Str) -> Res[Ip, Invalid]",
+          "sig_hash": "q5gps4djx5k6cuhmvu5o26q5bm",
+          "hash": "ycvggczh5bsjr2tgdp6gsrfw2u7ibsoqyeu7mhabhn6ivlg65hrq",
+          "effects": [],
+          "doc": "An IPv4 address in dotted-decimal form: exactly four parts from 0 to 255, decimal digits only,\nno leading zeros (`010.0.0.1` is rejected, since other parsers read it as octal), no other\nshorthand (`127.1`, hex). Codes `ipv4_parts`, `ipv4_number`, `leading_zero`, `ipv4_range`."
+        },
+        {
+          "name": "is_ipv4",
+          "kind": "fn",
+          "sig": "fn is_ipv4(s: Str) -> Bool",
+          "sig_hash": "hpxn7lz32m35fx3qniq7xzif5i",
+          "hash": "d7uetkbbgprgeliipyw6g444s3stj7t4uarhsf7rvyx7cbjjad7a",
+          "effects": [],
+          "doc": "Whether `s` is an IPv4 address (`check_ipv4`)."
+        },
+        {
+          "name": "check_ipv6",
+          "kind": "fn",
+          "sig": "fn check_ipv6(s: Str) -> Res[Ip, Invalid]",
+          "sig_hash": "zxryzzkme3ogbdvhgnsjp2vdei",
+          "hash": "dswnioxfmktckwgcihcwfig2ekgk3g74b32s727esffvmaop4b5a",
+          "effects": [],
+          "doc": "An IPv6 address in any RFC 4291 text form: eight groups of 1 to 4 hex digits, `::` once for one\nor more zero groups, an embedded IPv4 address in the last 32 bits (`::ffff:192.0.2.1`), and an\noptional zone after `%` (letters, digits and `-._~`, as in `fe80::1%eth0`). Codes `ipv6_group`,\n`double_colon`, `ipv6_groups`, `zone`, and the IPv4 codes for an embedded address."
+        },
+        {
+          "name": "is_ipv6",
+          "kind": "fn",
+          "sig": "fn is_ipv6(s: Str) -> Bool",
+          "sig_hash": "b6aapvgaveaeuisrdz7hdfwkqi",
+          "hash": "txoums7wczn7hkx6b4umdyzsn7ll2mps5omt3zyxietqlng4ul2q",
+          "effects": [],
+          "doc": "Whether `s` is an IPv6 address (`check_ipv6`)."
+        },
+        {
+          "name": "check_ip",
+          "kind": "fn",
+          "sig": "fn check_ip(s: Str) -> Res[Ip, Invalid]",
+          "sig_hash": "bs4zlxtxa3gjd2tcn6rro76lai",
+          "hash": "jlzdvebw7vhrcudvdz6i2w3ssflbxxupc57o4eja5lkksil7xqyq",
+          "effects": [],
+          "doc": "An IPv4 or IPv6 address (`check_ipv4` when `s` has no `:`, else `check_ipv6`)."
+        },
+        {
+          "name": "is_ip",
+          "kind": "fn",
+          "sig": "fn is_ip(s: Str) -> Bool",
+          "sig_hash": "4fdnaarkoxtqkmoa5il3xzyzty",
+          "hash": "h67bhi4ctc6t4fctako67ae7ajugbifzpqbcztadrfz7x7vpuqpq",
+          "effects": [],
+          "doc": "Whether `s` is an IPv4 or IPv6 address."
+        },
+        {
+          "name": "format_ip",
+          "kind": "fn",
+          "sig": "fn format_ip(ip: Ip) -> Str",
+          "sig_hash": "sr5hh7k7nohglkb6wkdtbgjmoy",
+          "hash": "cjmso3mtuhqz6c3oarkhdfyocdqp6c6lgyzoagzozvgoqvzs5k4a",
+          "effects": [],
+          "doc": "The canonical text of an address: dotted decimal for IPv4, and RFC 5952 for IPv6 (lower-case\nhex, no leading zeros, the longest run of two or more zero groups as `::`, the first on a tie,\nand `::ffff:a.b.c.d` for IPv4-mapped addresses), then `%zone` if there is one."
+        },
+        {
+          "name": "ip_kind",
+          "kind": "fn",
+          "sig": "fn ip_kind(ip: Ip) -> IpKind",
+          "sig_hash": "cgxy24q5qaqn6mr3b2ufpf6tbe",
+          "hash": "wfuuvj7ydmjcknt5gty4yl4biruqwfqhudqrm5r6xotkpiyk5iba",
+          "effects": [],
+          "doc": "What `ip` is for (see `IpKind`). An IPv4-mapped IPv6 address (`::ffff:10.0.0.1`) is classified\nas its IPv4 address."
+        },
+        {
+          "name": "is_private_ip",
+          "kind": "fn",
+          "sig": "fn is_private_ip(ip: Ip) -> Bool",
+          "sig_hash": "xh6lrrvebo7hb3jrx5nxdrj7ia",
+          "hash": "47e7e7757bqnyc2cmubfhx43sky5p5h7ogzra5fyz5crrofhdo3q",
+          "effects": [],
+          "doc": "Whether `ip` is in a private block: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 or IPv6 unique\nlocal fc00::/7."
+        },
+        {
+          "name": "is_loopback_ip",
+          "kind": "fn",
+          "sig": "fn is_loopback_ip(ip: Ip) -> Bool",
+          "sig_hash": "3as2jfqij2l564oitscbzliazi",
+          "hash": "v6anzgc5tngkaepobfilsuqrcbhps5r6bwyftplsahuwpg63xlcq",
+          "effects": [],
+          "doc": "Whether `ip` is a loopback address (127.0.0.0/8, ::1)."
+        },
+        {
+          "name": "is_public_ip",
+          "kind": "fn",
+          "sig": "fn is_public_ip(ip: Ip) -> Bool",
+          "sig_hash": "dyjsyktuuowdpobfm5ozslvkzq",
+          "hash": "eyuetrmc3dxb4zzadhchr5lv7hf5vrheg3rshol4h2reduokdxta",
+          "effects": [],
+          "doc": "Whether `ip` is globally routable: not in any special-purpose block."
+        },
+        {
+          "name": "check_cidr",
+          "kind": "fn",
+          "sig": "fn check_cidr(s: Str) -> Res[Cidr, Invalid]",
+          "sig_hash": "if5y7vazpqevspamgd242bir5q",
+          "hash": "s3zkhpc2ms6xgtnpfcjubibz3unsfulccoo5jqani6wku63qjjnq",
+          "effects": [],
+          "doc": "A CIDR block such as `192.168.0.0/16` or `2001:db8::/32`. The address may have bits set after\nthe prefix (`192.168.1.7/16`, as in interface configuration); `cidr_network` clears them.\nCodes `no_prefix`, `prefix`, `zone` and the address codes."
+        },
+        {
+          "name": "check_cidr_strict",
+          "kind": "fn",
+          "sig": "fn check_cidr_strict(s: Str) -> Res[Cidr, Invalid]",
+          "sig_hash": "7lyzmgh3p3fotbmv56rr5vfacu",
+          "hash": "kh2z5cx7o6xcs7l6c42iqcnslpmy34fwbd4ehvyfgytkilgaerpa",
+          "effects": [],
+          "doc": "A CIDR block whose address is its network address, so `192.168.1.7/16` is rejected with\n`host_bits`."
+        },
+        {
+          "name": "is_cidr",
+          "kind": "fn",
+          "sig": "fn is_cidr(s: Str) -> Bool",
+          "sig_hash": "a4inurix6zkcqc77z7u3d4mbuq",
+          "hash": "qdozizoeftfy2arwt2fn4jjg4yrkk4cdmmcdzhcnap76olny5lfa",
+          "effects": [],
+          "doc": "Whether `s` is a CIDR block (`check_cidr`)."
+        },
+        {
+          "name": "cidr_network",
+          "kind": "fn",
+          "sig": "fn cidr_network(c: Cidr) -> Ip",
+          "sig_hash": "5uf4cd6erqxjks2tbzojbdeqly",
+          "hash": "njvlug426kgtxfvgp6zsmsg4di5ysctxtrt442nnhdwu2yislc5a",
+          "effects": [],
+          "doc": "The first address of the block (the address with every bit after the prefix cleared)."
+        },
+        {
+          "name": "cidr_last",
+          "kind": "fn",
+          "sig": "fn cidr_last(c: Cidr) -> Ip",
+          "sig_hash": "kxyco7hpbtsawvaan5guiyydye",
+          "hash": "yhhvbpobonmz7fjyb7zv66b2dzaqbmtv75psmskm2r274tw6mhyq",
+          "effects": [],
+          "doc": "The last address of the block (every bit after the prefix set; the broadcast address for IPv4)."
+        },
+        {
+          "name": "cidr_size",
+          "kind": "fn",
+          "sig": "fn cidr_size(c: Cidr) -> BigInt",
+          "sig_hash": "sjjwh7bm7daf754xuwsvgxau4a",
+          "hash": "w3mpj3ujtglsji3rglxgqibq2tp3cndpxab52n5x3yzrcdcrqoua",
+          "effects": [],
+          "doc": "The number of addresses in the block, 2 to the power of the bits after the prefix."
+        },
+        {
+          "name": "in_cidr",
+          "kind": "fn",
+          "sig": "fn in_cidr(ip: Ip, c: Cidr) -> Bool",
+          "sig_hash": "qqaqirmxm2cboxljnw6q6xlsdm",
+          "hash": "mc2k4gdl6dwkb5r6cofsq5d6gr5p3gm5xocz2bwik3ltdrxazgwa",
+          "effects": [],
+          "doc": "Whether `ip` is inside the block `c`. Addresses of the other family are never inside, and the\nzone is ignored."
+        },
+        {
+          "name": "format_cidr",
+          "kind": "fn",
+          "sig": "fn format_cidr(c: Cidr) -> Str",
+          "sig_hash": "7ywb233x422ktlfebvkhdvkj7i",
+          "hash": "jnlbohkfhqt6zvnz6vr73i3wktiubfzpcax5wqg3fsxl6qpwixrq",
+          "effects": [],
+          "doc": "The text of a block, `format_ip` of its address, `/` and the prefix length."
+        },
+        {
+          "name": "EmailOpts",
+          "kind": "type",
+          "sig": "pub type EmailOpts = {allow_quoted: Bool, allow_ip_literal: Bool, require_tld: Bool} derive Eq, Show",
+          "sig_hash": "rlslxcn3zfpw35dl7wjovdqyyy",
+          "hash": "qmckmrxugrkne3mce3qb4npyq4dnakyefd7bbwrwi44utbg4fafq",
+          "effects": [],
+          "doc": "What `check_email_with` accepts besides plain `local@domain.tld` addresses."
+        },
+        {
+          "name": "email_defaults",
+          "kind": "fn",
+          "sig": "fn email_defaults() -> EmailOpts",
+          "sig_hash": "ukmxed7npdpdgm2gwnv3xa3s7y",
+          "hash": "5q6ybobecx3rwkqskepewywdhnnzyija4rpdwcrjz6t4u7xtvuba",
+          "effects": [],
+          "doc": "The defaults of `check_email`: no quoted local parts, no IP literals, and a top-level domain."
+        },
+        {
+          "name": "check_email_with",
+          "kind": "fn",
+          "sig": "fn check_email_with(s: Str, o: EmailOpts) -> Res[Str, Invalid]",
+          "sig_hash": "bnxd3bshvgz4gqgdfvp6llixqa",
+          "hash": "s7nhdelhp3abgeyz6chkdsqi6tp7pdsyemvzrchqssef7mwbut5a",
+          "effects": [],
+          "doc": "An email address by the practical subset of RFC 5321 and 5322 that mail systems accept: at most\n254 characters; a local part (before the last `@`) of 1 to 64 characters, a dot-atom of ASCII\nletters, digits and ``!#$%&'*+-/=?^_`{|}~`` with single dots not at either end, or with\n`allow_quoted` a quoted string (`\"john doe\"@example.com`, with `\\` escapes); and a domain by\n`check_domain` (with `require_tld`), or with `allow_ip_literal` an address literal such as\n`[192.0.2.1]` or `[IPv6:2001:db8::1]`. Comments, folding white space, obsolete syntax and\nnon-ASCII (SMTPUTF8) addresses are rejected. The result has the domain lower-cased and the local\npart unchanged. It says nothing about whether mail can be delivered. Codes `too_long`,\n`no_at`, `empty_local`, `local_too_long`, `local_char`, `local_dot`, `quoted_local`,\n`ip_literal`, and the domain and address codes."
+        },
+        {
+          "name": "check_email",
+          "kind": "fn",
+          "sig": "fn check_email(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "ba3mlgpuoccxp5eifiqyl3gikm",
+          "hash": "lohq5ry2e2tlvaorek26zzlo4yutycyjf5dx6axth3y3mniyhasq",
+          "effects": [],
+          "doc": "`check_email_with(s, email_defaults())`."
+        },
+        {
+          "name": "is_email",
+          "kind": "fn",
+          "sig": "fn is_email(s: Str) -> Bool",
+          "sig_hash": "axrygoult77eroyymhcu5wbgtm",
+          "hash": "zv2bbtfs33i3lndqgzyl65juhtgbznefadpcsoyqxqpcrbwfy7sa",
+          "effects": [],
+          "doc": "Whether `s` is an email address with the defaults (`check_email`)."
+        },
+        {
+          "name": "check_port",
+          "kind": "fn",
+          "sig": "fn check_port(s: Str) -> Res[Int, Invalid]",
+          "sig_hash": "4xvuqpaz7ss766g7oit2js4d3q",
+          "hash": "ri446tkfx4xvamqz3kdxake3ur6hc7rjf5hsgzdttrrpsylasgda",
+          "effects": [],
+          "doc": "A TCP or UDP port number, 0 to 65535, in decimal with no sign and no leading zeros. Codes\n`port`."
+        },
+        {
+          "name": "is_port",
+          "kind": "fn",
+          "sig": "fn is_port(s: Str) -> Bool",
+          "sig_hash": "57f5co4ahkbpq3vnvtk5qee7wi",
+          "hash": "3bnkoqvqi5ikhbuk4krotrjfqw3kmgadcgsm2mwyfce54pt3o2gq",
+          "effects": [],
+          "doc": "Whether `s` is a port number (`check_port`)."
+        },
+        {
+          "name": "Url",
+          "kind": "type",
+          "sig": "pub type Url = {scheme: Str, userinfo: Opt[Str], host: Str, port: Opt[Int], path: Str, query: Opt[Str], fragment: Opt[Str]} derive Eq, Show",
+          "sig_hash": "lboxk7e5xw2y54japup7iitnbm",
+          "hash": "cpi6sbbu3j3grtk6d6yboevan4vzpxrjwe5564jx7qmbdijqf5fq",
+          "effects": [],
+          "doc": "The parts of a URL. `host` is lower-cased, and an IPv6 host is written without its brackets;\n`path` is `\"\"` when the URL has none; `query` and `fragment` exclude the `?` and `#`."
+        },
+        {
+          "name": "UrlOpts",
+          "kind": "type",
+          "sig": "pub type UrlOpts = {schemes: List[Str], allow_userinfo: Bool, require_tld: Bool, allow_ip: Bool} derive Eq, Show",
+          "sig_hash": "vepp6xctvn7mvleajcavc5bllu",
+          "hash": "hsgaudj6ry2vwr4pfqpzfh7jr43s6n7wbo6kzgmryu3gwfq56cxa",
+          "effects": [],
+          "doc": "What `check_url_with` accepts: `schemes` (lower case; `[]` allows any scheme), credentials\nbefore the host, single-label hosts such as `localhost` (when `require_tld` is false), and IP\naddress hosts."
+        },
+        {
+          "name": "url_defaults",
+          "kind": "fn",
+          "sig": "fn url_defaults() -> UrlOpts",
+          "sig_hash": "fcxdcrszgngwavt2ipbnnlvzre",
+          "hash": "fmsol7xsc3p77k2jc4yrajgq7c2gwpk7yi5ngwzkcljzvizjwf4q",
+          "effects": [],
+          "doc": "The defaults of `check_url`: `http` and `https` only, no credentials, a domain with a top-level\ndomain or an IP address."
+        },
+        {
+          "name": "check_url_with",
+          "kind": "fn",
+          "sig": "fn check_url_with(s: Str, o: UrlOpts) -> Res[Url, Invalid]",
+          "sig_hash": "m4oyqjdmrfb3wpprvpztg3ta2m",
+          "hash": "zofp2bbldi645td5ix56kmq2iws4gxbl2mxbvkym55me6q7al6pa",
+          "effects": [],
+          "doc": "A URL with an authority, `scheme://[userinfo@]host[:port][/path][?query][#fragment]`, by\nRFC 3986: the scheme is a letter then letters, digits, `+`, `-` or `.`; the host a domain\n(`check_domain`), an IPv4 address or a bracketed IPv6 address without a zone; the port 0 to\n65535; path, query and fragment only RFC 3986 characters with valid `%XX` escapes. Spaces,\ncontrol characters and non-ASCII text (IRIs) are rejected, and so are URLs without `//`\n(`mailto:`, `urn:`). The result is the parsed `Url`. Codes `empty`, `bad_char`, `no_scheme`,\n`scheme`, `scheme_not_allowed`, `no_authority`, `userinfo`, `empty_host`, `host`, `ip_host`,\n`zone`, `port`, `path`, `query`, `fragment`, and the host codes."
+        },
+        {
+          "name": "check_url",
+          "kind": "fn",
+          "sig": "fn check_url(s: Str) -> Res[Url, Invalid]",
+          "sig_hash": "cxhplx55w56jaz6zpd7j4ijc3q",
+          "hash": "t7dvqeyhpfhe5zoiyfjbi3bdrupytaeprfevxzwdyme7qpfq72bq",
+          "effects": [],
+          "doc": "`check_url_with(s, url_defaults())`."
+        },
+        {
+          "name": "is_url",
+          "kind": "fn",
+          "sig": "fn is_url(s: Str) -> Bool",
+          "sig_hash": "zecexjbrqktl26l5onos2dzt3y",
+          "hash": "uztgiw24q256nzhk3znjyhfa2wo2l3v5be2asabarnc3utrcyiyq",
+          "effects": [],
+          "doc": "Whether `s` is an `http` or `https` URL with the defaults (`check_url`)."
+        },
+        {
+          "name": "check_uuid",
+          "kind": "fn",
+          "sig": "fn check_uuid(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "g6562bgr445prngaby7kexn4oi",
+          "hash": "thzjpkdpf5qu2bgdpke3xshtjrhcs4ym6je2ifvrlgb35cew5zfa",
+          "effects": [],
+          "doc": "A UUID in the canonical 8-4-4-4-12 hex form, either case, of any version and variant\n(including the nil and max UUIDs). The result is lower case. Code `uuid`."
+        },
+        {
+          "name": "check_uuid_loose",
+          "kind": "fn",
+          "sig": "fn check_uuid_loose(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "yy5gpqg6dh32iiaqkfqk4234d4",
+          "hash": "xtdhgq4cs5g2mmjeqzqia23gf5k7ebqzolxs4qhtkcuufnexmbgq",
+          "effects": [],
+          "doc": "A UUID in the canonical form or one of the other common forms: in braces\n(`{...}`), with a `urn:uuid:` prefix (any case), or as 32 hex digits without hyphens. The\nresult is the canonical lower-case form. Code `uuid`."
+        },
+        {
+          "name": "is_uuid",
+          "kind": "fn",
+          "sig": "fn is_uuid(s: Str) -> Bool",
+          "sig_hash": "fr47tsidke5bjltjuxsi24q4qm",
+          "hash": "stjaxtmdiw2pnsqumab74keimb576zcvjurzzhnotc4yg6rpvi4a",
+          "effects": [],
+          "doc": "Whether `s` is a canonical UUID (`check_uuid`)."
+        },
+        {
+          "name": "uuid_version",
+          "kind": "fn",
+          "sig": "fn uuid_version(s: Str) -> Opt[Int]",
+          "sig_hash": "zyagbmqrmwe3qrrerp4xgluzya",
+          "hash": "erdpphu72w5lpjtb3lbjj3rzah3nzzk2gapthqk52fvg5w2ui7nq",
+          "effects": [],
+          "doc": "The version of a UUID in any form `check_uuid_loose` accepts: the hex digit that starts the\nthird group (4 for random, 7 for time-ordered, 0 for nil, 15 for max)."
+        },
+        {
+          "name": "uuid_variant",
+          "kind": "fn",
+          "sig": "fn uuid_variant(s: Str) -> Opt[Str]",
+          "sig_hash": "maq5a2c5guewsew4hgfcflje54",
+          "hash": "b7bgar6uzpshhpntowv2rcapsnrsxbbgepcacwtfe5pzkbvs6coa",
+          "effects": [],
+          "doc": "The variant of a UUID, from the first hex digit of its fourth group: `ncs` (0 to 7),\n`rfc9562` (8 to b, the RFC 4122 and 9562 layout), `microsoft` (c, d) or `future` (e, f)."
+        },
+        {
+          "name": "check_uuid_version",
+          "kind": "fn",
+          "sig": "fn check_uuid_version(s: Str, v: Int where _ >= 1 and _ <= 8) -> Res[Str, Invalid]",
+          "sig_hash": "37hwo32yflebovcrwqz6qhkwae",
+          "hash": "hx4dtjttskdm2hjjhwphkdl2o4zf3ywrylktoqtc45s5x2flttoa",
+          "effects": [],
+          "doc": "A canonical UUID of version `v` with the RFC 9562 variant, as generators of that version write\nit. Codes `uuid`, `uuid_version`, `uuid_variant`."
+        },
+        {
+          "name": "is_nil_uuid",
+          "kind": "fn",
+          "sig": "fn is_nil_uuid(s: Str) -> Bool",
+          "sig_hash": "gl5izaq6eee3fnvzyd6g3lm5dm",
+          "hash": "dkh4nd5hirrjsanpjuu4pdt7y2batrto2dr73ld6fheitacrsqoq",
+          "effects": [],
+          "doc": "Whether `s` is the nil UUID, all zeros (any form `check_uuid_loose` accepts)."
+        },
+        {
+          "name": "is_max_uuid",
+          "kind": "fn",
+          "sig": "fn is_max_uuid(s: Str) -> Bool",
+          "sig_hash": "x4hkr5kebz2ecx4fkh3dpnbhii",
+          "hash": "t4lz4f2rajmqpb7lbtrbyacksi3jlp7mnlyymliei6yf5ilpukga",
+          "effects": [],
+          "doc": "Whether `s` is the max UUID, all `f` (any form `check_uuid_loose` accepts)."
+        },
+        {
+          "name": "check_date",
+          "kind": "fn",
+          "sig": "fn check_date(s: Str) -> Res[Time, Invalid]",
+          "sig_hash": "q6sg2cwpzju4xcqrpocinp4mtq",
+          "hash": "ldepdgni46pey4td7p7wx62pgwrwenl47ngqcb7wjebss7r4qmea",
+          "effects": [],
+          "doc": "A calendar date in ISO 8601 extended form, `YYYY-MM-DD`, that exists (`2024-02-29` but not\n`2023-02-29`); the result is midnight UTC of that day. Years are 0000 to 9999; basic\n(`20240229`), week and ordinal forms are rejected. Codes `date_form`, `month`, `day`."
+        },
+        {
+          "name": "is_date",
+          "kind": "fn",
+          "sig": "fn is_date(s: Str) -> Bool",
+          "sig_hash": "b3rilc3uca24bvqdr5xheh7uvi",
+          "hash": "vrf3nhapgcnnsyr45fdeowchbt7sa3cpzl5hyqsmqniewvi4oyqa",
+          "effects": [],
+          "doc": "Whether `s` is an ISO 8601 date (`check_date`)."
+        },
+        {
+          "name": "check_time",
+          "kind": "fn",
+          "sig": "fn check_time(s: Str) -> Res[Int, Invalid]",
+          "sig_hash": "2zi75zqrt5qcjryaheywa43ty4",
+          "hash": "46vxboclxmuydab6447gks333hemgli547ht5t3vrmmaaywifwda",
+          "effects": [],
+          "doc": "A time of day, `HH:MM`, `HH:MM:SS` or `HH:MM:SS.fff` (any number of fraction digits, kept to\nthe millisecond), hours 00 to 23; the result is milliseconds after midnight. `24:00` and leap\nseconds are rejected. Codes `time_form`, `hour`, `minute`, `second`."
+        },
+        {
+          "name": "is_time",
+          "kind": "fn",
+          "sig": "fn is_time(s: Str) -> Bool",
+          "sig_hash": "4kcewh7ngklaelgxzrp2wk75j4",
+          "hash": "bvqrp2qxqwgnqs52ylrptot5eieaiaw2jyxmgssl6qoqzxnzeona",
+          "effects": [],
+          "doc": "Whether `s` is a time of day (`check_time`)."
+        },
+        {
+          "name": "check_datetime",
+          "kind": "fn",
+          "sig": "fn check_datetime(s: Str) -> Res[Time, Invalid]",
+          "sig_hash": "jqgp4dykyv2t5haas43kwr7x2i",
+          "hash": "3ccd6fwxd36jmo455ozecwyxilsuqsu4ccwkjohuqkry6o6vxjhq",
+          "effects": [],
+          "doc": "An ISO 8601 date and time: a date, `T` (or `t`, or a space), a time as `check_time` reads it,\nand an optional offset (`Z`, `+HH:MM`, `+HHMM` or `+HH`); a time without an offset is read as\nUTC. The result is the instant. Codes of `check_date` and `check_time`, `datetime_form` and\n`offset`."
+        },
+        {
+          "name": "is_datetime",
+          "kind": "fn",
+          "sig": "fn is_datetime(s: Str) -> Bool",
+          "sig_hash": "f4rmbujjlswvirmimnzbbuoypq",
+          "hash": "idviavtskehyhnl5rvwetznfgraezzti2pzuefxy4gbyxlhkg4pa",
+          "effects": [],
+          "doc": "Whether `s` is an ISO 8601 date and time (`check_datetime`)."
+        },
+        {
+          "name": "check_rfc3339",
+          "kind": "fn",
+          "sig": "fn check_rfc3339(s: Str) -> Res[Time, Invalid]",
+          "sig_hash": "uom5quevw7wy4p5d4z3x2rgpha",
+          "hash": "fs7a7mnmf6mvsuajf3ntv33fwawd7tid6txotyn56irsjcz5ocvq",
+          "effects": [],
+          "doc": "An RFC 3339 timestamp, the strict profile of ISO 8601 used on the internet: `T` (or `t`) between\ndate and time, seconds required, and an offset required (`Z`, `z` or `+HH:MM`), as in\n`2026-10-16T09:30:00.250+05:30`. The result is the instant. Codes as `check_datetime`."
+        },
+        {
+          "name": "is_rfc3339",
+          "kind": "fn",
+          "sig": "fn is_rfc3339(s: Str) -> Bool",
+          "sig_hash": "72ldapjkidytupc5vxebnye42e",
+          "hash": "5w5oqem6hpb2lajsm24bbnswwojjl3lq33a2mkb2xvp2qvys4lcq",
+          "effects": [],
+          "doc": "Whether `s` is an RFC 3339 timestamp (`check_rfc3339`)."
+        },
+        {
+          "name": "check_mac",
+          "kind": "fn",
+          "sig": "fn check_mac(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "fa3hwrfzqiulw5kcwvmrqtzo2e",
+          "hash": "tcq66g3pqi3lffu3i72yassplf5deeu6rojko2innhnurqxaanuq",
+          "effects": [],
+          "doc": "A 48-bit MAC address as six pairs of hex digits separated by `:` or `-` (one kind throughout),\nor as three groups of four separated by `.` (`0123.4567.89ab`). The result is lower case with\ncolons, `01:23:45:67:89:ab`. Code `mac`."
+        },
+        {
+          "name": "is_mac",
+          "kind": "fn",
+          "sig": "fn is_mac(s: Str) -> Bool",
+          "sig_hash": "ii6r3jetj35ul2pgkf5cn3hcqy",
+          "hash": "umiyw6ia4o6yq2nv3qx5v56x7fj4ffiaudzkrxzme3e4qpb3qs7a",
+          "effects": [],
+          "doc": "Whether `s` is a MAC address (`check_mac`)."
+        },
+        {
+          "name": "luhn_valid",
+          "kind": "fn",
+          "sig": "fn luhn_valid(s: Str) -> Bool",
+          "sig_hash": "mlwrj5oi3xmytcvxjuorptjgm4",
+          "hash": "5mcrb75unqvxagt6kisyh2n2urblubygni63iam6of37hxjjhmcq",
+          "effects": [],
+          "doc": "Whether `s` is two or more ASCII digits whose Luhn (mod 10) checksum is valid, as on payment\ncards and IMEI numbers."
+        },
+        {
+          "name": "luhn_check_digit",
+          "kind": "fn",
+          "sig": "fn luhn_check_digit(s: Str) -> Opt[Int]",
+          "sig_hash": "egllgum4ked3qgwiskby64atpu",
+          "hash": "ubs5uf3vhtv57lvnlvhwadexgzxhyazl45f6mrud23crhzbk3bpa",
+          "effects": [],
+          "doc": "The Luhn check digit to append to the digits `s`, or `none` unless `s` is one or more digits."
+        },
+        {
+          "name": "check_gtin",
+          "kind": "fn",
+          "sig": "fn check_gtin(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "t4ngdixa44ltu67fd2fh5i5g6q",
+          "hash": "kn7c7mnnu2p2hlerylbirw5mvidqrnhrk5byip5ngdynrrxdwbsq",
+          "effects": [],
+          "doc": "A GTIN: an EAN-8, UPC-A (12 digits), EAN-13 or GTIN-14 number with a valid check digit.\nDigits only, no separators. Codes `gtin_form`, `check_digit`."
+        },
+        {
+          "name": "is_ean13",
+          "kind": "fn",
+          "sig": "fn is_ean13(s: Str) -> Bool",
+          "sig_hash": "iu36ybyzqz3igeayitvkt6jtcy",
+          "hash": "cjazz27elwalbm6p2wr3xicmrvks57g4sl7rwvwwdep7qk75xmzq",
+          "effects": [],
+          "doc": "Whether `s` is an EAN-13 number with a valid check digit."
+        },
+        {
+          "name": "is_upca",
+          "kind": "fn",
+          "sig": "fn is_upca(s: Str) -> Bool",
+          "sig_hash": "qdpzkvkxziplspbov4r5cy26ja",
+          "hash": "bsuy3ot4aduwzuc6wkj4kvnybnwk6er4oa6ygbwawhgddxomi6ga",
+          "effects": [],
+          "doc": "Whether `s` is a UPC-A number (12 digits) with a valid check digit."
+        },
+        {
+          "name": "check_isbn10",
+          "kind": "fn",
+          "sig": "fn check_isbn10(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "ybjfhc7jmeh6sffbaznmp6amva",
+          "hash": "xppzgephh2oib6ss35dc4725pg5hjbaodqtlgljbvgjcruumb6qa",
+          "effects": [],
+          "doc": "An ISBN-10: nine digits and a check digit or `X`, with optional hyphens or spaces between them.\nThe result is the ten characters without separators (`X` upper case). Codes `isbn_form`,\n`check_digit`."
+        },
+        {
+          "name": "check_isbn13",
+          "kind": "fn",
+          "sig": "fn check_isbn13(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "fvfq43o64r6pr4hzrzy55umndy",
+          "hash": "e3ojv6crx3efoxknwr4rhfwguvjetv22hrbhiluknerrgyvkwm7a",
+          "effects": [],
+          "doc": "An ISBN-13: 13 digits starting 978 or 979 with a valid check digit, with optional hyphens or\nspaces. The result has no separators. Codes `isbn_form`, `check_digit`."
+        },
+        {
+          "name": "check_isbn",
+          "kind": "fn",
+          "sig": "fn check_isbn(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "wzdxcgje7ur5sahpona45cclb4",
+          "hash": "b76oikfo56uirns5rod344ulzkzmgoyfpereze2erigk4ol6dr6a",
+          "effects": [],
+          "doc": "An ISBN-10 or ISBN-13 (by the number of digits), without separators in the result."
+        },
+        {
+          "name": "is_isbn",
+          "kind": "fn",
+          "sig": "fn is_isbn(s: Str) -> Bool",
+          "sig_hash": "lxenlubfddsqwa23nbn25mkbza",
+          "hash": "fcj5y5ar7jpt45vd5ggtf6f6zbotzdx24nvuzoui4kl2t7gftdlq",
+          "effects": [],
+          "doc": "Whether `s` is an ISBN-10 or ISBN-13 (`check_isbn`)."
+        },
+        {
+          "name": "isbn10_to_13",
+          "kind": "fn",
+          "sig": "fn isbn10_to_13(s: Str) -> Opt[Str]",
+          "sig_hash": "gmjevxe5ijzuiaypc4jpwsxdqm",
+          "hash": "kzxb67dwqrhxhqovfswegdanufwou3kqwtk76pmmof6hl4eqqorq",
+          "effects": [],
+          "doc": "The ISBN-13 of a valid ISBN-10 (978, its first nine digits and a new check digit)."
+        },
+        {
+          "name": "CardBrand",
+          "kind": "type",
+          "sig": "pub type CardBrand = Visa | Mastercard | Amex | Discover | DinersClub | Jcb | UnionPay | Maestro | Mir | UnknownBrand derive Eq, Show",
+          "sig_hash": "gcvlkqa6jdpdyvd7b7vn2cr4dy",
+          "hash": "bzyggptrlzyy2jotjtna5fnu3bbvmchvqgtv5ia5b7v6utipdknq",
+          "effects": [],
+          "doc": "A card network, from the number's leading digits (IIN ranges)."
+        },
+        {
+          "name": "Card",
+          "kind": "type",
+          "sig": "pub type Card = {number: Str, brand: CardBrand} derive Eq, Show",
+          "sig_hash": "qdetdj4aayeffauylkp5lndoxy",
+          "hash": "kebboxis6pynra5az7pmiohs6ss37pznkjh3bdxqrjyn3qtnacwa",
+          "effects": [],
+          "doc": "A checked card number (digits only) and its network."
+        },
+        {
+          "name": "card_brand",
+          "kind": "fn",
+          "sig": "fn card_brand(digits: Str) -> CardBrand",
+          "sig_hash": "qmgwic57u4ioqcc7q67ro52lgy",
+          "hash": "xsdqoch3gjo2cm3ib2h5l33gew47uyxw3ypwjhcm6bkrgvlcky6q",
+          "effects": [],
+          "doc": "The network of a card number (digits only) by its leading digits: Visa 4; Mastercard 51 to 55\nand 2221 to 2720; American Express 34, 37; Discover 6011, 644 to 649, 65, 622126 to 622925;\nUnionPay other 62; Diners Club 300 to 305, 36, 38, 39; JCB 3528 to 3589; Maestro 50, 56 to 69;\nMir 2200 to 2204; otherwise `UnknownBrand`."
+        },
+        {
+          "name": "check_card",
+          "kind": "fn",
+          "sig": "fn check_card(s: Str) -> Res[Card, Invalid]",
+          "sig_hash": "fbn26wippmajon25by4cl3kmte",
+          "hash": "xm52k2hzwzbnefa34fpxtyieb3hhziynr6tchishxo6ggw56dbvq",
+          "effects": [],
+          "doc": "A payment card number: digits with optional spaces or hyphens, 12 to 19 digits, a valid Luhn\nchecksum, and a length its network uses (16 for Mastercard, 15 for American Express, 13, 16 or\n19 for Visa). Numbers of unknown networks are accepted with `UnknownBrand`. Codes `card_form`,\n`card_length`, `check_digit`."
+        },
+        {
+          "name": "is_card",
+          "kind": "fn",
+          "sig": "fn is_card(s: Str) -> Bool",
+          "sig_hash": "kjeijpnwpt72qfjygn23aezbkm",
+          "hash": "tukaxt4v22spmq66jj33vg37vu7uc7ffa4vk4aqzez3gimodzfaa",
+          "effects": [],
+          "doc": "Whether `s` is a payment card number (`check_card`)."
+        },
+        {
+          "name": "iban_length",
+          "kind": "fn",
+          "sig": "fn iban_length(country: Str) -> Opt[Int]",
+          "sig_hash": "oajo6gj664krc4g54qjoe5mw7a",
+          "hash": "isgghc2cwz7kadj5omrzg2pnjaty3npnj5e5ku72253hcxzncera",
+          "effects": [],
+          "doc": "The IBAN length of a country (ISO 3166 alpha-2, upper case) from the SWIFT IBAN registry, or\n`none` for a country without IBANs."
+        },
+        {
+          "name": "check_iban",
+          "kind": "fn",
+          "sig": "fn check_iban(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "tenhctuxzx53wxux5h2tg7zjjy",
+          "hash": "2mixprjkadryeene6u7vk3djfzzsjpa2noptydpsc5ayforltjsa",
+          "effects": [],
+          "doc": "An IBAN: a country code, two check digits and the account number (BBAN) of the length the\nregistry gives for that country, upper-case letters and digits, with the ISO 7064 mod 97\nchecksum equal to 1. Spaces are ignored and letters may be lower case. The result is the\nelectronic form, upper case without spaces. Codes `iban_form`, `iban_country`, `iban_length`,\n`check_digit`."
+        },
+        {
+          "name": "is_iban",
+          "kind": "fn",
+          "sig": "fn is_iban(s: Str) -> Bool",
+          "sig_hash": "ekklxxj5w2m52nskpj33qrajm4",
+          "hash": "cqxaobtsso3cuwvzn52jysbdk7nvjulbgit2m4revlk6pqvppapq",
+          "effects": [],
+          "doc": "Whether `s` is an IBAN (`check_iban`)."
+        },
+        {
+          "name": "format_iban",
+          "kind": "fn",
+          "sig": "fn format_iban(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "h4jrwk2ajvfiprbrsaoozfemz4",
+          "hash": "c4m2g7k4omhnnrf3hyql5v5ihpwe6k3zvhnqy6uppn7pes3coy7a",
+          "effects": [],
+          "doc": "The print form of a valid IBAN: groups of four characters separated by spaces."
+        },
+        {
+          "name": "check_semver",
+          "kind": "fn",
+          "sig": "fn check_semver(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "lesxsx3lnqjkhecuvk2eclb5ha",
+          "hash": "pigps6y7izqgudfapu77ow7ctunv7ansqmw2fchmlgrsnltpznzq",
+          "effects": [],
+          "doc": "A Semantic Versioning 2.0.0 version, exactly as the specification's grammar: `MAJOR.MINOR.PATCH`\nwithout leading zeros, an optional `-` and dot-separated pre-release identifiers (ASCII\nletters, digits and hyphens; numeric ones without leading zeros), and an optional `+` and\nbuild identifiers (the same characters, leading zeros allowed). No `v` prefix. Codes `semver`,\n`prerelease`, `build`."
+        },
+        {
+          "name": "is_semver",
+          "kind": "fn",
+          "sig": "fn is_semver(s: Str) -> Bool",
+          "sig_hash": "edk54usnfylyoa7mcxnt7alwvq",
+          "hash": "svto6xupfph2nw66q7gjwtr7twj5sul75g4bvotvu2ivitwmo4yq",
+          "effects": [],
+          "doc": "Whether `s` is a Semantic Versioning 2.0.0 version (`check_semver`)."
+        },
+        {
+          "name": "check_hex_color",
+          "kind": "fn",
+          "sig": "fn check_hex_color(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "ghxffmvvmkr7byw6vbvrlpkrea",
+          "hash": "qjke5o6lwjqb5qo24ltgsig7jn3z26h3pilvsyv2snjjuyals4ma",
+          "effects": [],
+          "doc": "A CSS hex color: `#` and 3, 4, 6 or 8 hex digits (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`). The\nresult is the long lower-case form, `#rrggbb` or `#rrggbbaa`. Code `hex_color`."
+        },
+        {
+          "name": "is_hex_color",
+          "kind": "fn",
+          "sig": "fn is_hex_color(s: Str) -> Bool",
+          "sig_hash": "ph63ypisvkq24jvnhe7gvvdlfq",
+          "hash": "4xi2zavkhzjf6swqecbeszk7d4fizj5cxqly7l34ghijo4tpugmq",
+          "effects": [],
+          "doc": "Whether `s` is a CSS hex color (`check_hex_color`)."
+        },
+        {
+          "name": "check_e164",
+          "kind": "fn",
+          "sig": "fn check_e164(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "lth2vyarsuf57zozqx4scxlh7u",
+          "hash": "eemtp37dlykqvrfbtgrib6du3xlb2delawp2vlw46ll2xbrjodpq",
+          "effects": [],
+          "doc": "A phone number in E.164 form: `+`, then 7 to 15 digits starting with 1 to 9 (the country code\nfirst), with no spaces or punctuation. Whether the number exists is out of scope. Code\n`e164`."
+        },
+        {
+          "name": "is_e164",
+          "kind": "fn",
+          "sig": "fn is_e164(s: Str) -> Bool",
+          "sig_hash": "oupek3qf4hwg4ec327fn5bgaoi",
+          "hash": "m6ykmql4kzit7us4f3gcuyw7gns7f3uqrwaovtjicn7twy5decvq",
+          "effects": [],
+          "doc": "Whether `s` is an E.164 phone number (`check_e164`)."
+        },
+        {
+          "name": "check_base64",
+          "kind": "fn",
+          "sig": "fn check_base64(s: Str) -> Res[Bytes, Invalid]",
+          "sig_hash": "newzju543eyby5pxfgyxszceuu",
+          "hash": "bizdt5dwrbnkzhw5sopoeow64oluv7tkir5wyfuzq4v4ownmrd7q",
+          "effects": [],
+          "doc": "Standard base64 (RFC 4648 section 4: `A-Z a-z 0-9 + /`) with the `=` padding that makes the\nlength a multiple of 4, and unused bits zero; `\"\"` is the empty value. The result is the decoded\nbytes. Codes `base64`."
+        },
+        {
+          "name": "check_base64url",
+          "kind": "fn",
+          "sig": "fn check_base64url(s: Str) -> Res[Bytes, Invalid]",
+          "sig_hash": "g2ygdf4tneog6322cnelvynx5i",
+          "hash": "x6xsqiwh34sqharm6wod5aygazngnidkefa5he7r7ciqzadbeg3q",
+          "effects": [],
+          "doc": "URL-safe base64 (RFC 4648 section 5: `-` and `_` in place of `+` and `/`), with or without\npadding. The result is the decoded bytes. Code `base64`."
+        },
+        {
+          "name": "is_base64",
+          "kind": "fn",
+          "sig": "fn is_base64(s: Str) -> Bool",
+          "sig_hash": "lwokugfvqm23rmg2irdx6hsfky",
+          "hash": "mdj6vcl465lixjbvjovii57r5erk2d3usda4fp3iftoejteldmfa",
+          "effects": [],
+          "doc": "Whether `s` is standard base64 (`check_base64`)."
+        },
+        {
+          "name": "is_base64url",
+          "kind": "fn",
+          "sig": "fn is_base64url(s: Str) -> Bool",
+          "sig_hash": "in3ndisx5s3kj5gvz7iqm3kqiq",
+          "hash": "eiqxz3tsypmtq2ipjr2ar5vto6lz4dwtbccheyamth3lvxjs63ua",
+          "effects": [],
+          "doc": "Whether `s` is URL-safe base64 (`check_base64url`)."
+        },
+        {
+          "name": "check_hex",
+          "kind": "fn",
+          "sig": "fn check_hex(s: Str) -> Res[Bytes, Invalid]",
+          "sig_hash": "hsw6yw4qryw7xhmti3rhv7ttne",
+          "hash": "ul23gtiiy2tb2hqczrs3anh6j57gkrbj7wqux6vdd4fubqttbpaq",
+          "effects": [],
+          "doc": "Hex-encoded bytes: an even number of hex digits in either case; `\"\"` is the empty value. The\nresult is the decoded bytes. Code `hex`."
+        },
+        {
+          "name": "is_hex",
+          "kind": "fn",
+          "sig": "fn is_hex(s: Str) -> Bool",
+          "sig_hash": "bkq3westrvoo2za7ktbyx5xq5q",
+          "hash": "3gdevx4cjpmo7ogacwybhnnohwnlilrygny4y5inaqh7rh6mn63a",
+          "effects": [],
+          "doc": "Whether `s` is hex-encoded bytes (`check_hex`)."
+        },
+        {
+          "name": "check_slug",
+          "kind": "fn",
+          "sig": "fn check_slug(s: Str) -> Res[Str, Invalid]",
+          "sig_hash": "gqu2pwriw3a5y6xjox5ni5s5vy",
+          "hash": "5f2g3zgfr4m6absqkyzrnzykprlgny3z4yo7v4ze62uxq2twxiwa",
+          "effects": [],
+          "doc": "A URL slug: lower-case ASCII letters and digits in groups joined by single hyphens, as in\n`my-first-post`. Code `slug`."
+        },
+        {
+          "name": "is_slug",
+          "kind": "fn",
+          "sig": "fn is_slug(s: Str) -> Bool",
+          "sig_hash": "cvzg65resiq4meunksobbc3sja",
+          "hash": "lez6t73bwsk2klssviemmmqmfebtlgrwim65jlqr4erv376hanxq",
+          "effects": [],
+          "doc": "Whether `s` is a URL slug (`check_slug`)."
+        },
+        {
+          "name": "check_json",
+          "kind": "fn",
+          "sig": "fn check_json(s: Str) -> Res[Unit, Invalid]",
+          "sig_hash": "cc2omlnw434vov7xt3vgof6kkm",
+          "hash": "oy3cvrb4swvrqdddsk7tzzwjlrycjh77iy537jzjab6aalajrcda",
+          "effects": [],
+          "doc": "Whether `s` is one well-formed JSON text by RFC 8259: any value at the top, white space around\nit, strings with valid escapes and no raw control characters, numbers in JSON's grammar (no\nleading zeros, `+`, `NaN` or hex), and nesting at most 512 deep. Duplicate member names are\nallowed, as the RFC allows. On failure the message names the character position. Code `json`."
+        },
+        {
+          "name": "is_json",
+          "kind": "fn",
+          "sig": "fn is_json(s: Str) -> Bool",
+          "sig_hash": "u75qugz6oc4jr7de3zmoca5cfi",
+          "hash": "jn2itfttxdrudiam37tdhymtmdyllhpc73oc72yygamc63lk7qya",
+          "effects": [],
+          "doc": "Whether `s` is well-formed JSON (`check_json`)."
+        },
+        {
+          "name": "PasswordPolicy",
+          "kind": "type",
+          "sig": "pub type PasswordPolicy = {min_len: Int, max_len: Int, need_lower: Bool, need_upper: Bool, need_digit: Bool, need_symbol: Bool, allow_spaces: Bool, max_run: Int, banned: List[Str]} derive Eq, Show",
+          "sig_hash": "orn5owxhle6jxajd2gbv5egfui",
+          "hash": "i3u57qmiforfxvt76eremagdcceub3neeozv2wpmj5i2lyoakaza",
+          "effects": [],
+          "doc": "A password policy. `max_run` limits how often one character may repeat in a row (0 for no\nlimit), and `banned` lists passwords that are refused whatever their shape (compared ignoring\ncase), such as a list of common passwords."
+        },
+        {
+          "name": "password_defaults",
+          "kind": "fn",
+          "sig": "fn password_defaults() -> PasswordPolicy",
+          "sig_hash": "nuexeizc4tvjfua3vsibjxbkae",
+          "hash": "t7qzjejzoniydy7nc57qa7ujqcd26g3ckf7htasrgjwrvqjnyria",
+          "effects": [],
+          "doc": "A common policy: 12 to 128 characters, a lower-case and an upper-case letter, a digit and a\nsymbol, spaces allowed, at most 3 equal characters in a row, nothing banned. NIST SP 800-63B\nrecommends length and a banned list over composition rules: set the `need_*` fields to false\nand fill `banned` to follow it."
+        },
+        {
+          "name": "password_problems",
+          "kind": "fn",
+          "sig": "fn password_problems(pw: Str, p: PasswordPolicy) -> List[Invalid]",
+          "sig_hash": "yikx6srfkjpepawnien273uuqi",
+          "hash": "4o23asvw5wjavyctevsiqaufqfv5frpvc6hemmwzwlcrjoda2tfa",
+          "effects": [],
+          "doc": "Every rule of `p` that `pw` breaks, in the order `too_short`, `too_long`, `need_lower`,\n`need_upper`, `need_digit`, `need_symbol`, `spaces`, `repeated`, `banned`; `[]` means it\npasses. Letters are Unicode letters with case (`é` is lower case), digits are ASCII digits,\nand a symbol is any other non-space character."
+        },
+        {
+          "name": "check_password",
+          "kind": "fn",
+          "sig": "fn check_password(pw: Str, p: PasswordPolicy) -> Res[Str, Invalid]",
+          "sig_hash": "wnudap2eyocybpe24vhnvhjnce",
+          "hash": "lbvtffc24fxklmbecknp3aan2ss3yyxra2bnjv4trl7lhap3yrua",
+          "effects": [],
+          "doc": "`pw` when it passes `p`, else the first rule it breaks (`password_problems` lists them all)."
+        }
+      ]
+    }
+  ]
+}
