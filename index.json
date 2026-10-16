@@ -10,6 +10,16 @@
       "updated": "2026-10-16T05:01:51Z",
       "yanked": false,
       "deprecated": null
+    },
+    {
+      "name": "passwords",
+      "description": "Password policy after NIST SP 800-63B, and Argon2id hashing",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T16:11:24Z",
+      "yanked": false,
+      "deprecated": null
     }
   ]
 }
