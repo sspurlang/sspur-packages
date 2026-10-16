@@ -1,0 +1,1065 @@
+{
+  "schema": 1,
+  "name": "maps",
+  "description": "Map utilities (merge with resolvers, invert, filter and map keys and values, counters, multimaps, diffs) and dynamic JSON values with paths, pointers and merge patches",
+  "repository": "https://github.com/sspurlang/sspur-maps",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-maps.git",
+      "tag": "v0.1.0",
+      "commit": "a832998d6f5fa33f3e23a81bf4f79b07fe2d6481",
+      "hash": "jrmcf6qux3ty5unvasss5eb7r373js3a3aosa6lpqw3mcxzbkutq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/maps-0.1.0/maps-0.1.0.tar",
+        "sha256": "9ab222c041d3f952c91959fc4b7fb2a4bd076d219f6aca2edc07ded7ba7ffd7a",
+        "size": 84992
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:03:11Z",
+      "publisher": "utkarshavardhana",
+      "request": 17,
+      "api": [
+        {
+          "name": "from_pairs",
+          "kind": "fn",
+          "sig": "fn from_pairs[K, V](pairs: List[(K, V)]) -> Map[K, V]",
+          "sig_hash": "po7uphaevtpautvtkl4kve6ds4",
+          "hash": "2v6qzqags24dashv4hxk7e5wazy7l7ja5dfvyrmuxbil3nqnyp3a",
+          "effects": [],
+          "doc": "The map of `pairs`; a later pair for a key replaces an earlier one, as in a series of `put`s."
+        },
+        {
+          "name": "from_pairs_with",
+          "kind": "fn",
+          "sig": "fn from_pairs_with[K, V, e](pairs: List[(K, V)], resolve: (K, V, V) -> V ! e) -> Map[K, V] ! e",
+          "sig_hash": "kjquo5clsskbfse6btre47yosi",
+          "hash": "ndy2dz6ccjqnkpmjfx5vif23xrxccge2x5ocuvpxetennx7yrtpa",
+          "effects": [
+            "e"
+          ],
+          "doc": "The map of `pairs`, combining the values of a repeated key with `resolve(key, existing, incoming)`."
+        },
+        {
+          "name": "from_keys",
+          "kind": "fn",
+          "sig": "fn from_keys[K, V, e](keys: List[K], f: K -> V ! e) -> Map[K, V] ! e",
+          "sig_hash": "oauldgvtdwnmnkokoa3epurnqa",
+          "hash": "gb2tru74sds3xieix4nirybp3pdl74u5bzbwiuytqmzn72f2nppq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The map from each of `keys` to `f(key)`."
+        },
+        {
+          "name": "from_lists",
+          "kind": "fn",
+          "sig": "fn from_lists[K, V](keys: List[K], values: List[V]) -> Map[K, V]",
+          "sig_hash": "aare2q6wgy3uvvwwwjue7ajvhm",
+          "hash": "dc5gkisi64vpeilixzha5o4lu7kgw4vpqhdsawgdvrnv4oltx2jq",
+          "effects": [],
+          "doc": "The map from `keys[i]` to `values[i]`; extra keys or values are ignored, and a repeated key takes\nits last value."
+        },
+        {
+          "name": "index_by",
+          "kind": "fn",
+          "sig": "fn index_by[T, K, e](xs: List[T], key: T -> K ! e) -> Map[K, T] ! e",
+          "sig_hash": "rj3eh4c65uefgvx6vsjtzexfeu",
+          "hash": "dabd7hq4zzgmsxixmjvasjxppd3ztt7is3cwrcl54znf2lwkjxqa",
+          "effects": [
+            "e"
+          ],
+          "doc": "The map from `key(x)` to `x` for each element; a later element with the same key wins."
+        },
+        {
+          "name": "group_into",
+          "kind": "fn",
+          "sig": "fn group_into[T, K, e](xs: List[T], key: T -> K ! e) -> Map[K, List[T]] ! e",
+          "sig_hash": "4ymym6xcq3ma6au2hxgwumal64",
+          "hash": "l4ql52g2hasjp2hj37cuvkxvk2xwrxsweg7uqzqjef6cousm7h7q",
+          "effects": [
+            "e"
+          ],
+          "doc": "The elements of `xs` grouped by `key(x)`, each group in the order of `xs`."
+        },
+        {
+          "name": "to_hash",
+          "kind": "fn",
+          "sig": "fn to_hash[K, V](m: Map[K, V]) -> HashMap[K, V]",
+          "sig_hash": "r3pu3posere64yywwqisl6xqee",
+          "hash": "3ncua4js7rspvtbn2ug7opzdljy2xvcg7ed33m3xcsl27tcishvq",
+          "effects": [],
+          "doc": "The same entries as a `HashMap`."
+        },
+        {
+          "name": "from_hash",
+          "kind": "fn",
+          "sig": "fn from_hash[K, V](h: HashMap[K, V]) -> Map[K, V]",
+          "sig_hash": "oyktnm744kvf3476frlve53vda",
+          "hash": "lu6iagbp5g3op3aetkfqqu7rug62z5cl4cjazcnk3m2ejycgbdra",
+          "effects": [],
+          "doc": "The same entries as an ordered `Map`."
+        },
+        {
+          "name": "get_or",
+          "kind": "fn",
+          "sig": "fn get_or[K, V](m: Map[K, V], k: K, default: V) -> V",
+          "sig_hash": "v4p3c3f7e3v5vbpa7pofuhhrea",
+          "hash": "xbxhjq6v22t5wfqw3ev4t37zcwld7zyia7uzxjdpb3ttppdqhvea",
+          "effects": [],
+          "doc": "The value for `k`, or `default` when `k` is missing."
+        },
+        {
+          "name": "is_empty_map",
+          "kind": "fn",
+          "sig": "fn is_empty_map[K, V](m: Map[K, V]) -> Bool",
+          "sig_hash": "rv4fbpfumzvjrkpl4ulo4vz6j4",
+          "hash": "dwoslfcwsgx5wbb77u3beeh44binvwup7jdqvpiz3cntkge5zgpa",
+          "effects": [],
+          "doc": "Whether `m` has no entries."
+        },
+        {
+          "name": "find_key",
+          "kind": "fn",
+          "sig": "fn find_key[K, V](m: Map[K, V], v: V) -> Opt[K]",
+          "sig_hash": "73kvajoptuiy6bxbo2jkkm3h7a",
+          "hash": "wu25cexl6lmj7emsbxfsdmrzprv44be746ud3kicalxzsvxkpxkq",
+          "effects": [],
+          "doc": "The smallest key whose value equals `v`."
+        },
+        {
+          "name": "find_entry",
+          "kind": "fn",
+          "sig": "fn find_entry[K, V, e](m: Map[K, V], f: (K, V) -> Bool ! e) -> Opt[(K, V)] ! e",
+          "sig_hash": "f3umnm35f4d46gxhriw6cow7w4",
+          "hash": "orvhxm7b2ictl5l3gljw5xuhydzisw23pknewtvqatmw7pofs4uq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The first entry, in key order, for which `f(key, value)` holds."
+        },
+        {
+          "name": "keys_where",
+          "kind": "fn",
+          "sig": "fn keys_where[K, V, e](m: Map[K, V], f: V -> Bool ! e) -> List[K] ! e",
+          "sig_hash": "ywl2poldhcgjmov6ry2sla4hqm",
+          "hash": "twlp73vplunr2lgaacvphoytxxyobqx57rlj2obvbncjn6okrpzq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The keys, in order, whose value satisfies `f`."
+        },
+        {
+          "name": "has_all",
+          "kind": "fn",
+          "sig": "fn has_all[K, V](m: Map[K, V], ks: List[K]) -> Bool",
+          "sig_hash": "bpf3rlw5qpxmbf3rjh36odoyxy",
+          "hash": "34yx5xblyjghmewi5ic53ti62oxjv5eutfo37amce76tdvjnoj2q",
+          "effects": [],
+          "doc": "Whether every key of `ks` is in `m`."
+        },
+        {
+          "name": "has_any",
+          "kind": "fn",
+          "sig": "fn has_any[K, V](m: Map[K, V], ks: List[K]) -> Bool",
+          "sig_hash": "tnc5mafutaimsxfmtvxznib5im",
+          "hash": "xh2atfiheqfiukmj2g4cyor3rotl5xxthm2vscwzfxmmal4d3wea",
+          "effects": [],
+          "doc": "Whether some key of `ks` is in `m`."
+        },
+        {
+          "name": "min_by_value",
+          "kind": "fn",
+          "sig": "fn min_by_value[K, V: Ord](m: Map[K, V]) -> Opt[(K, V)]",
+          "sig_hash": "3rpxac3im4bi25kqzmzllzq4pm",
+          "hash": "6exw5rnopkv2ecoyabm6zyukmzpmxxrz5fdmkvevhbvbc6fxv5ma",
+          "effects": [],
+          "doc": "The entry with the smallest value (the smallest key among equal values)."
+        },
+        {
+          "name": "max_by_value",
+          "kind": "fn",
+          "sig": "fn max_by_value[K, V: Ord](m: Map[K, V]) -> Opt[(K, V)]",
+          "sig_hash": "nwoctbcvuxi5hkux3jqp7ileaq",
+          "hash": "qa5vtuhwr4dw3yy5bjjpxjavnhpthydbwtewqrslt6qdffjs7l7a",
+          "effects": [],
+          "doc": "The entry with the largest value (the smallest key among equal values)."
+        },
+        {
+          "name": "merge",
+          "kind": "fn",
+          "sig": "fn merge[K, V](a: Map[K, V], b: Map[K, V]) -> Map[K, V]",
+          "sig_hash": "rj7pkpvdw453qondn6xf2kjr7a",
+          "hash": "pmk5dblzffqw2x7dqjilxvajqxol4bnorxifymmhofd5vby2qo6a",
+          "effects": [],
+          "doc": "The entries of both maps; for a key in both, the value from `b` wins (like Python's `a | b`)."
+        },
+        {
+          "name": "merge_prefer_left",
+          "kind": "fn",
+          "sig": "fn merge_prefer_left[K, V](a: Map[K, V], b: Map[K, V]) -> Map[K, V]",
+          "sig_hash": "q76sdnny7ycln4wgheeeiltgbi",
+          "hash": "2spithh6ywd7z5kpewdfipaorma6l3vahu23moxgcno5msyrbr3q",
+          "effects": [],
+          "doc": "The entries of both maps; for a key in both, the value from `a` wins (lodash `defaults`)."
+        },
+        {
+          "name": "merge_with",
+          "kind": "fn",
+          "sig": "fn merge_with[K, V, e](a: Map[K, V], b: Map[K, V], resolve: (K, V, V) -> V ! e) -> Map[K, V] ! e",
+          "sig_hash": "5ebsgehmroygqhb7gllxqxijsu",
+          "hash": "st3mkhjeh64vgdl4nnvzu5dftc7cos64bw5gokkecwynx2zxhcrq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The entries of both maps; for a key in both, the value is `resolve(key, from_a, from_b)`."
+        },
+        {
+          "name": "merge_all",
+          "kind": "fn",
+          "sig": "fn merge_all[K, V](ms: List[Map[K, V]]) -> Map[K, V]",
+          "sig_hash": "xjghkk6jt25olrrzbimgrrthzu",
+          "hash": "txzu5yz3vjpvelpvdapc47oywza2p3cetkjyjzdjb2wujcuvvk3a",
+          "effects": [],
+          "doc": "The entries of all maps, later maps winning; the empty map for an empty list."
+        },
+        {
+          "name": "merge_all_with",
+          "kind": "fn",
+          "sig": "fn merge_all_with[K, V, e](ms: List[Map[K, V]], resolve: (K, V, V) -> V ! e) -> Map[K, V] ! e",
+          "sig_hash": "tggskjaeyzzqn5pxyacqja255u",
+          "hash": "czvov3n3v35tqkbpxc63gnhsa5qkp5u6m754nxogmflrmpu5t6na",
+          "effects": [
+            "e"
+          ],
+          "doc": "The entries of all maps, folding repeated keys from left to right with `resolve(key, acc, next)`."
+        },
+        {
+          "name": "intersect_keys",
+          "kind": "fn",
+          "sig": "fn intersect_keys[K, V, W](a: Map[K, V], b: Map[K, W]) -> Map[K, V]",
+          "sig_hash": "r5r3asqovhnfi5dgaqdui5sstu",
+          "hash": "tauhytrxberqfoupruymwrnj4jlfe6eyud5x66bgeqhrwwfjuc5q",
+          "effects": [],
+          "doc": "The entries of `a` whose key is also in `b`, with `a`'s values."
+        },
+        {
+          "name": "subtract_keys",
+          "kind": "fn",
+          "sig": "fn subtract_keys[K, V, W](a: Map[K, V], b: Map[K, W]) -> Map[K, V]",
+          "sig_hash": "hsulouu63vt4uuez46cm6zgwy4",
+          "hash": "iregvb7e5p7uoma6dmwcglnpst25zafbkd7yst2voj4d55qwze4q",
+          "effects": [],
+          "doc": "The entries of `a` whose key is not in `b`."
+        },
+        {
+          "name": "invert",
+          "kind": "fn",
+          "sig": "fn invert[K, V](m: Map[K, V]) -> Map[V, K]",
+          "sig_hash": "ajddxyvjao63zk3hzr26cakhly",
+          "hash": "ovhtg7p4cmgbcgvj56bsbrylyvjqx4rzzpr5pawl56wbwzjb3uoq",
+          "effects": [],
+          "doc": "The map from each value to its key. When several keys share a value the largest key wins,\nbecause entries are visited in key order and later ones replace earlier ones."
+        },
+        {
+          "name": "invert_with",
+          "kind": "fn",
+          "sig": "fn invert_with[K, V, e](m: Map[K, V], resolve: (V, K, K) -> K ! e) -> Map[V, K] ! e",
+          "sig_hash": "vxcs3remkamwvu7yd272b4pj3a",
+          "hash": "dtn3dzdp4qqh2bcrb6biybg3b76buvtbfzsmvcv27ewsvr7fk57a",
+          "effects": [
+            "e"
+          ],
+          "doc": "The map from each value to its key, combining keys that share a value with\n`resolve(value, existing_key, next_key)` (keys arrive in ascending order)."
+        },
+        {
+          "name": "invert_multi",
+          "kind": "fn",
+          "sig": "fn invert_multi[K, V](m: Map[K, V]) -> Map[V, List[K]]",
+          "sig_hash": "qqahddcvrptpvqvxbe6rgj26hi",
+          "hash": "63j7b6qp32zwi5e5w6ssqljgz2gywgv6k5ld4jlr6xzxjwt2o5wq",
+          "effects": [],
+          "doc": "The map from each value to all keys that have it, in ascending key order."
+        },
+        {
+          "name": "filter_keys",
+          "kind": "fn",
+          "sig": "fn filter_keys[K, V, e](m: Map[K, V], f: K -> Bool ! e) -> Map[K, V] ! e",
+          "sig_hash": "fnu2yednhss76vol37ldzhchxy",
+          "hash": "hoc6xc5r6onywgoj4r5syl2xkjef33fhbxhdnplu7kawybrvt3oa",
+          "effects": [
+            "e"
+          ],
+          "doc": "The entries whose key satisfies `f`."
+        },
+        {
+          "name": "filter_values",
+          "kind": "fn",
+          "sig": "fn filter_values[K, V, e](m: Map[K, V], f: V -> Bool ! e) -> Map[K, V] ! e",
+          "sig_hash": "oibnciqgcdxx4sxrrksgoqpkbm",
+          "hash": "gusypmrvf6vz2sfchic7kh3i3qpxjpil4p3up2kutmww322hx7lq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The entries whose value satisfies `f`."
+        },
+        {
+          "name": "filter_entries",
+          "kind": "fn",
+          "sig": "fn filter_entries[K, V, e](m: Map[K, V], f: (K, V) -> Bool ! e) -> Map[K, V] ! e",
+          "sig_hash": "gtxtpsojkylqphrl5wbxynbmue",
+          "hash": "nikolr7h43ovgnksnhmwlovfv3qglb7bufvykcry4ulyezs25dpq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The entries for which `f(key, value)` holds."
+        },
+        {
+          "name": "partition_entries",
+          "kind": "fn",
+          "sig": "fn partition_entries[K, V, e](m: Map[K, V], f: (K, V) -> Bool ! e) -> (Map[K, V], Map[K, V]) ! e",
+          "sig_hash": "pvxnzsojajhjf3x2v4p5lyiyua",
+          "hash": "enj24ze3e27ulvfzb7sukcflkqlaylcse467colv7n6c4zdpvf4q",
+          "effects": [
+            "e"
+          ],
+          "doc": "The entries that satisfy `f(key, value)` and the ones that don't."
+        },
+        {
+          "name": "map_values",
+          "kind": "fn",
+          "sig": "fn map_values[K, V, W, e](m: Map[K, V], f: V -> W ! e) -> Map[K, W] ! e",
+          "sig_hash": "fxj3e46xyotcipzhha2tga66da",
+          "hash": "ldqqatl3twnk65kd54odh5xllgjn6ja32hmmjxnhegryupfuvawa",
+          "effects": [
+            "e"
+          ],
+          "doc": "Every value replaced by `f(value)`."
+        },
+        {
+          "name": "map_values_with_key",
+          "kind": "fn",
+          "sig": "fn map_values_with_key[K, V, W, e](m: Map[K, V], f: (K, V) -> W ! e) -> Map[K, W] ! e",
+          "sig_hash": "htwjqsbawlbnqrnzq2uuk253c4",
+          "hash": "2i6xyyomvbnep62wkknfg4sefabpomngglkpfqafoy7qwj5lqhia",
+          "effects": [
+            "e"
+          ],
+          "doc": "Every value replaced by `f(key, value)`."
+        },
+        {
+          "name": "map_keys",
+          "kind": "fn",
+          "sig": "fn map_keys[K, V, K2, e](m: Map[K, V], f: K -> K2 ! e) -> Map[K2, V] ! e",
+          "sig_hash": "gh6wsy44uievkoqrw42wa7zdk4",
+          "hash": "chw3xgopa5vrmm3jo6ngmu5s7ocxror7kkwzc4wddcf5f57lphoa",
+          "effects": [
+            "e"
+          ],
+          "doc": "Every key replaced by `f(key)`. When two keys map to the same new key, the value of the larger\noriginal key wins; use `map_keys_with` to choose."
+        },
+        {
+          "name": "map_keys_with",
+          "kind": "fn",
+          "sig": "fn map_keys_with[K, V, K2, e](m: Map[K, V], f: K -> K2 ! e, resolve: (K2, V, V) -> V ! e) -> Map[K2, V] ! e",
+          "sig_hash": "rj7dvekhpepkubxmfioneb2ski",
+          "hash": "wz4ynqoqtrh2stnfoj2sglgwi2yhy4imw2kkfp6fe7mjdcqly3mq",
+          "effects": [
+            "e"
+          ],
+          "doc": "Every key replaced by `f(key)`, combining colliding values with\n`resolve(new_key, existing, incoming)` in ascending order of the original keys."
+        },
+        {
+          "name": "map_entries",
+          "kind": "fn",
+          "sig": "fn map_entries[K, V, K2, W, e](m: Map[K, V], f: (K, V) -> (K2, W) ! e) -> Map[K2, W] ! e",
+          "sig_hash": "2qtauexkck23k3zwrn5lpzehji",
+          "hash": "ydk53nmhjyyf6js63nzehjmqvzr52yrbvo6jnkzaahcceeuyhqfq",
+          "effects": [
+            "e"
+          ],
+          "doc": "Every entry replaced by the pair `f(key, value)`; on a key collision the later entry, in the\noriginal key order, wins."
+        },
+        {
+          "name": "filter_map_values",
+          "kind": "fn",
+          "sig": "fn filter_map_values[K, V, W, e](m: Map[K, V], f: (K, V) -> Opt[W] ! e) -> Map[K, W] ! e",
+          "sig_hash": "sh3yjcwi7b5loeyghfq7oq5fju",
+          "hash": "mw7lim53f5w2thulybfr326j7byftlxkyv6t4lxulgdvwqlvjxma",
+          "effects": [
+            "e"
+          ],
+          "doc": "The entries for which `f(key, value)` gives `some(w)`, with the value `w`."
+        },
+        {
+          "name": "pick",
+          "kind": "fn",
+          "sig": "fn pick[K, V](m: Map[K, V], ks: List[K]) -> Map[K, V]",
+          "sig_hash": "pujqv3psebyqgomqpt2qaxuvae",
+          "hash": "wakwwqzup3yulvu7wrxemf2ebay472tkq5r4oxoueqxhsxuenjaa",
+          "effects": [],
+          "doc": "Only the entries whose key is in `ks`."
+        },
+        {
+          "name": "omit",
+          "kind": "fn",
+          "sig": "fn omit[K, V](m: Map[K, V], ks: List[K]) -> Map[K, V]",
+          "sig_hash": "dxw4pexdzzapjas7jxr2prntum",
+          "hash": "uznrxf6uvsountwfrutk5c25nwojirao5pr6gjpzl4uv44dotkqq",
+          "effects": [],
+          "doc": "The entries whose key is not in `ks`."
+        },
+        {
+          "name": "rename_key",
+          "kind": "fn",
+          "sig": "fn rename_key[K, V](m: Map[K, V], from: K, to: K) -> Map[K, V]",
+          "sig_hash": "wlj3nh2skie2z7k3xkqshwlhwi",
+          "hash": "fh5vm6demfoqavtrt3jdfcqyzh5rcii2x7lxgrwqcttsdqzrjbsa",
+          "effects": [],
+          "doc": "The map with the entry of `from` moved to the key `to`, replacing any entry already at `to`.\nUnchanged when `from` is missing or equal to `to`."
+        },
+        {
+          "name": "adjust",
+          "kind": "fn",
+          "sig": "fn adjust[K, V, e](m: Map[K, V], k: K, f: V -> V ! e) -> Map[K, V] ! e",
+          "sig_hash": "mqtnu4zrzt3lpmzh6qbcr5qi3i",
+          "hash": "g4iiqdaoq4uup55a5wcios5l42e2jhzwz7dqdk35d7mzr7gpolea",
+          "effects": [
+            "e"
+          ],
+          "doc": "The value at `k` replaced by `f(value)`; unchanged when `k` is missing."
+        },
+        {
+          "name": "update",
+          "kind": "fn",
+          "sig": "fn update[K, V, e](m: Map[K, V], k: K, f: V -> Opt[V] ! e) -> Map[K, V] ! e",
+          "sig_hash": "va7ajmrpt6xe2yq4h45sxdirna",
+          "hash": "fsxabnku5hu2euulfxta6ymhyvqvj26wg32yhh27qhbzv24zzhcq",
+          "effects": [
+            "e"
+          ],
+          "doc": "The value at `k` replaced by `f(value)`, or removed when `f` gives `none`; unchanged when `k` is\nmissing."
+        },
+        {
+          "name": "upsert",
+          "kind": "fn",
+          "sig": "fn upsert[K, V, e](m: Map[K, V], k: K, init: V, f: V -> V ! e) -> Map[K, V] ! e",
+          "sig_hash": "nsqgwcqnmva4ay2sqvgmjkefie",
+          "hash": "hllipx77dd3ueegoghizchmi3jtxkdb2o3lvc5zdaih65n2g5jpq",
+          "effects": [
+            "e"
+          ],
+          "doc": "`f(value)` at `k` when `k` is present, else `init` (Java's `Map.merge`)."
+        },
+        {
+          "name": "alter",
+          "kind": "fn",
+          "sig": "fn alter[K, V, e](m: Map[K, V], k: K, f: Opt[V] -> Opt[V] ! e) -> Map[K, V] ! e",
+          "sig_hash": "dszns4zqwvz47tcvuoqvnzkihe",
+          "hash": "5pllm66msxzptr6bxiww3ohagvvf64xo7a6kpdcmxvavmsldtgga",
+          "effects": [
+            "e"
+          ],
+          "doc": "The entry at `k` decided by `f(current)`: `some(v)` stores `v`, `none` removes it (Haskell's\n`alter`, Java's `compute`)."
+        },
+        {
+          "name": "put_if_absent",
+          "kind": "fn",
+          "sig": "fn put_if_absent[K, V](m: Map[K, V], k: K, v: V) -> Map[K, V]",
+          "sig_hash": "e7w5a2hia6a4iw4yfbhvtzkw54",
+          "hash": "fnxxb2iwl352odhrjqmo5zudiaypgz77hu2cmaspp4uwuqkh7vwa",
+          "effects": [],
+          "doc": "The map with `v` at `k` only when `k` is missing (Python's `setdefault`, without the read)."
+        },
+        {
+          "name": "counter",
+          "kind": "fn",
+          "sig": "fn counter[T](xs: List[T]) -> Map[T, Int]",
+          "sig_hash": "rlw5erzekkngvj7tipc2hlbsem",
+          "hash": "g7t5iucbqpbavcggm6qy3xes4ktaucujq3ghbukwzzpizjgiy4iq",
+          "effects": [],
+          "doc": "How many times each element occurs."
+        },
+        {
+          "name": "increment",
+          "kind": "fn",
+          "sig": "fn increment[K](m: Map[K, Int], k: K, by: Int) -> Map[K, Int]",
+          "sig_hash": "kli7j3tt7wvnlwp6zfypgxk7vu",
+          "hash": "mkgskr7q224f67z2oc2qslspeeigoblzu5jgbbtcg4k3ythlruta",
+          "effects": [],
+          "doc": "The count at `k` raised by `by` (which may be negative); a missing key counts as 0, and a key\nwhose count reaches 0 stays in the map."
+        },
+        {
+          "name": "add_counts",
+          "kind": "fn",
+          "sig": "fn add_counts[K](a: Map[K, Int], b: Map[K, Int]) -> Map[K, Int]",
+          "sig_hash": "qhhbxppt62nshslksefw5f6m3a",
+          "hash": "wgojwjnmgidutlhaatdafloin65npefmcaouep5meracbm2unrla",
+          "effects": [],
+          "doc": "The counts of both counters added key by key."
+        },
+        {
+          "name": "subtract_counts",
+          "kind": "fn",
+          "sig": "fn subtract_counts[K](a: Map[K, Int], b: Map[K, Int]) -> Map[K, Int]",
+          "sig_hash": "j7fndmmymfg3kwlxaku4nyf2s4",
+          "hash": "snrgjk3p2bh3afrijfhsmczat6lodwu7f2ogawjc3epjmslimcxq",
+          "effects": [],
+          "doc": "The counts of `a` minus those of `b`, keeping only keys whose result is positive (Python's\n`Counter - Counter`)."
+        },
+        {
+          "name": "most_common",
+          "kind": "fn",
+          "sig": "fn most_common[K](m: Map[K, Int], n: Int where _ >= 0) -> List[(K, Int)]",
+          "sig_hash": "gdqbbxahr5wdj4uclgyw7p2hem",
+          "hash": "dyfuwclto325xf4wtd7ahodswxmeh63u2hq5e4fuknnqy4fb2vka",
+          "effects": [],
+          "doc": "The `n` entries with the highest counts, highest first; equal counts are in key order. Fewer\nwhen the counter is smaller; `n` 0 gives `[]`."
+        },
+        {
+          "name": "least_common",
+          "kind": "fn",
+          "sig": "fn least_common[K](m: Map[K, Int], n: Int where _ >= 0) -> List[(K, Int)]",
+          "sig_hash": "45xq5mkvvb7yr5pidlhebj7i5a",
+          "hash": "fyhv57kd4v4432s6jfe7nb2dzfmqemyub6l4mn2hd63dnku266oq",
+          "effects": [],
+          "doc": "The `n` entries with the lowest counts, lowest first; equal counts are in key order."
+        },
+        {
+          "name": "count_total",
+          "kind": "fn",
+          "sig": "fn count_total[K](m: Map[K, Int]) -> Int",
+          "sig_hash": "2c6rsz6vjy6ijnxlikun4qgyua",
+          "hash": "izvpwx3osnb7xrw7tgskaff43t3zyjzrpvws7cynswrt3dcza6oa",
+          "effects": [],
+          "doc": "The sum of all counts."
+        },
+        {
+          "name": "multi_add",
+          "kind": "fn",
+          "sig": "fn multi_add[K, V](m: Map[K, List[V]], k: K, v: V) -> Map[K, List[V]]",
+          "sig_hash": "lb7cu3r4y7aeh4gxkkil2tjhy4",
+          "hash": "hgc7hdzx7irkggit7tpi5mlyngfqk6jido2s7ej6uzlyvxudsbea",
+          "effects": [],
+          "doc": "The multimap with `v` appended to the list at `k`."
+        },
+        {
+          "name": "multi_get",
+          "kind": "fn",
+          "sig": "fn multi_get[K, V](m: Map[K, List[V]], k: K) -> List[V]",
+          "sig_hash": "wk477ggu2due3nqovfu232uvpe",
+          "hash": "bwzeioazha2onfgmetjuqiari4y4org4bpt3nf32irmbuhjesa2q",
+          "effects": [],
+          "doc": "The values at `k`, `[]` when missing."
+        },
+        {
+          "name": "multi_remove",
+          "kind": "fn",
+          "sig": "fn multi_remove[K, V](m: Map[K, List[V]], k: K, v: V) -> Map[K, List[V]]",
+          "sig_hash": "dikv67o5x2mhhgd7cwf7qbd6na",
+          "hash": "wezzsvusrpl56mnccobyrrvordeogxa6xl4qj4dcl6tqbgulgsjq",
+          "effects": [],
+          "doc": "The multimap with every occurrence of `v` removed from the list at `k`; the key goes when its\nlist becomes empty."
+        },
+        {
+          "name": "multi_from_pairs",
+          "kind": "fn",
+          "sig": "fn multi_from_pairs[K, V](pairs: List[(K, V)]) -> Map[K, List[V]]",
+          "sig_hash": "tppsdn7ili335afqja55ysx6sy",
+          "hash": "tdffhuhga7mnk63fjmickdqshf3x2zovjqwaed3oa2vgcx4abz3q",
+          "effects": [],
+          "doc": "The multimap of `pairs`, each key's values in the order given."
+        },
+        {
+          "name": "multi_pairs",
+          "kind": "fn",
+          "sig": "fn multi_pairs[K, V](m: Map[K, List[V]]) -> List[(K, V)]",
+          "sig_hash": "75s62sy72amauto3gwd3gquk7a",
+          "hash": "e3xc4auotaobg6i6ul2tn4jomb23hucwctsbaymtah44rxp2b64q",
+          "effects": [],
+          "doc": "Every (key, value) pair of the multimap, in key order and then list order."
+        },
+        {
+          "name": "multi_size",
+          "kind": "fn",
+          "sig": "fn multi_size[K, V](m: Map[K, List[V]]) -> Int",
+          "sig_hash": "gl2xbixejseu6hyps4e5pqoj5q",
+          "hash": "wbceoigbcpt43sfsntlqfdgdkmdxi7dierwwldo7evrrii2lufua",
+          "effects": [],
+          "doc": "The number of values in the multimap, over all keys."
+        },
+        {
+          "name": "same_keys",
+          "kind": "fn",
+          "sig": "fn same_keys[K, V, W](a: Map[K, V], b: Map[K, W]) -> Bool",
+          "sig_hash": "u33xpao37zof5ia623dxfjus64",
+          "hash": "vxmnbvxbtmufdmmunzwntygqlwgmh4f7pf6ifniug7pdq2wv3dpq",
+          "effects": [],
+          "doc": "Whether both maps have exactly the same keys."
+        },
+        {
+          "name": "equal_by",
+          "kind": "fn",
+          "sig": "fn equal_by[K, V, W, e](a: Map[K, V], b: Map[K, W], eq: (V, W) -> Bool ! e) -> Bool ! e",
+          "sig_hash": "pzqs2qjpu4q7pykrdtklcnbvpq",
+          "hash": "jxlil4jsjsgq4vnhlybok6a56ku4y7uwge6szldc5vdfmyf3ixrq",
+          "effects": [
+            "e"
+          ],
+          "doc": "Whether both maps have the same keys and `eq` holds for the values at each key."
+        },
+        {
+          "name": "is_submap",
+          "kind": "fn",
+          "sig": "fn is_submap[K, V](a: Map[K, V], b: Map[K, V]) -> Bool",
+          "sig_hash": "kzhrp7wwyy7b46tdg3cmi2dc2i",
+          "hash": "ablx3fp7mox672pkyfcgxf3jrdrddpdsur33soa23ul4vu4xirma",
+          "effects": [],
+          "doc": "Whether every entry of `a` is also in `b` with an equal value."
+        },
+        {
+          "name": "MapDiff",
+          "kind": "type",
+          "sig": "pub type MapDiff[K, V] = {added: Map[K, V], removed: Map[K, V], changed: Map[K, (V, V)]} derive Eq, Show",
+          "sig_hash": "cowcnzxijnqwfflp6byxr56bpa",
+          "hash": "ya7fnyz3mm3xc2h3qjdt5okt6chdsr3znhly777qv7r4azgrrwna",
+          "effects": [],
+          "doc": "The difference between two maps: entries only in the new map, entries only in the old one,\nand keys in both whose values differ, as `(old, new)`."
+        },
+        {
+          "name": "diff_maps",
+          "kind": "fn",
+          "sig": "fn diff_maps[K, V](old: Map[K, V], new_map: Map[K, V]) -> MapDiff[K, V]",
+          "sig_hash": "xnafcpb3zgdfw3qbkpvckprx24",
+          "hash": "pj5m5aecwbcnr3k5an36vu7yj4rmndgnx6y7ok64uii25cbobava",
+          "effects": [],
+          "doc": "What changed from `old` to `new_map`."
+        },
+        {
+          "name": "diff_is_empty",
+          "kind": "fn",
+          "sig": "fn diff_is_empty[K, V](d: MapDiff[K, V]) -> Bool",
+          "sig_hash": "njsun64upx72ewgma75lfxhpyu",
+          "hash": "lifq2svfmj4auocaidrnapem3qo3nhak2zel5a476f3ctioxjfya",
+          "effects": [],
+          "doc": "Whether a diff has no changes."
+        },
+        {
+          "name": "apply_diff",
+          "kind": "fn",
+          "sig": "fn apply_diff[K, V](m: Map[K, V], d: MapDiff[K, V]) -> Map[K, V]",
+          "sig_hash": "egwnjdgqyuvngingj7tv7tg3re",
+          "hash": "2nuswhj22rfroi472hx5xrh6bjtmoqvwogeymmudtwb4mp7gneqa",
+          "effects": [],
+          "doc": "`m` with a diff applied: removed keys go, added and changed keys take their new values. So\n`apply_diff(a, diff_maps(a, b)) == b`. Keys of `removed` and `changed` are applied whatever their\ncurrent value is."
+        },
+        {
+          "name": "JsonValue",
+          "kind": "type",
+          "sig": "pub type JsonValue = JNull | JBool{b: Bool} | JInt{i: Int} | JNum{f: F64} | JBig{digits: Str} | JStr{s: Str} | JArr{elems: List[JsonValue]} | JObj{fields: Map[Str, JsonValue]} derive Eq, Show",
+          "sig_hash": "dibggbvfj6lcz7zve4lhly3r7a",
+          "hash": "qol6cfp5ybq73czlicpxfrye3uiqbyjtcyjgsqqjqupbdjvg55va",
+          "effects": [],
+          "doc": "A JSON value. Integers that fit `Int` are `JInt`; numbers with a fraction or an exponent are\n`JNum`; a number that fits neither (an integer beyond 64 bits, or a float that overflows) is\n`JBig`, which keeps its exact text. Object keys are kept sorted (a `Map`), so objects compare\nand print the same whatever order their keys were written in. The functions below recurse on\nnesting and are tested to 4096 levels in both tiers."
+        },
+        {
+          "name": "JsonError",
+          "kind": "type",
+          "sig": "pub type JsonError = {message: Str, offset: Int, line: Int, column: Int} derive Eq, Show",
+          "sig_hash": "gzo34yxoupdlsfaoqbeawenyi4",
+          "hash": "q7v4limfkq4yxxti2m4266z2r7gkrsejvvhi5h5dv3ciy5iqmzzq",
+          "effects": [],
+          "doc": "Where and why JSON text failed to parse: `offset` counts characters from 0, `line` and\n`column` count from 1."
+        },
+        {
+          "name": "PathSeg",
+          "kind": "type",
+          "sig": "pub type PathSeg = Key{key: Str} | At{pos: Int where _ >= 0} derive Eq, Ord, Show",
+          "sig_hash": "hz6xh5smuljzasvg5akn3lxrx4",
+          "hash": "e44o76foaaik24ufrp7ljhj3m3ygmdiqps5fx7oc4w6tacma3fua",
+          "effects": [],
+          "doc": "One step of a path: an object key, or an array position."
+        },
+        {
+          "name": "Change",
+          "kind": "type",
+          "sig": "pub type Change = Added{path: List[PathSeg], value: JsonValue} | Removed{path: List[PathSeg], value: JsonValue} | Replaced{path: List[PathSeg], before: JsonValue, after: JsonValue} derive Eq, Show",
+          "sig_hash": "iq5m4exn74t7dky57kcv7mfstu",
+          "hash": "4if7zrgr2iwm7lskpid7a3bsjtwlvwbmeclatzr5rjsvdjsjlvbq",
+          "effects": [],
+          "doc": "A difference found by `diff_values`, at a path from the root."
+        },
+        {
+          "name": "default_max_depth",
+          "kind": "fn",
+          "sig": "fn default_max_depth() -> Int",
+          "sig_hash": "j3k3bcj5a7lpbjh3dhyvxzspmu",
+          "hash": "miac76dufmzmi4hqrre7yvwhfe36yrvqcmc56etggowzfwjfvzra",
+          "effects": [],
+          "doc": "The deepest nesting of arrays and objects `parse_json` accepts."
+        },
+        {
+          "name": "obj",
+          "kind": "fn",
+          "sig": "fn obj(pairs: List[(Str, JsonValue)]) -> JsonValue",
+          "sig_hash": "6emgpoqutuu2vs5lk2sit3ktyu",
+          "hash": "lwbtyovvj6fd5g5tpbsexm7ixicycv4jq7vzpcxgmtluttxdccwa",
+          "effects": [],
+          "doc": "An object from key-value pairs; a repeated key takes its last value."
+        },
+        {
+          "name": "kind_of",
+          "kind": "fn",
+          "sig": "fn kind_of(v: JsonValue) -> Str",
+          "sig_hash": "hppvdpqkc2xt7i5hehhmvw6u34",
+          "hash": "24eyut4fnaduk4xrzc65256yfxhfp54wkjmcafr2ueiau35shjha",
+          "effects": [],
+          "doc": "The kind of a value: \"null\", \"boolean\", \"number\" (`JInt`, `JNum` and `JBig`), \"string\", \"array\"\nor \"object\"."
+        },
+        {
+          "name": "is_null",
+          "kind": "fn",
+          "sig": "fn is_null(v: JsonValue) -> Bool",
+          "sig_hash": "xrdfxlwy6ccbovzyhv2oygha2y",
+          "hash": "nceby7i627dar7thd3jntnpisc3e5qiqxhymu3hmtco43xz6fdqq",
+          "effects": [],
+          "doc": "Whether the value is `null`."
+        },
+        {
+          "name": "as_bool",
+          "kind": "fn",
+          "sig": "fn as_bool(v: JsonValue) -> Opt[Bool]",
+          "sig_hash": "md6jv2wweqvbacp7x2hhmllhla",
+          "hash": "vnoqteqgy27xfifgrywlnvgddrtvedmhxhzykzr3kk2wkysf4sfq",
+          "effects": [],
+          "doc": "The boolean, if the value is one."
+        },
+        {
+          "name": "as_int",
+          "kind": "fn",
+          "sig": "fn as_int(v: JsonValue) -> Opt[Int]",
+          "sig_hash": "7chinvrjfxzer3oe2rff6vfy3a",
+          "hash": "bvu57hxdomprmulvvqgdtjjdvwnxhp6y6hsrfizgl2jo6a677v4q",
+          "effects": [],
+          "doc": "The integer, if the value is a `JInt`, or a `JNum` with no fraction within the `Int` range."
+        },
+        {
+          "name": "as_f64",
+          "kind": "fn",
+          "sig": "fn as_f64(v: JsonValue) -> Opt[F64]",
+          "sig_hash": "2gzdpmvi5oxng6m5pojpbqx4mm",
+          "hash": "kaku72dsctwwps3ghpumwgbv6eb46iro5ku5pdfqpzrqzvj4zy7q",
+          "effects": [],
+          "doc": "The number as an `F64`, for any number; a `JBig` integer is rounded and an overflowing one is\n`none`."
+        },
+        {
+          "name": "as_str",
+          "kind": "fn",
+          "sig": "fn as_str(v: JsonValue) -> Opt[Str]",
+          "sig_hash": "c6doyuhs7vr7wcpbnjwawog5bu",
+          "hash": "ibhfrnqnehgzleuyhtg6u2byt56tilvpmhaxr4ndnud45n4zirra",
+          "effects": [],
+          "doc": "The string, if the value is one."
+        },
+        {
+          "name": "as_array",
+          "kind": "fn",
+          "sig": "fn as_array(v: JsonValue) -> Opt[List[JsonValue]]",
+          "sig_hash": "tt32q5rgyb3mtaayh4poo6r5wa",
+          "hash": "tl7d4lzhr7wbgvejgf7fepejxppwjwmwuf2zoucgrijecu2dfaha",
+          "effects": [],
+          "doc": "The elements, if the value is an array."
+        },
+        {
+          "name": "as_object",
+          "kind": "fn",
+          "sig": "fn as_object(v: JsonValue) -> Opt[Map[Str, JsonValue]]",
+          "sig_hash": "2cuu3ue5yojb6caxjuujuucfhq",
+          "hash": "tbvod2ykcjhjakcn2ldemmd7eo7gx3sw5hmncpb2fq5ldji7eioq",
+          "effects": [],
+          "doc": "The fields, if the value is an object."
+        },
+        {
+          "name": "parse_json",
+          "kind": "fn",
+          "sig": "fn parse_json(text: Str) -> Res[JsonValue, JsonError]",
+          "sig_hash": "i23mvzjczcsq7gpiwmeezfilme",
+          "hash": "2pdtmwlxkztdmt7qzzb3hntugec6zzleinxscybidjynztcumxia",
+          "effects": [],
+          "doc": "The value of JSON text, strictly as RFC 8259 says: one value with optional whitespace around\nit, no comments, no trailing commas, no single quotes, no leading zeros or `+`, no `NaN`, and\nstrings with valid escapes and no raw control characters; a `\\u` escape of a lone surrogate is\nan error. A repeated object key keeps its last value. Nesting deeper than\n`default_max_depth()` is an error."
+        },
+        {
+          "name": "parse_json_depth",
+          "kind": "fn",
+          "sig": "fn parse_json_depth(text: Str, max_depth: Int where _ >= 0 and _ <= 4096) -> Res[JsonValue, JsonError]",
+          "sig_hash": "eiajmwdfe5nnhi7web7lcll6im",
+          "hash": "5xkz23ibce25pqddpddbvqjdidaqdiukpkjld44y5j2psln4cnwq",
+          "effects": [],
+          "doc": "`parse_json` with a nesting limit: arrays and objects may nest `max_depth` deep (0 allows only\nscalars)."
+        },
+        {
+          "name": "error_text",
+          "kind": "fn",
+          "sig": "fn error_text(e: JsonError) -> Str",
+          "sig_hash": "ugajm4ac2df2ow445f2455szu4",
+          "hash": "cudcfbfqqhzr5txs7nsp5bmqpss2muxn37yuc66qnlupvtr56lcq",
+          "effects": [],
+          "doc": "The error as one line: \"line 1, column 5: expected ':' after an object key\"."
+        },
+        {
+          "name": "render",
+          "kind": "fn",
+          "sig": "fn render(v: JsonValue) -> Str",
+          "sig_hash": "yeugf22w3fge7skn4slpqcx5vm",
+          "hash": "vxlkvts3ttt6g5xrwcyx2gezpascsid2vgwvdfblfw3pzh25hjwq",
+          "effects": [],
+          "doc": "The value as compact JSON text: no spaces, object keys in sorted order, strings escaped as\nRFC 8259 requires (`\"`, `\\`, and control characters; other characters are written as they\nare). A `JNum` that is not finite is written `null`; a `JBig` is written as its text."
+        },
+        {
+          "name": "render_pretty",
+          "kind": "fn",
+          "sig": "fn render_pretty(v: JsonValue, indent: Int where _ >= 0 and _ <= 16) -> Str",
+          "sig_hash": "4vtp6ny4f4z3xr4kthkr63g6cy",
+          "hash": "q2j3narnnk4e7rto6id2vxdxaxz4s4yksju7kwwpnheuijoqlgka",
+          "effects": [],
+          "doc": "The value as indented JSON text: one element or field per line, `indent` spaces per level,\n`\": \"` after keys, and `[]` and `{}` for empty containers. `indent` 0 still breaks lines."
+        },
+        {
+          "name": "quote_json",
+          "kind": "fn",
+          "sig": "fn quote_json(s: Str) -> Str",
+          "sig_hash": "ajonjfnccfvarb6vu6z7sec4yq",
+          "hash": "e5qddzvk5cyzoquu2l4f5t374766piqrht2rtptcn6fnzkadgwxq",
+          "effects": [],
+          "doc": "The string as a JSON string literal, with its quotes."
+        },
+        {
+          "name": "parse_path",
+          "kind": "fn",
+          "sig": "fn parse_path(path: Str) -> Res[List[PathSeg], Str]",
+          "sig_hash": "hntqfsvunym5zbjf5qhremshwu",
+          "hash": "ikb6nltxobrinfmovc2ues5s7z2vhx7htojsnmssdntnpiat2dsa",
+          "effects": [],
+          "doc": "The steps of a dotted path such as `a.b[0].c` or `users[2][\"first name\"]`: names separated by\ndots, `[n]` for an array position, and `[\"...\"]` (with `\\\"` and `\\\\` escapes) for a key that\nhas dots, brackets or quotes in it. `\"\"` is the root (no steps). A name can't be empty\n(`a..b` is an error) and a position can't be negative or have a leading zero."
+        },
+        {
+          "name": "path_text",
+          "kind": "fn",
+          "sig": "fn path_text(segs: List[PathSeg]) -> Str",
+          "sig_hash": "eylxylpuaozqlogp4nhelf7r2y",
+          "hash": "xtjzxpr7xxohft7aqe2lltw42p7feupy4opfyj4ibrnbnuz2wsta",
+          "effects": [],
+          "doc": "A path as text that `parse_path` reads back: plain names joined with dots, `[n]` for\npositions, and `[\"...\"]` for empty keys and keys with `.`, `[`, `]` or `\"`."
+        },
+        {
+          "name": "parse_pointer",
+          "kind": "fn",
+          "sig": "fn parse_pointer(ptr: Str) -> Res[List[PathSeg], Str]",
+          "sig_hash": "cga2qy7envnaxchy4576v44soa",
+          "hash": "k2cn7nezdfea7bz5ooudwqrbwbszowfflp625o47ubi4dg6o4kjq",
+          "effects": [],
+          "doc": "The steps of an RFC 6901 JSON Pointer such as `/a/b/0`: `\"\"` is the whole document, every other\npointer starts with `/`, and `~1` and `~0` in a step stand for `/` and `~`. Every step is a\n`Key`; on an array a key that is a position (`0`, `12`, not `01`) indexes it, and `-` means the\nend (for `set_in`)."
+        },
+        {
+          "name": "pointer_text",
+          "kind": "fn",
+          "sig": "fn pointer_text(segs: List[PathSeg]) -> Str",
+          "sig_hash": "oridfu34y6tloai3skmdy62rky",
+          "hash": "ddnzdvmibnlq644hr3ghvtgunhwtm2dcgzwot4buqufemgh4sjya",
+          "effects": [],
+          "doc": "A path as an RFC 6901 JSON Pointer, escaping `~` as `~0` and `/` as `~1`."
+        },
+        {
+          "name": "get_in",
+          "kind": "fn",
+          "sig": "fn get_in(v: JsonValue, segs: List[PathSeg]) -> Opt[JsonValue]",
+          "sig_hash": "kxajzag5yqauv4gf674oznr2cm",
+          "hash": "4z3bqnoshkemdpeks6msv25xvgsezmjy2orlqeiky5cvz4ztv7la",
+          "effects": [],
+          "doc": "The value at a path, or `none` when a step is missing. A `Key` step reads an object field, or\nan array element when the key is a position; an `At` step reads only array elements."
+        },
+        {
+          "name": "has_in",
+          "kind": "fn",
+          "sig": "fn has_in(v: JsonValue, segs: List[PathSeg]) -> Bool",
+          "sig_hash": "dy6izvudvlaufrrgt6ofnno6ty",
+          "hash": "u4utrkcfmji7phfgj4vrpkwraq2hclzigbihz7wismqolsvnlihq",
+          "effects": [],
+          "doc": "Whether there is a value at the path (a `null` there counts)."
+        },
+        {
+          "name": "set_in",
+          "kind": "fn",
+          "sig": "fn set_in(v: JsonValue, segs: List[PathSeg], x: JsonValue) -> Res[JsonValue, Str]",
+          "sig_hash": "hwqjrdw3po2ca5odpx6mbhx3fa",
+          "hash": "p7il3zylti4bynaarozibaowvjc7h3dpd2cn4xsopxa2fi6xpceq",
+          "effects": [],
+          "doc": "The value with `x` stored at a path, or why it can't be. Missing objects along the way are\ncreated (and a `null` is replaced by one), as an object for a `Key` step and an array for an\n`At` step. On an array the position must be at most its length (the length, or the key `-`,\nappends), so arrays never get holes. A step into a boolean, number or string, a key that is\nnot a position on an array, or an `At` step on an object is an error that names the path."
+        },
+        {
+          "name": "delete_in",
+          "kind": "fn",
+          "sig": "fn delete_in(v: JsonValue, segs: List[PathSeg]) -> JsonValue",
+          "sig_hash": "gezxknwwifdgkdywglmxrewoue",
+          "hash": "6jazkhfzgtpgddqlsnzdkcmlbby4c4g2v52lez7syqqmjimrh2ea",
+          "effects": [],
+          "doc": "The value without whatever is at a path: an object field is removed and an array element is\ntaken out (later elements move down). Unchanged when the path is missing or `segs` is empty."
+        },
+        {
+          "name": "update_in",
+          "kind": "fn",
+          "sig": "fn update_in[e](v: JsonValue, segs: List[PathSeg], f: JsonValue -> JsonValue ! e) -> JsonValue ! e",
+          "sig_hash": "xgobl4tluaqvnny4j7dqojkgma",
+          "hash": "osajovfhpb2spdqhgfavpkyfikrww2v53hr4lppf4c5s5rfk6nqa",
+          "effects": [
+            "e"
+          ],
+          "doc": "The value with the value at a path replaced by `f(old)`; unchanged when the path is missing."
+        },
+        {
+          "name": "get_path",
+          "kind": "fn",
+          "sig": "fn get_path(v: JsonValue, path: Str) -> Opt[JsonValue]",
+          "sig_hash": "2e6olkvif3n4yxy6pnyv7dhzku",
+          "hash": "tf5x3vx7ylvpt6bp3loryw6zsyryvwyqmbrvbnyklpbyrlopsxyq",
+          "effects": [],
+          "doc": "`get_in` with a dotted path; `none` also when the path doesn't parse."
+        },
+        {
+          "name": "has_path",
+          "kind": "fn",
+          "sig": "fn has_path(v: JsonValue, path: Str) -> Bool",
+          "sig_hash": "jk7ism4jianzsstrlglfszo3ci",
+          "hash": "mq335bvffzh23uenm36cbgbmz3yuth46hxv6vy3cdhzkmrrmbkba",
+          "effects": [],
+          "doc": "`has_in` with a dotted path; `false` also when the path doesn't parse."
+        },
+        {
+          "name": "set_path",
+          "kind": "fn",
+          "sig": "fn set_path(v: JsonValue, path: Str, x: JsonValue) -> Res[JsonValue, Str]",
+          "sig_hash": "pdmustb46q66ksjq4eoa5ycb3y",
+          "hash": "4hchp5i4yg7xjecss257hvc55ioedvqjh4qchijniqdxe5zpgtfq",
+          "effects": [],
+          "doc": "`set_in` with a dotted path; a path that doesn't parse is an error too."
+        },
+        {
+          "name": "delete_path",
+          "kind": "fn",
+          "sig": "fn delete_path(v: JsonValue, path: Str) -> Res[JsonValue, Str]",
+          "sig_hash": "ddlrqnz75vrqdsuh3hc5fhkpee",
+          "hash": "yrmmd22uejulmgut6fglvfsbhyxs34hycatsugdru3bxxmf34plq",
+          "effects": [],
+          "doc": "`delete_in` with a dotted path; a path that doesn't parse is an error."
+        },
+        {
+          "name": "get_pointer",
+          "kind": "fn",
+          "sig": "fn get_pointer(v: JsonValue, ptr: Str) -> Opt[JsonValue]",
+          "sig_hash": "7t73j47ql4iaamrl7rtvll22xa",
+          "hash": "namdpwx43ge3r3inil4pz4beniuoh2uiye6izacb6epc55q7ijma",
+          "effects": [],
+          "doc": "`get_in` with a JSON Pointer; `none` also when the pointer doesn't parse."
+        },
+        {
+          "name": "has_pointer",
+          "kind": "fn",
+          "sig": "fn has_pointer(v: JsonValue, ptr: Str) -> Bool",
+          "sig_hash": "yaoozxhfpukmi24ewuboxzkcgq",
+          "hash": "hjxxhjogmdp6jbevmcupcovz2imrcvc6ddgx27awk3s6pjh6vfnq",
+          "effects": [],
+          "doc": "`has_in` with a JSON Pointer."
+        },
+        {
+          "name": "set_pointer",
+          "kind": "fn",
+          "sig": "fn set_pointer(v: JsonValue, ptr: Str, x: JsonValue) -> Res[JsonValue, Str]",
+          "sig_hash": "iocod7fiyejkjealpr6ypgy4ge",
+          "hash": "d5fchpp5sshp4zc4cpxtiuchsspaovadvooaav5xnnud4q5gjv2a",
+          "effects": [],
+          "doc": "`set_in` with a JSON Pointer; `-` as an array step appends."
+        },
+        {
+          "name": "delete_pointer",
+          "kind": "fn",
+          "sig": "fn delete_pointer(v: JsonValue, ptr: Str) -> Res[JsonValue, Str]",
+          "sig_hash": "acp7egxy6yxoymooee7avezrci",
+          "hash": "3ixvewg5fdm27kozmpxy3zi6uakgc4n3jsw2kubpofknt3hsdkrq",
+          "effects": [],
+          "doc": "`delete_in` with a JSON Pointer."
+        },
+        {
+          "name": "deep_merge",
+          "kind": "fn",
+          "sig": "fn deep_merge(a: JsonValue, b: JsonValue) -> JsonValue",
+          "sig_hash": "jqtteaffh3pbo6kmnzwlrvo4qa",
+          "hash": "3fync7jvbrjoarsmtepzyaimhyzrdhq75puzfrvlsec7esq3dlia",
+          "effects": [],
+          "doc": "`b` merged into `a`: where both are objects their fields merge recursively, anywhere else\n(arrays included) the value from `b` replaces the one from `a`."
+        },
+        {
+          "name": "merge_patch",
+          "kind": "fn",
+          "sig": "fn merge_patch(target: JsonValue, patch: JsonValue) -> JsonValue",
+          "sig_hash": "2kn75wlapuqzlbyvue2pirrm2y",
+          "hash": "vugthmmery25rc64m2qybxawrmk3jujttsuygvkct3wsrlmo7voa",
+          "effects": [],
+          "doc": "`target` with an RFC 7386 JSON Merge Patch applied: an object patch sets each of its fields\nrecursively and removes the fields it sets to `null`; any other patch replaces the target."
+        },
+        {
+          "name": "make_merge_patch",
+          "kind": "fn",
+          "sig": "fn make_merge_patch(source: JsonValue, target: JsonValue) -> JsonValue",
+          "sig_hash": "saf4wsvh47l2krvbsccoldhijy",
+          "hash": "sczlgsz2j4fgs52mwmj7zwzz2r45nvpdo2iyumxwvbxafhf4dpvq",
+          "effects": [],
+          "doc": "The RFC 7386 merge patch that turns `source` into `target`, so\n`merge_patch(source, make_merge_patch(source, target)) == target` whenever `target` has no `null`\ninside an object (merge patches can't set a field to `null`). Unchanged fields are left out;\narrays are replaced whole."
+        },
+        {
+          "name": "flatten_value",
+          "kind": "fn",
+          "sig": "fn flatten_value(v: JsonValue) -> Map[Str, JsonValue]",
+          "sig_hash": "322y7apazngdmgo6uhtojuvlj4",
+          "hash": "td32cmxbbf2q6f3sdfjco5j2pbhxkwvtozdrdfhutel3mxvchusq",
+          "effects": [],
+          "doc": "The leaves of a value keyed by their `path_text`: scalars, and empty arrays and objects (so\n`unflatten_value` can restore them). A scalar or empty root is the single key `\"\"`."
+        },
+        {
+          "name": "unflatten_value",
+          "kind": "fn",
+          "sig": "fn unflatten_value(m: Map[Str, JsonValue]) -> Res[JsonValue, Str]",
+          "sig_hash": "pudlqjcuj3a47zy7bink7yckg4",
+          "hash": "enkdvlsg2jgjbzgxdcl5xc5r5ikz3iyybay2tzghqnw55ppkpxya",
+          "effects": [],
+          "doc": "The value whose leaves are `m`, the inverse of `flatten_value`: each key is parsed with\n`parse_path` and set with `set_in`, in path order (an empty map gives an empty object).\nErrors when a key doesn't parse, when two keys conflict (`a` and `a.b`), or when array\npositions skip one."
+        },
+        {
+          "name": "diff_values",
+          "kind": "fn",
+          "sig": "fn diff_values(a: JsonValue, b: JsonValue) -> List[Change]",
+          "sig_hash": "vtbur6izumkdwmh7qcpykjnxzq",
+          "hash": "om5ezyrsqjda2gdvd3dea25lf6zbiwgkl4eli6anzhc4ivhwqp4q",
+          "effects": [],
+          "doc": "The differences from `a` to `b`, in path order: fields and trailing array elements only in `b`\nare `Added`, only in `a` `Removed`, and other values that differ `Replaced` (a change of kind,\nor of a scalar). Arrays are compared position by position, so an insertion shows as\nreplacements plus an addition. Equal values give `[]`."
+        },
+        {
+          "name": "apply_changes",
+          "kind": "fn",
+          "sig": "fn apply_changes(v: JsonValue, changes: List[Change]) -> Res[JsonValue, Str]",
+          "sig_hash": "zx7m5d2o2jhpoexy3soo7yg554",
+          "hash": "vtfyunhxqjupijtwakwdyperw4n2hb3csrqzwz6mirczwm6lcyaq",
+          "effects": [],
+          "doc": "`v` with changes applied, as `diff_values` produces them: `Replaced` and `Added` in order, then\n`Removed` from the last to the first so array positions stay valid. So\n`apply_changes(a, diff_values(a, b)) == ok(b)`. Errors when a path can't be set."
+        }
+      ]
+    }
+  ]
+}
