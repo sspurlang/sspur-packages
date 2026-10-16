@@ -1,0 +1,776 @@
+{
+  "schema": 1,
+  "name": "featureflags",
+  "description": "Feature flags: targeting rules, segments, prerequisites, stable percentage rollouts, OpenFeature-style details, JSON definitions and a SQLite store with audit",
+  "repository": "https://github.com/sspurlang/sspur-featureflags",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-featureflags.git",
+      "tag": "v0.1.0",
+      "commit": "a4cd55744e707c1cfcc1e008e20b3828b7b999e5",
+      "hash": "7zlmqhyy5zral6zndivny5c3bp772segryiwv5df5l4q33nsz7ra",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/featureflags-0.1.0/featureflags-0.1.0.tar",
+        "sha256": "7c3d70b0994a118d93c46c0bead2742bb600b2a55904bc94a76ea9fe2471bf0c",
+        "size": 83968
+      },
+      "effects": [
+        "db",
+        "fs"
+      ],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T19:59:23Z",
+      "publisher": "utkarshavardhana",
+      "request": 47,
+      "api": [
+        {
+          "name": "FlagValue",
+          "kind": "type",
+          "sig": "pub type FlagValue = BoolV{v: Bool} | StrV{v: Str} | IntV{v: Int} | NumV{v: F64} derive Eq, Show",
+          "sig_hash": "ohqliigk4ch4yxz5hhrh4pu5o4",
+          "hash": "v7m4huni2w2fngahwlllhj4hzcyplgc7sob3xeudrotyyppfnclq",
+          "effects": [],
+          "doc": "The value of one variant."
+        },
+        {
+          "name": "type_name",
+          "kind": "fn",
+          "sig": "fn type_name(v: FlagValue) -> Str",
+          "sig_hash": "jjsvojtrkcm2hiye7dcfikncru",
+          "hash": "vqejgvmmofpzqibsoayu5bmwdf3uwtl7sabopvksimk5n2h44tsa",
+          "effects": [],
+          "doc": "The name of a value's type: `boolean`, `string`, `integer` or `number`."
+        },
+        {
+          "name": "Context",
+          "kind": "type",
+          "sig": "pub type Context = {key: Str, attrs: Map[Str, Str]} derive Eq, Show",
+          "sig_hash": "2llsthqwdlwv7cam3moypnygam",
+          "hash": "b4a7hgxxfy24th53aecn7szgiqxohcjmubi5mwiz6ic2obqdxaxa",
+          "effects": [],
+          "doc": "Who a flag is evaluated for: the targeting key (a user, account or device id; used for\nexplicit targets and as the default bucketing key) and string attributes. A rule's attribute\n`key` means the targeting key unless the attributes define `key` themselves."
+        },
+        {
+          "name": "context",
+          "kind": "fn",
+          "sig": "fn context(key: Str) -> Context",
+          "sig_hash": "sn7tdifqje5tfqa7gdvt2wwxnm",
+          "hash": "nw3znzyf44eakdqzvy3bbyebctmtqbpchflljmdej2spf7kqp27q",
+          "effects": [],
+          "doc": "A context for `key` with no attributes."
+        },
+        {
+          "name": "with_attr",
+          "kind": "fn",
+          "sig": "fn with_attr(c: Context, name: Str, value: Str) -> Context",
+          "sig_hash": "onskqz7oaaqkumgew36pq5t2ya",
+          "hash": "uasbs3iilvmvkhd5uhq7mwaa4qez25ff7ahl6rbn3jjss6o6ayeq",
+          "effects": [],
+          "doc": "The context with attribute `name` set to `value`."
+        },
+        {
+          "name": "attr",
+          "kind": "fn",
+          "sig": "fn attr(c: Context, name: Str) -> Opt[Str]",
+          "sig_hash": "fi6ugeen6gahucrho7rveiugey",
+          "hash": "56ak7u2tyiv4ds7nssacwur327o5nfgsw5af47m236bltv4c7dha",
+          "effects": [],
+          "doc": "The value of attribute `name` in `c`, or none. `key` falls back to the targeting key, and an\nempty targeting key counts as missing."
+        },
+        {
+          "name": "Op",
+          "kind": "type",
+          "sig": "pub type Op = Equals | NotEquals | In | NotIn | Contains | NotContains | StartsWith | EndsWith | Lt | Le | Gt | Ge | Matches | Before | After | Exists | NotExists derive Eq, Show",
+          "sig_hash": "njdi5ur5pc7so3pg6umjdf2npi",
+          "hash": "fjxlkgu35dqxceowbqeoqbemeftrptq5wwj3c6grrkmbq3vbjvnq",
+          "effects": [],
+          "doc": "A comparison in a rule. Every operator except `NotExists` is false when the attribute is\nmissing. `Equals` and `NotEquals` take one value, `In` and `NotIn` one or more, the string\noperators (`Contains`, `NotContains`, `StartsWith`, `EndsWith`) and `Matches` (a regular\nexpression; the stdlib engine runs in linear time, so a pattern can't hang the server) are true\nwhen any value fits, `Lt` `Le` `Gt` `Ge` compare numbers (false if either side isn't one),\n`Before` and `After` compare ISO 8601 times, and `Exists` and `NotExists` take no values.\nComparisons are exact and case-sensitive."
+        },
+        {
+          "name": "Clause",
+          "kind": "type",
+          "sig": "pub type Clause = AttrClause{attr: Str, op: Op, values: List[Str]} | SegmentClause{segment: Str} | AllClauses{cs: List[Clause]} | AnyClause{cs: List[Clause]} | NotClause{c: Clause} | AlwaysClause derive Eq, Show",
+          "sig_hash": "xgaicoqv6d2dicfehcfzrrrxca",
+          "hash": "hebwzerhb34vnbtmoqzrejelyqmosy3tt4fplbtjzsl3skekbfwq",
+          "effects": [],
+          "doc": "A targeting condition: an attribute comparison, membership of a segment, or a combination.\n`AllClauses([])` is true and `AnyClause([])` is false."
+        },
+        {
+          "name": "Serve",
+          "kind": "type",
+          "sig": "pub type Serve = Fixed{variant: Str} | Weighted{weights: List[(Str, Int)], bucket_by: Str} derive Eq, Show",
+          "sig_hash": "yrvqgphx65kxofjyyymimpnpwu",
+          "hash": "tj2pjcw3ufuhcanwvurpmuo6iwyyrm2dt32prcxxi5psbkq5xd6q",
+          "effects": [],
+          "doc": "What a rule (or the fallthrough) serves: one variant, or a weighted split of variants by a\nstable hash of the bucketing attribute (`bucket_by`, `key` for the targeting key). Weights are\nrelative non-negative integers (percentages, or parts of 100000 for finer steps)."
+        },
+        {
+          "name": "Rule",
+          "kind": "type",
+          "sig": "pub type Rule = {id: Str, when: Clause, serve: Serve} derive Eq, Show",
+          "sig_hash": "4y6k334zsp2rfgyrm43w2wmem4",
+          "hash": "kt44v4qt5njmiploj7kjqxozymyqqk7gmqjlbl4khrj52cjgcvaa",
+          "effects": [],
+          "doc": "A targeting rule: when `when` holds, serve `serve`. `id` names it in evaluation details."
+        },
+        {
+          "name": "Target",
+          "kind": "type",
+          "sig": "pub type Target = {variant: Str, keys: List[Str]} derive Eq, Show",
+          "sig_hash": "4lfce7knsgualpmlmw7crotpqa",
+          "hash": "74hquixjini7ao3hm7h5qxmskp365vqpl7zc32rbbarm76weitvq",
+          "effects": [],
+          "doc": "Contexts whose targeting key is in `keys` get `variant`, before any rule: allow and deny lists."
+        },
+        {
+          "name": "Prereq",
+          "kind": "type",
+          "sig": "pub type Prereq = {flag: Str, variants: List[Str]} derive Eq, Show",
+          "sig_hash": "q5722emajnuowpymawwlw7hylq",
+          "hash": "xvkewuorlbi5mnsadtfidnjantkk2vv2nzurffhquhrm27tvdtoa",
+          "effects": [],
+          "doc": "The flag `flag` must evaluate to one of `variants` for this flag to be on."
+        },
+        {
+          "name": "Flag",
+          "kind": "type",
+          "sig": "pub type Flag = {key: Str, enabled: Bool, variants: List[(Str, FlagValue)], off_variant: Str, fallthrough: Serve, targets: List[Target], rules: List[Rule], prerequisites: List[Prereq], salt: Str, version: Int} derive Eq, Show",
+          "sig_hash": "safq55tqgxpsgulptc6pepdqza",
+          "hash": "4bj72xy4gwxqf2ix5mkkau53dw7h4pk2oaaglr6fpckiehvqslla",
+          "effects": [],
+          "doc": "A flag. When `enabled` is false it serves `off_variant`. Otherwise its prerequisites must hold\n(else `off_variant`), then explicit targets, then the first matching rule, then `fallthrough`\ndecide. `salt` changes every bucket of the flag at once (leave it `\"\"` to bucket by the key\nalone); `version` counts changes."
+        },
+        {
+          "name": "Segment",
+          "kind": "type",
+          "sig": "pub type Segment = {key: Str, included: List[Str], excluded: List[Str], rules: List[Clause]} derive Eq, Show",
+          "sig_hash": "avmyzii4wlyjzxsgay3zj5hcp4",
+          "hash": "v3agfgzoriuo6fqttgljtkghkwd3hcm5n5saou6rallp4gnge2qq",
+          "effects": [],
+          "doc": "A reusable set of contexts: `excluded` keys never belong, `included` keys always do, and\notherwise a context belongs when any of `rules` holds. Segment rules may not refer to segments."
+        },
+        {
+          "name": "Snapshot",
+          "kind": "type",
+          "sig": "pub type Snapshot = {flags: Map[Str, Flag], segments: Map[Str, Segment], version: Int} derive Eq, Show",
+          "sig_hash": "gs424l2q5ljuru7bxhzgfq5t2i",
+          "hash": "2b2gwi4m3jw23pe4hu3s43qwplwu3qf2p6fhuiuxy3cnfjkjjcca",
+          "effects": [],
+          "doc": "A set of flags and segments, with the version of the store they came from (0 for a file).\nShare it between request handlers as any immutable value."
+        },
+        {
+          "name": "bool_flag",
+          "kind": "fn",
+          "sig": "fn bool_flag(key: Str, enabled: Bool) -> Flag",
+          "sig_hash": "dpxm4ki3qoucwbnh7k5mb43rpm",
+          "hash": "fmtadeicpzepjoiqsw7zojt3a5vf7dhmhl7rxcrtb5ezg3y7hbva",
+          "effects": [],
+          "doc": "A boolean flag: `on` (true) and `off` (false), off when disabled, on for everyone when enabled\nunless rules say otherwise."
+        },
+        {
+          "name": "string_flag",
+          "kind": "fn",
+          "sig": "fn string_flag(key: Str, enabled: Bool, variants: List[(Str, Str)], default_variant: Str, off_variant: Str) -> Flag",
+          "sig_hash": "rw7lxkcvrv24akqsje56fcp54e",
+          "hash": "l4chszht7rcnjggaoy4cx3pc2shkal3np2afqymyhvlsx6f47yrq",
+          "effects": [],
+          "doc": "A flag with string variants, serving `default_variant` to everyone when enabled and\n`off_variant` when disabled."
+        },
+        {
+          "name": "add_rule",
+          "kind": "fn",
+          "sig": "fn add_rule(f: Flag, rule: Rule) -> Flag",
+          "sig_hash": "hqgrboz67whrkq4d4ul5aiamoa",
+          "hash": "ua7hkran5pvhnkm6koyvzihqmm4bhgiut3g4mxwkvcp5galxbtsa",
+          "effects": [],
+          "doc": "The flag with `rule` added after its other rules."
+        },
+        {
+          "name": "add_target",
+          "kind": "fn",
+          "sig": "fn add_target(f: Flag, variant: Str, keys: List[Str]) -> Flag",
+          "sig_hash": "fnhkzpirnqumwaoqn5shl6uj3i",
+          "hash": "fqoseu5cjc7nw7d2uw4rmr7nsizbq6zas4vp5aqzvrrr5acgebrq",
+          "effects": [],
+          "doc": "The flag with an explicit target: `keys` get `variant`."
+        },
+        {
+          "name": "add_prereq",
+          "kind": "fn",
+          "sig": "fn add_prereq(f: Flag, flag: Str, variants: List[Str]) -> Flag",
+          "sig_hash": "ksr6wqbbydvpgi42y6jrmxocby",
+          "hash": "bexzwclo3xutzjqgrp5cfpo3fhpjb4zakn7slpmazjawk3kteisq",
+          "effects": [],
+          "doc": "The flag with a prerequisite."
+        },
+        {
+          "name": "with_fallthrough",
+          "kind": "fn",
+          "sig": "fn with_fallthrough(f: Flag, s: Serve) -> Flag",
+          "sig_hash": "4hckyexd5c53j4762mua5empsa",
+          "hash": "2vut4doe24ze2fdd3muczlz2ritakaea7hnz3vztpzkxvwdx4pwq",
+          "effects": [],
+          "doc": "The flag serving `s` when no target or rule decides."
+        },
+        {
+          "name": "rollout",
+          "kind": "fn",
+          "sig": "fn rollout(on: Str, off: Str, pct: F64 where _ >= 0.0 and _ <= 100.0) -> Serve",
+          "sig_hash": "skzvpsgp275pneqfdvtbfmup2q",
+          "hash": "osp4bmw4l22wekfupksrjqa7437qnqk3jopdcq4dctg4siikr6jq",
+          "effects": [],
+          "doc": "A percentage rollout: `pct` percent (0 to 100, in steps of 0.001) of contexts, by targeting key,\nget `on`, the rest `off`. Raising the percentage later keeps everyone who already had `on`."
+        },
+        {
+          "name": "rule",
+          "kind": "fn",
+          "sig": "fn rule(id: Str, attr: Str, op: Op, values: List[Str], serve: Serve) -> Rule",
+          "sig_hash": "wu4yrydtt74nxlaj323qkvxalu",
+          "hash": "pvufeo4bknpplhvoguhswk6p5oq4jw2gdazpuyu3d4tsgin27rwq",
+          "effects": [],
+          "doc": "A rule matching one attribute."
+        },
+        {
+          "name": "snapshot",
+          "kind": "fn",
+          "sig": "fn snapshot(flags: List[Flag], segments: List[Segment]) -> Snapshot",
+          "sig_hash": "y76tgjaj33inahnvbsmtkzjmxa",
+          "hash": "fggaytj4myqsnx3f5qmdqazyegkqszrdponajsf7ape5gk5netqq",
+          "effects": [],
+          "doc": "A snapshot of these flags and segments (later ones replace earlier ones with the same key)."
+        },
+        {
+          "name": "bucket",
+          "kind": "fn",
+          "sig": "fn bucket(flag_key: Str, salt: Str, bucket_key: Str) -> Int",
+          "sig_hash": "tdubtc7t4fterryxhjognw47ja",
+          "hash": "gcr4hqrbvxq77ao5v4sks2gosy7lpyydbkvvtzhrxu7pdyj35cha",
+          "effects": [],
+          "doc": "The bucket of `bucket_key` for a flag, from 0 to 99999: the first four bytes of\nSHA-256(`flag_key` \".\" `salt` \".\" `bucket_key`), as an unsigned big-endian integer, scaled to\n100000. The same inputs always give the same bucket, in every process and tier, and buckets are\nuniform to within 0.003%."
+        },
+        {
+          "name": "split_variant",
+          "kind": "fn",
+          "sig": "fn split_variant(weights: List[(Str, Int)], b: Int where _ >= 0 and _ < 100000) -> Opt[Str]",
+          "sig_hash": "u76vv2puhplczt7spwlzjdup2i",
+          "hash": "bfwso2p56e3jlm3rxpixd6ig73shwrwjextgud37z5dpmrwz5dya",
+          "effects": [],
+          "doc": "The variant a split gives to bucket `b` (0 to 99999): weights are laid out in order over the\nbuckets, in proportion. None when every weight is 0."
+        },
+        {
+          "name": "Reason",
+          "kind": "type",
+          "sig": "pub type Reason = Static | Default | TargetingMatch | Split | Disabled | PrerequisiteFailed | ErrorReason derive Eq, Show",
+          "sig_hash": "2uy3xh7kdp2qut6mqyt6qp6pyy",
+          "hash": "da4rwrvdyk26pze7f3iwqxdhm7yur4h7ixtcbfkhw6awv4j5sg2q",
+          "effects": [],
+          "doc": "Why a flag has the value it has, as in OpenFeature: `Static` (the flag has no targets or rules),\n`Default` (nothing matched; the fallthrough variant), `TargetingMatch` (a target or rule\nmatched), `Split` (a weighted split chose), `Disabled` (the flag is off), `PrerequisiteFailed`\n(a prerequisite did not hold; the off variant), or `ErrorReason` (see the error code; the\ncaller's default is used)."
+        },
+        {
+          "name": "reason_name",
+          "kind": "fn",
+          "sig": "fn reason_name(r: Reason) -> Str",
+          "sig_hash": "2xgjcfu3tp5ei3svczjbwuwau4",
+          "hash": "euk3qwvd2pznir7hhee5h3yurslosq35iiyrzg4cytibwhe4jblq",
+          "effects": [],
+          "doc": "The OpenFeature spelling of a reason: `STATIC`, `DEFAULT`, `TARGETING_MATCH`, `SPLIT`,\n`DISABLED`, `PREREQUISITE_FAILED` or `ERROR`."
+        },
+        {
+          "name": "ErrorCode",
+          "kind": "type",
+          "sig": "pub type ErrorCode = FlagNotFound | TypeMismatch | ParseError | TargetingKeyMissing | InvalidContext | General derive Eq, Show",
+          "sig_hash": "yj6rznldhxl5ekz43hmxhql6jq",
+          "hash": "iri4jq65c4csdruw5gcznxpjj7tdzakkmyhyq34dqf3agvdphscq",
+          "effects": [],
+          "doc": "What went wrong, as in OpenFeature: no such flag, a typed accessor for another type, a split\nwithout its bucketing attribute, or a definition that refers to something missing or forms a\nprerequisite cycle (`General`, with a message). `ParseError` and `InvalidContext` complete the\nOpenFeature set for code that wraps this package (definitions that failed to load, a context\nit rejects); evaluation itself never produces them."
+        },
+        {
+          "name": "error_name",
+          "kind": "fn",
+          "sig": "fn error_name(e: ErrorCode) -> Str",
+          "sig_hash": "s4pm2yyy73pzxovvt6p7gzui2y",
+          "hash": "jsztycnv4dfwuqe2jmsfpsbirhebxot7isoe3i2c7bnzy64bff6q",
+          "effects": [],
+          "doc": "The OpenFeature spelling of an error code: `FLAG_NOT_FOUND`, `TYPE_MISMATCH`, `PARSE_ERROR`,\n`TARGETING_KEY_MISSING`, `INVALID_CONTEXT` or `GENERAL`."
+        },
+        {
+          "name": "Details",
+          "kind": "type",
+          "sig": "pub type Details = {key: Str, value: Opt[FlagValue], variant: Opt[Str], reason: Reason, error: Opt[ErrorCode], message: Str, rule: Opt[Str], flag_version: Int} derive Eq, Show",
+          "sig_hash": "fcetwb3rbnkxsxtvrto3vru72q",
+          "hash": "bsqyyxymr523rcxxak2jfiud7aofh3eyhglane54kvc4gbo6ml2a",
+          "effects": [],
+          "doc": "The result of evaluating a flag: the value and variant (none on an error), why, the error code\nand a message on an error, the id of the rule that matched (`target:VARIANT` for an explicit\ntarget), and the flag's version."
+        },
+        {
+          "name": "clause_holds",
+          "kind": "fn",
+          "sig": "fn clause_holds(s: Snapshot, c: Clause, ctx: Context) -> Bool",
+          "sig_hash": "qwfw3hawa36p6cuek5lqgtl5sa",
+          "hash": "q5v6tbw3vefcxfsge6kbiuut5q5xemesl5f4gjqtom6evulmexoq",
+          "effects": [],
+          "doc": "Whether `c` holds for `ctx`, with the snapshot's segments. A clause naming a missing segment is\nfalse (validation reports it)."
+        },
+        {
+          "name": "in_segment",
+          "kind": "fn",
+          "sig": "fn in_segment(s: Snapshot, seg: Segment, ctx: Context) -> Bool",
+          "sig_hash": "zlpoupi5su7zgw6uhxomgpqrnq",
+          "hash": "scyyodlbnzhczefkracm2bfwlm5qpuzwhkzu7dencyngcopfgoqq",
+          "effects": [],
+          "doc": "Whether `ctx` belongs to segment `seg`: not excluded, and included or matched by a rule. A\nsegment rule that names a segment is false (validation reports it)."
+        },
+        {
+          "name": "evaluate",
+          "kind": "fn",
+          "sig": "fn evaluate(s: Snapshot, key: Str, ctx: Context) -> Details",
+          "sig_hash": "awwzgqvmfdwhtawwhyvoqvmtjq",
+          "hash": "2jngietnrvmp7vtixo2hndplo36onmjjiqdivofdmqee6juyzkoq",
+          "effects": [],
+          "doc": "Evaluates flag `key` for `ctx`. Pure: the same snapshot and context always give the same\ndetails."
+        },
+        {
+          "name": "Resolved",
+          "kind": "type",
+          "sig": "pub type Resolved[T] = {value: T, details: Details} derive Eq, Show",
+          "sig_hash": "tzvjnij6naznitgnboorgeqxvy",
+          "hash": "k4ubvwypxdnojf5pe7zyssgdepgyx4s3tmffi4gdnhqq3bdcym7a",
+          "effects": [],
+          "doc": "A typed result: the value (the caller's default on any error) and the details."
+        },
+        {
+          "name": "bool_details",
+          "kind": "fn",
+          "sig": "fn bool_details(s: Snapshot, key: Str, ctx: Context, default: Bool) -> Resolved[Bool]",
+          "sig_hash": "4sehffwprfqdc4qhk2gm5cwv5u",
+          "hash": "zawc7b7yyt6pgbidg5izblfdy7c2jdemnbaos6kiqjhlu3oriagq",
+          "effects": [],
+          "doc": "A boolean flag's value and details; `default` on any error, including `TypeMismatch`."
+        },
+        {
+          "name": "str_details",
+          "kind": "fn",
+          "sig": "fn str_details(s: Snapshot, key: Str, ctx: Context, default: Str) -> Resolved[Str]",
+          "sig_hash": "l3646hfevs55n2is5lseztwpsq",
+          "hash": "6bgfbpprl3afenhoofdk3qocd2pqjv43fl2vt6eiewlvxtzgq4xa",
+          "effects": [],
+          "doc": "A string flag's value and details; `default` on any error."
+        },
+        {
+          "name": "int_details",
+          "kind": "fn",
+          "sig": "fn int_details(s: Snapshot, key: Str, ctx: Context, default: Int) -> Resolved[Int]",
+          "sig_hash": "zksm7dun4rajyerb75jxx2hobi",
+          "hash": "hsugevimzsnpt64u37zrxrqv2tg6ikdtf4a2z7qipgxshx5r2raa",
+          "effects": [],
+          "doc": "An integer flag's value and details; `default` on any error."
+        },
+        {
+          "name": "num_details",
+          "kind": "fn",
+          "sig": "fn num_details(s: Snapshot, key: Str, ctx: Context, default: F64) -> Resolved[F64]",
+          "sig_hash": "rl4quv6ikjfnahangvriwdlynu",
+          "hash": "5hxcxanxz7h5gkbdm5dx2ftzajgp6q26rw2ibevrax7jky2id2cq",
+          "effects": [],
+          "doc": "A number flag's value and details (integer variants are accepted as numbers); `default` on any\nerror."
+        },
+        {
+          "name": "is_on",
+          "kind": "fn",
+          "sig": "fn is_on(s: Snapshot, key: Str, ctx: Context, default: Bool) -> Bool",
+          "sig_hash": "7gflinvd4ebynhafc4tfhp26hy",
+          "hash": "ckjjwrx3q5i3j4krlmyd4nwkk7rrnqyyo2ci3lg4a2ykcfwmr43q",
+          "effects": [],
+          "doc": "Whether boolean flag `key` is on for `ctx`; `default` on any error."
+        },
+        {
+          "name": "str_value",
+          "kind": "fn",
+          "sig": "fn str_value(s: Snapshot, key: Str, ctx: Context, default: Str) -> Str",
+          "sig_hash": "hdrnfkdjox34y2jxcj74aps4ze",
+          "hash": "7powbfxgfj5dl3esuzbvlb6bqzuyfvcktndqvc3gtkhhptdu2cma",
+          "effects": [],
+          "doc": "A string flag's value for `ctx`; `default` on any error."
+        },
+        {
+          "name": "int_value",
+          "kind": "fn",
+          "sig": "fn int_value(s: Snapshot, key: Str, ctx: Context, default: Int) -> Int",
+          "sig_hash": "akh5vcwvg5cwany7bem364tbye",
+          "hash": "6ia7h67codajimjmc3il5emabekjbnowf3w36r4po6wvj2g3y77a",
+          "effects": [],
+          "doc": "An integer flag's value for `ctx`; `default` on any error."
+        },
+        {
+          "name": "num_value",
+          "kind": "fn",
+          "sig": "fn num_value(s: Snapshot, key: Str, ctx: Context, default: F64) -> F64",
+          "sig_hash": "mmgz4vnjdmar56vkcwz4quzrum",
+          "hash": "fsn75vjash5lfjkpfcfguxqgp7vgqcxff645x2f3u3afqv3xsuia",
+          "effects": [],
+          "doc": "A number flag's value for `ctx`; `default` on any error."
+        },
+        {
+          "name": "evaluate_all",
+          "kind": "fn",
+          "sig": "fn evaluate_all(s: Snapshot, ctx: Context) -> List[Details]",
+          "sig_hash": "77bq4u7ysffybcv5ye5pvp34i4",
+          "hash": "qbopryx44ixxvsmlcur73lh6ug7bdtypsgcof43sxpomxl2pcjva",
+          "effects": [],
+          "doc": "Every flag of the snapshot evaluated for `ctx`, in key order: what a client-side SDK\nbootstrap needs."
+        },
+        {
+          "name": "problems",
+          "kind": "fn",
+          "sig": "fn problems(s: Snapshot) -> List[Str]",
+          "sig_hash": "ygcyt3ryiqzzv7tydbzd7axysq",
+          "hash": "soy7ctqezmswezjmpwfkyqunz4o3ptpctbagwussflkhrsiop2sq",
+          "effects": [],
+          "doc": "Every problem in a snapshot, each with its path (`flags.KEY.rules[0].when.values: ...`):\nunknown variants, segments and prerequisite flags, prerequisite cycles, operator arities, numbers\nand times that don't parse, bad regular expressions, splits without positive weights, variants\nof mixed types, duplicate names and keys that aren't allowed. Empty when the snapshot is valid."
+        },
+        {
+          "name": "VariantJson",
+          "kind": "type",
+          "sig": "pub type VariantJson = {name: Str, boolean: Opt[Bool], string: Opt[Str], integer: Opt[Int], number: Opt[F64]} derive Eq, Show",
+          "sig_hash": "2onwialrfuolbsz4p3cpqivnki",
+          "hash": "6nh6f5tpaa7ad53nf4ah6v25uq3n5by4gdh7v2o3ji7t3gfwssxq",
+          "effects": [],
+          "doc": "A variant on the wire: its name and exactly one of `boolean`, `string`, `integer`, `number`."
+        },
+        {
+          "name": "ClauseJson",
+          "kind": "type",
+          "sig": "pub type ClauseJson = {attr: Opt[Str], op: Opt[Str], values: Opt[List[Str]], segment: Opt[Str], all: Opt[List[ClauseJson]], any: Opt[List[ClauseJson]], negate: Opt[ClauseJson], always: Opt[Bool]} derive Eq, Show",
+          "sig_hash": "y2vja2rabfilzvg7ruqhu3gli4",
+          "hash": "ydeh6mz4vqe7rezog6px77rqzbuy4pcqdirdbjfry72lftt2qjrq",
+          "effects": [],
+          "doc": "A clause on the wire: exactly one of an attribute comparison (`attr`, `op`, `values`), `segment`,\n`all`, `any` or `negate`; `{}` with `always: true` always holds."
+        },
+        {
+          "name": "WeightJson",
+          "kind": "type",
+          "sig": "pub type WeightJson = {variant: Str, weight: Int} derive Eq, Show",
+          "sig_hash": "m45noj6fk3uw6khxnuk32mqfwm",
+          "hash": "l5yk622opdbb3onc23cwakjy5ztpeuuy4ediisg6o4ydfusyoi6q",
+          "effects": [],
+          "doc": "A weighted variant of a split on the wire."
+        },
+        {
+          "name": "ServeJson",
+          "kind": "type",
+          "sig": "pub type ServeJson = {variant: Opt[Str], split: Opt[List[WeightJson]], bucket_by: Opt[Str]} derive Eq, Show",
+          "sig_hash": "qkxcblyoqjfuc7nkaefdptoi6e",
+          "hash": "5niw4dezukj2zeuzmfgrdpcdtsx73ol3e2zgpve3q2yl6r5sbwva",
+          "effects": [],
+          "doc": "A serve on the wire: `variant`, or `split` (with an optional `bucket_by`, default `key`)."
+        },
+        {
+          "name": "RuleJson",
+          "kind": "type",
+          "sig": "pub type RuleJson = {id: Str, when: ClauseJson, serve: ServeJson} derive Eq, Show",
+          "sig_hash": "cfmnoaboaqhunr6e253nywkhjm",
+          "hash": "p254m5tvlz5c6ozvktaeklgnz7txr2albvmpt5qv7io3rf2fghcq",
+          "effects": [],
+          "doc": "A rule on the wire."
+        },
+        {
+          "name": "FlagJson",
+          "kind": "type",
+          "sig": "pub type FlagJson = {key: Str, enabled: Opt[Bool], variants: List[VariantJson], off_variant: Str, fallthrough: ServeJson, targets: Opt[List[Target]], rules: Opt[List[RuleJson]], prerequisites: Opt[List[Prereq]], salt: Opt[Str], version: Opt[Int]} derive Eq, Show",
+          "sig_hash": "uumdxcq2shenaooe3fwm347y3i",
+          "hash": "mcbp6jc3ezv2pfti4smb7ulifw7ywj74vgfq6vwm43gndtjtzhaq",
+          "effects": [],
+          "doc": "A flag on the wire. Missing `targets`, `rules`, `prerequisites`, `salt` and `version` are empty\n(0); a missing `enabled` is true."
+        },
+        {
+          "name": "SegmentJson",
+          "kind": "type",
+          "sig": "pub type SegmentJson = {key: Str, included: Opt[List[Str]], excluded: Opt[List[Str]], rules: Opt[List[ClauseJson]]} derive Eq, Show",
+          "sig_hash": "wvwq5dskqiw3v2gu37n6lmplhu",
+          "hash": "ob5jiqntx3ojf6rwykfifxubkbsrc2azbvcg2fgntbocmrhqvhrq",
+          "effects": [],
+          "doc": "A segment on the wire."
+        },
+        {
+          "name": "DefinitionsJson",
+          "kind": "type",
+          "sig": "pub type DefinitionsJson = {flags: List[FlagJson], segments: Opt[List[SegmentJson]]} derive Eq, Show",
+          "sig_hash": "w5absv63xl72kudzutamd6ejym",
+          "hash": "b5i2w75d5252gnh3knhxd7uvhncwqemn7547kflu4bjrrdrantxa",
+          "effects": [],
+          "doc": "A definitions document: `{\"flags\": [...], \"segments\": [...]}`."
+        },
+        {
+          "name": "op_name",
+          "kind": "fn",
+          "sig": "fn op_name(op: Op) -> Str",
+          "sig_hash": "ijjogc7o5pvloptf6qw7mqp34e",
+          "hash": "3wxu6ksradz35qprdagxa4xscxrwca4dgsm2ou3tiwxnlta3ykda",
+          "effects": [],
+          "doc": "The name of an operator in the JSON format (`equals`, `not_in`, `starts_with`, `lt`, ...)."
+        },
+        {
+          "name": "parse_op",
+          "kind": "fn",
+          "sig": "fn parse_op(name: Str) -> Opt[Op]",
+          "sig_hash": "qla6v4pucdzblfdor55hq6zhjy",
+          "hash": "4htehwly42o67enwsxila3jmdv23sgxvxogkvtokadr7q6kx2seq",
+          "effects": [],
+          "doc": "The operator with this JSON name."
+        },
+        {
+          "name": "decode",
+          "kind": "fn",
+          "sig": "fn decode(text: Str) -> Res[Snapshot, Str]",
+          "sig_hash": "6c57hhwultgjqiaqddlswjnqjq",
+          "hash": "mupru37ax7xvjw2ejkfovclpc56yp4xfmzzfplroemkifibld2sq",
+          "effects": [],
+          "doc": "The snapshot a definitions document describes, validated (see `problems`). Errors name the\npath: `flags[1].rules[0].when.op: unknown operator 'eqals'`. Flags and segments must have unique\nkeys."
+        },
+        {
+          "name": "encode",
+          "kind": "fn",
+          "sig": "fn encode(s: Snapshot) -> Str",
+          "sig_hash": "ecfqpukcrsugdei2r6pqs7g4vu",
+          "hash": "4hg2fxbprpwonjktye5w7qaofcuf7u4sa3rb5o6z3yxkrqr6elka",
+          "effects": [],
+          "doc": "The definitions document of a snapshot; `decode` reads it back to the same flags and\nsegments."
+        },
+        {
+          "name": "encode_flag",
+          "kind": "fn",
+          "sig": "fn encode_flag(f: Flag) -> Str",
+          "sig_hash": "xnepv2w4kwrcrra6uxmgf2lzym",
+          "hash": "5kq4xwn547zwqgpi6xdyaqyzxdm7c2htdtowiep7jjgydn6d7dtq",
+          "effects": [],
+          "doc": "One flag as JSON in the definitions format."
+        },
+        {
+          "name": "encode_segment",
+          "kind": "fn",
+          "sig": "fn encode_segment(s: Segment) -> Str",
+          "sig_hash": "spgowfeubavicbjgb7uktzcrcm",
+          "hash": "rh5iwa5oquv22luxppvm65fynfzhvn4mm235k6mivl4vfz2y5t6q",
+          "effects": [],
+          "doc": "One segment as JSON in the definitions format."
+        },
+        {
+          "name": "decode_flag",
+          "kind": "fn",
+          "sig": "fn decode_flag(text: Str) -> Res[Flag, Str]",
+          "sig_hash": "kscush363wc22xw33cztnjnefm",
+          "hash": "ggvuijkmhbwrrmty7zmqviqc2st7y6vs4wjo3o2z5isxm4t7yckq",
+          "effects": [],
+          "doc": "A flag from its JSON (one element of `flags`), checked on its own: references to other flags\nand segments are checked when it joins a snapshot."
+        },
+        {
+          "name": "decode_segment",
+          "kind": "fn",
+          "sig": "fn decode_segment(text: Str) -> Res[Segment, Str]",
+          "sig_hash": "yursuks54pasjfjha4dm3ukgde",
+          "hash": "4gen7bnbiarus46oduaknhzm3arlfc6yunvu4qpdndufvklnfydq",
+          "effects": [],
+          "doc": "A segment from its JSON (one element of `segments`)."
+        },
+        {
+          "name": "load_file",
+          "kind": "fn",
+          "sig": "fn load_file(path: Str) -> Res[Snapshot, Str] ! fs",
+          "sig_hash": "cqeriovlm4epoj47oamgtnuzsq",
+          "hash": "tmng5wwzbgihvgsb2u2bc2rj6j3ldkx6dfunvmidlvtkc72hweca",
+          "effects": [
+            "fs"
+          ],
+          "doc": "The definitions in a JSON file, validated."
+        },
+        {
+          "name": "fingerprint",
+          "kind": "fn",
+          "sig": "fn fingerprint(s: Snapshot) -> Str",
+          "sig_hash": "vnpi7fgzwznwwkktfj5dnwfl24",
+          "hash": "em2kkhcksddoajvlijgwvc5jit5pv2wvpxzypveeaaodpevmbwiq",
+          "effects": [],
+          "doc": "A fingerprint of a snapshot's definitions (the SHA-256 of their JSON, in hex): equal snapshots\nhave equal fingerprints, so a poller can tell whether anything changed."
+        },
+        {
+          "name": "StoreErr",
+          "kind": "type",
+          "sig": "pub type StoreErr = Invalid{msg: Str} | Conflict{key: Str, expected: Int, actual: Int} | NotFound{key: Str} derive Eq, Show",
+          "sig_hash": "vyvt7iqjaue24t3czdnfndtgem",
+          "hash": "jlghcpq3l6ptay3cjzlyqiuv6brvkxdx7fawejoydoxlgsz3qg7a",
+          "effects": [],
+          "doc": "Why a store change was refused: the change would make the definitions invalid, the flag or\nsegment changed since the version the caller read (`expected`), or it does not exist. The\nvariant names answer 400, 409 and 404 when an `http.serve` handler raises them."
+        },
+        {
+          "name": "AuditEntry",
+          "kind": "type",
+          "sig": "pub type AuditEntry = {id: Int, kind: Str, key: Str, action: Str, definition: Opt[Str], version: Int, actor: Str, at: Time} derive Eq, Show",
+          "sig_hash": "ubfqb6awwiqeqv7pi2ueuv2fka",
+          "hash": "46fmlcfmxabll5a4jagjwe2gwqakgprlk67r3xpuobgkvwrf27sa",
+          "effects": [],
+          "doc": "One entry of the audit history: what changed (`flag` or `segment`, its key), the action (`put`\nor `delete`), the definition after a put, the store version it produced, who did it and when."
+        },
+        {
+          "name": "open_store",
+          "kind": "fn",
+          "sig": "fn open_store(c: Db) -> Unit ! db, fail[DbErr]",
+          "sig_hash": "mlnykvxkmgg6tpwv27g6yagiya",
+          "hash": "rqeqmgtfq3fykdm4dmtuzgcgdfwxm4nd5pkfvruy2tdyffiyfeua",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Creates the store's tables if they are missing (`featureflags_flags`, `featureflags_segments`,\n`featureflags_audit`, `featureflags_meta`). Safe to call on every start."
+        },
+        {
+          "name": "store_version",
+          "kind": "fn",
+          "sig": "fn store_version(c: Db) -> Int ! db, fail[DbErr]",
+          "sig_hash": "gvci4jmgsgat5tgcoxp72htxlm",
+          "hash": "wttc2yaotf7yucitbgdqvdxhsqigyt47exemix7xkhvb5q4rtyaq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "The store's version: it increases by one with every change, so comparing it with a snapshot's\n`version` is the cheap way to tell whether to reload."
+        },
+        {
+          "name": "load_store",
+          "kind": "fn",
+          "sig": "fn load_store(c: Db) -> Snapshot ! db, fail[DbErr], fail[StoreErr]",
+          "sig_hash": "t5ogudachytwusezm7noyn4ciu",
+          "hash": "m2azk6erg4gxctobmhndjwgn44thbckhy7zi5vmpyh3bdo6pnqta",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[StoreErr]"
+          ],
+          "doc": "Every flag and segment in the store, as a snapshot with the store's version. Read in one\ntransaction, so it is consistent."
+        },
+        {
+          "name": "reload_if_changed",
+          "kind": "fn",
+          "sig": "fn reload_if_changed(c: Db, have: Int) -> Opt[Snapshot] ! db, fail[DbErr], fail[StoreErr]",
+          "sig_hash": "zn3rocf2lmgff42x4qiwo7mw3m",
+          "hash": "4wql5vyuxt6kxoau5bq36ekvu6vd5wvwi5x74kwxqz6dpnemrusq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[StoreErr]"
+          ],
+          "doc": "The store's snapshot if its version differs from `have`, else none: a poll costs one indexed\nread when nothing changed."
+        },
+        {
+          "name": "put_flag",
+          "kind": "fn",
+          "sig": "fn put_flag(c: Db, f: Flag, expected: Opt[Int], actor: Str, at: Time) -> Flag ! db, fail[DbErr], fail[StoreErr]",
+          "sig_hash": "tyvmbatxwpat2hipuj6jvhqjja",
+          "hash": "eugkizy2zrokpobutys6kbzmeiyfbltgitxy4ohh5rfvraoxwyla",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[StoreErr]"
+          ],
+          "doc": "Creates or replaces flag `f`, in a transaction: the whole store must stay valid with it. With\n`expected` (the flag's version the caller read, 0 for a new flag) a concurrent change is a\n`Conflict` instead of being overwritten. Returns the flag as stored, with its new version."
+        },
+        {
+          "name": "delete_flag",
+          "kind": "fn",
+          "sig": "fn delete_flag(c: Db, key: Str, expected: Opt[Int], actor: Str, at: Time) -> Unit ! db, fail[DbErr], fail[StoreErr]",
+          "sig_hash": "c3fxogttgaz3heiqcopot6jmm4",
+          "hash": "fn27e77mohmoa2l6mxc3moslxarl52kikzfzsyzyceqsal7mknbq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[StoreErr]"
+          ],
+          "doc": "Deletes flag `key`; refused while another flag has it as a prerequisite."
+        },
+        {
+          "name": "put_segment",
+          "kind": "fn",
+          "sig": "fn put_segment(c: Db, g: Segment, expected: Opt[Int], actor: Str, at: Time) -> Int ! db, fail[DbErr], fail[StoreErr]",
+          "sig_hash": "xlgzkprvshbawqxk7hi6jqbkru",
+          "hash": "wqmvdultnxyjpnln2ewbxcoik7gjelpm3poy3l7x25z4dx5ixmpq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[StoreErr]"
+          ],
+          "doc": "Creates or replaces segment `g`; the store must stay valid with it."
+        },
+        {
+          "name": "delete_segment",
+          "kind": "fn",
+          "sig": "fn delete_segment(c: Db, key: Str, expected: Opt[Int], actor: Str, at: Time) -> Unit ! db, fail[DbErr], fail[StoreErr]",
+          "sig_hash": "oop4zufsbf3bl36vcdqhjvfy6a",
+          "hash": "7q5tdba7bbj37ev4jumbcb2xqp5pjagohue24nky6dspdlozdnoa",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[StoreErr]"
+          ],
+          "doc": "Deletes segment `key`; refused while a flag uses it."
+        },
+        {
+          "name": "import_snapshot",
+          "kind": "fn",
+          "sig": "fn import_snapshot(c: Db, s: Snapshot, actor: Str, at: Time) -> Int ! db, fail[DbErr], fail[StoreErr]",
+          "sig_hash": "vaxpylkotgx2c2p6jpfwp7itn4",
+          "hash": "xitkniszsvjtimals5lzcc5lnhfxmswcrtd3uwyskb46w5z3hrvq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[StoreErr]"
+          ],
+          "doc": "Replaces everything in the store with the snapshot's flags and segments (keeping each flag's\nversion counting), in one transaction, with one audit entry per change. Returns the new store\nversion."
+        },
+        {
+          "name": "history",
+          "kind": "fn",
+          "sig": "fn history(c: Db, kind: Str, key: Str) -> List[AuditEntry] ! db, fail[DbErr]",
+          "sig_hash": "m6sjnrx3sv6uidbrieubivfy3y",
+          "hash": "vdfyhjypbh5tqpucuqp3iftj25rmi4rmfpargbjubuxfzvrmh3xq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "The audit history of one flag or segment (`kind` is `flag` or `segment`), oldest first."
+        },
+        {
+          "name": "changes_since",
+          "kind": "fn",
+          "sig": "fn changes_since(c: Db, since: Int) -> List[AuditEntry] ! db, fail[DbErr]",
+          "sig_hash": "r2enbcsv2liit6x3stygiinqby",
+          "hash": "4ez7xgzedwwd7rndokq4udycu3vzi5jlnyoyagina6ypxsff64dq",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "The audit entries after store version `since`, oldest first: what changed since a snapshot."
+        },
+        {
+          "name": "evaluate_stored",
+          "kind": "fn",
+          "sig": "fn evaluate_stored(c: Db, key: Str, ctx: Context) -> Details ! db, fail[DbErr], fail[StoreErr]",
+          "sig_hash": "t4tdxdoymch3n5szebn6bfjn54",
+          "hash": "of5holvb2bxs3xv3a5lqmw67kqnbea72lh3qad6cv36hj3aeyvoq",
+          "effects": [
+            "db",
+            "fail[DbErr]",
+            "fail[StoreErr]"
+          ],
+          "doc": "Evaluates flag `key` straight from the store, reading only that flag, its prerequisites and the\nsegments they use: cheap enough for every request of a handler that shares the `Db`."
+        }
+      ]
+    }
+  ]
+}
