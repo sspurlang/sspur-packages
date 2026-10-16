@@ -112,6 +112,16 @@
       "deprecated": null
     },
     {
+      "name": "ratelimit",
+      "description": "Rate limiting for HTTP services: token bucket, GCRA, fixed and sliding windows, a lock-free in-memory table, a SQLite store, RateLimit headers and a handler wrapper",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:21:47Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "retry",
       "description": "Retries with exponential backoff and jitter, retry budgets, a circuit breaker and rate limiters, on a clock effect that tests run virtually",
       "latest": "0.1.0",
