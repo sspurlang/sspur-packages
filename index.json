@@ -170,6 +170,16 @@
       "updated": "2026-10-16T20:08:49Z",
       "yanked": false,
       "deprecated": null
+    },
+    {
+      "name": "webhooks",
+      "description": "Verify and sign webhooks: GitHub, Stripe, Slack, Standard Webhooks, Shopify and custom HMAC schemes, with timestamp tolerance and replay protection",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:19:40Z",
+      "yanked": false,
+      "deprecated": null
     }
   ]
 }

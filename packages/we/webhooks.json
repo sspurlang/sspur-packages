@@ -1,0 +1,551 @@
+{
+  "schema": 1,
+  "name": "webhooks",
+  "description": "Verify and sign webhooks: GitHub, Stripe, Slack, Standard Webhooks, Shopify and custom HMAC schemes, with timestamp tolerance and replay protection",
+  "repository": "https://github.com/sspurlang/sspur-webhooks",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-webhooks.git",
+      "tag": "v0.1.0",
+      "commit": "b0b844d8c21278bc746c863dddefde6a7761e07e",
+      "hash": "w4h4bipadvz3eb35fku4kvsetm3emmvx2gupks7pvjtneyeymbcq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/webhooks-0.1.0/webhooks-0.1.0.tar",
+        "sha256": "8595f91833d2b8c62e37b422519510fc321e47bf8cf45a53a0fa167c40907279",
+        "size": 59392
+      },
+      "effects": [
+        "db"
+      ],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:19:40Z",
+      "publisher": "utkarshavardhana",
+      "request": 37,
+      "api": [
+        {
+          "name": "WebhookErr",
+          "kind": "type",
+          "sig": "pub type WebhookErr = MissingHeader{name: Str} | MalformedHeader{name: Str, why: Str} | SignatureMismatch | TooOld{age: Int, tolerance: Int} | TooNew{ahead: Int, tolerance: Int} | Replayed{id: Str} | InvalidKey{why: Str} derive Eq, Show",
+          "sig_hash": "rzxcduhnljlr52wiwnlzzzprfy",
+          "hash": "midgeon7czja65jjmv6yne6uimeu3ci24hcp4mtp2mkvhbp4ldmq",
+          "effects": [],
+          "doc": "Why a webhook was refused. No variant carries the expected signature, so an error can be\nlogged or returned without helping an attacker."
+        },
+        {
+          "name": "Algorithm",
+          "kind": "type",
+          "sig": "pub type Algorithm = Sha256 | Sha512 derive Eq, Show",
+          "sig_hash": "jth67abpmtix7saj5grkcu2c2y",
+          "hash": "4ry4bxev6rggm45msjw3psfeagu2drh5ql6njk4mhn6zoadvevhq",
+          "effects": [],
+          "doc": "The HMAC hash function of a scheme."
+        },
+        {
+          "name": "Encoding",
+          "kind": "type",
+          "sig": "pub type Encoding = Hex | Base64 | Base64Url derive Eq, Show",
+          "sig_hash": "vyve62qnykujnqezehy2md7ctm",
+          "hash": "yx4hs6f6swl2ffyehukqyrecozkllf4zwjomgwt4eczib3q5wjzq",
+          "effects": [],
+          "doc": "How a signature is written as text: lower-case hex, padded base64 or unpadded base64url."
+        },
+        {
+          "name": "text_key",
+          "kind": "fn",
+          "sig": "fn text_key(s: Secret[Str]) -> Secret[Bytes]",
+          "sig_hash": "m5ryocyecfruj2vxbndjr6aj5y",
+          "hash": "aalvuzfrz6h4rkfiaf3wjzvzdk54pizlyekdnai3yr7wgdcvrbhq",
+          "effects": [],
+          "doc": "A shared secret given as text (the usual form in provider dashboards), as an HMAC key."
+        },
+        {
+          "name": "hmac",
+          "kind": "fn",
+          "sig": "fn hmac(alg: Algorithm, key: Secret[Bytes], data: Str) -> Bytes",
+          "sig_hash": "hah7lblil27rjjqfzwqspfaqcq",
+          "hash": "lx3z6eoy36ykv5pvvzsmbr6jje3p2vkqwjo2736lxme7bx5cgfba",
+          "effects": [],
+          "doc": "The HMAC of `data` under `key` with `alg`."
+        },
+        {
+          "name": "encode",
+          "kind": "fn",
+          "sig": "fn encode(e: Encoding, b: Bytes) -> Str",
+          "sig_hash": "rs7zn6oel3hlavockfavcd5xau",
+          "hash": "xjympkzcrhi5y5vgitz7i76y7slzkgmwrozcsjokdi5i2si6k3qa",
+          "effects": [],
+          "doc": "`b` written with encoding `e`."
+        },
+        {
+          "name": "decode",
+          "kind": "fn",
+          "sig": "fn decode(e: Encoding, s: Str) -> Opt[Bytes]",
+          "sig_hash": "ljy2dczmgrgc7cizc5gh6aumwq",
+          "hash": "yflm5qzhsnpgjuwdwtz7cury6xhgugreqai6c46gipl64i3ufd2q",
+          "effects": [],
+          "doc": "The bytes `s` encodes with `e`, or none when it is not valid in that encoding. Hex accepts\neither case."
+        },
+        {
+          "name": "matches",
+          "kind": "fn",
+          "sig": "fn matches(alg: Algorithm, e: Encoding, keys: List[Secret[Bytes]], data: Str, given: Str) -> Bool",
+          "sig_hash": "tmmwq64rbo2vd25miu6blvrvs4",
+          "hash": "diglk7azo7ddohf6by5c6pbfe26c4fqazrihb2usgo2ubs4vgpxq",
+          "effects": [],
+          "doc": "Whether the encoded signature `given` is the HMAC of `data` under one of `keys`. Every key is\ntried and each comparison is constant time, so the time taken doesn't say which bytes or which\nkey matched."
+        },
+        {
+          "name": "unix_now",
+          "kind": "fn",
+          "sig": "fn unix_now() -> Int ! time",
+          "sig_hash": "nyzqpwdb5bjd7r5e7zdhmoqbpu",
+          "hash": "en7tdzjupdzctqyoctcwbyspi46utgtkkns24xlnczvse2eujccq",
+          "effects": [
+            "time"
+          ],
+          "doc": "The current Unix time in seconds, for the `now` parameters."
+        },
+        {
+          "name": "parse_timestamp",
+          "kind": "fn",
+          "sig": "fn parse_timestamp(s: Str) -> Opt[Int]",
+          "sig_hash": "x7itgslj27agcyyzajuujnhxze",
+          "hash": "zlljjzrt4hkwetpjibmxnnzbetkwjassvblhrk6wqn5wsdua5ssa",
+          "effects": [],
+          "doc": "A Unix timestamp in seconds as a header carries it: 1 to 12 ASCII digits, nothing else."
+        },
+        {
+          "name": "check_timestamp",
+          "kind": "fn",
+          "sig": "fn check_timestamp(ts: Int, now: Int, tolerance: Int where _ >= 0) -> Res[Unit, WebhookErr]",
+          "sig_hash": "sjlpda7vzcnvxobub7yvfbr6uq",
+          "hash": "hdyepz4tv4vsncvx33hdvptrqr6sq2inqwgbx35i4xmpzbe4ikmq",
+          "effects": [],
+          "doc": "Whether `ts` is within `tolerance` seconds of `now`, in either direction. A tolerance of 0\ndisables the check."
+        },
+        {
+          "name": "default_tolerance",
+          "kind": "fn",
+          "sig": "fn default_tolerance() -> Int",
+          "sig_hash": "vxyzl3nwf43iddza7mnywbrlyi",
+          "hash": "l35gkdgn7zwevuyvbgwpuzkebggounebgs6niloh7sgxrthqajuq",
+          "effects": [],
+          "doc": "The default tolerance of Stripe, Slack and Standard Webhooks: 5 minutes."
+        },
+        {
+          "name": "github_signature",
+          "kind": "fn",
+          "sig": "fn github_signature(key: Secret[Bytes], body: Str) -> Str",
+          "sig_hash": "gxgn4pmweq6lnbalxbm6uagidu",
+          "hash": "fss2lvuf6oh3p3s7wqveo4flnmin3umsvf2xmix7lcwr7k4r7kba",
+          "effects": [],
+          "doc": "The value of `X-Hub-Signature-256` for `body`: `sha256=` and the hex HMAC-SHA-256."
+        },
+        {
+          "name": "github_headers",
+          "kind": "fn",
+          "sig": "fn github_headers(key: Secret[Bytes], body: Str) -> List[(Str, Str)]",
+          "sig_hash": "6apom6trdgtghqcs744ldzghdq",
+          "hash": "4wxrhtcveb2ynw5lngnesswufodpa3cymdqqc2pd4v3witwy4kra",
+          "effects": [],
+          "doc": "The headers a sender adds to a GitHub-style delivery of `body`."
+        },
+        {
+          "name": "github_verify",
+          "kind": "fn",
+          "sig": "fn github_verify(keys: List[Secret[Bytes]] where _.len > 0, body: Str, header: Str) -> Res[Unit, WebhookErr]",
+          "sig_hash": "pbuqqpsgiqfvucfunlh32th3fe",
+          "hash": "u4vtqy3avj4xcbiwop3nuco5pkazho4uoyiq5flddo5avf7yqowa",
+          "effects": [],
+          "doc": "Checks an `X-Hub-Signature-256` value against `body` and any of `keys`. The legacy SHA-1\n`X-Hub-Signature` header is not accepted."
+        },
+        {
+          "name": "github_verify_request",
+          "kind": "fn",
+          "sig": "fn github_verify_request(keys: List[Secret[Bytes]] where _.len > 0, req: Request) -> Res[Unit, WebhookErr]",
+          "sig_hash": "bxzu4gchldgoysn5mksxvmrpf4",
+          "hash": "lwqb2roleupzvaozqqq4bqhmvkdi7bkeafpg6eayu23qz5s54pza",
+          "effects": [],
+          "doc": "Checks a GitHub delivery received by an `http.serve` handler: its raw body and its\n`X-Hub-Signature-256` header."
+        },
+        {
+          "name": "StripeHeader",
+          "kind": "type",
+          "sig": "pub type StripeHeader = {timestamp: Int, v1: List[Str]} derive Eq, Show",
+          "sig_hash": "p7bglyfpozij5e4cs2yya3dmmu",
+          "hash": "otyhbnbsue4bpofga56y64ah7pxo7fjjcrmsgb3umll7corhablq",
+          "effects": [],
+          "doc": "A parsed `Stripe-Signature` header: the timestamp and every `v1` signature. Other schemes,\nsuch as the test-mode `v0`, are ignored."
+        },
+        {
+          "name": "stripe_parse",
+          "kind": "fn",
+          "sig": "fn stripe_parse(header: Str) -> Res[StripeHeader, WebhookErr]",
+          "sig_hash": "femc26h42v5h2o76qaiezwmcqm",
+          "hash": "bgtzp52rau33vyjm4leqbh4po2lkldyqsqv4tmvwhg53uynakiya",
+          "effects": [],
+          "doc": "Parses `t=<seconds>,v1=<hex>[,v1=<hex>...]`. A header without exactly one valid `t`, without\na `v1`, with an element that isn't `key=value`, or with more than 20 elements is malformed."
+        },
+        {
+          "name": "stripe_signature",
+          "kind": "fn",
+          "sig": "fn stripe_signature(key: Secret[Bytes], body: Str, timestamp: Int where _ >= 0) -> Str",
+          "sig_hash": "ldcksyzw5npnqc3nrzywxmqp3e",
+          "hash": "zuitxrar4vvgjkuvajogmku66sbujdznl4uciru65grsccyveoqa",
+          "effects": [],
+          "doc": "The `v1` signature of `body` sent at `timestamp`: hex HMAC-SHA-256 of `\"{timestamp}.{body}\"`.\nStripe's endpoint secrets (`whsec_...`) are used as text, prefix included: `text_key`."
+        },
+        {
+          "name": "stripe_test_header",
+          "kind": "fn",
+          "sig": "fn stripe_test_header(key: Secret[Bytes], body: Str, timestamp: Int where _ >= 0) -> Str",
+          "sig_hash": "hakqrzenxqlrpryhke5z6covqq",
+          "hash": "n5ld3uw3e7eetfogiwql2lsxhk2wqrcqvmfxzyakru3z7ams4rwa",
+          "effects": [],
+          "doc": "A `Stripe-Signature` value for `body` at `timestamp`, as stripe-node's\n`generateTestHeaderString` makes, for tests and for senders."
+        },
+        {
+          "name": "stripe_verify",
+          "kind": "fn",
+          "sig": "fn stripe_verify(keys: List[Secret[Bytes]] where _.len > 0, body: Str, header: Str, now: Int, tolerance: Int where _ >= 0) -> Res[Unit, WebhookErr]",
+          "sig_hash": "3jlrqrxllov6jiiapwaeqgpw7q",
+          "hash": "2rvjw4zcviejakid7nj7ni4hv62t7qkhnnkqrzucemcab45akpoq",
+          "effects": [],
+          "doc": "Checks a `Stripe-Signature` value: one of its `v1` signatures must match under one of `keys`,\nand its timestamp must be within `tolerance` seconds of `now` (0 disables the check)."
+        },
+        {
+          "name": "stripe_verify_request",
+          "kind": "fn",
+          "sig": "fn stripe_verify_request(keys: List[Secret[Bytes]] where _.len > 0, req: Request, now: Int, tolerance: Int where _ >= 0) -> Res[Unit, WebhookErr]",
+          "sig_hash": "juylyeohv2ayknier2fvekafgm",
+          "hash": "fnbttj4u54xpw7szkoichyrpydrzjosax3vz6bm27gzou2kgxfwq",
+          "effects": [],
+          "doc": "Checks a Stripe event received by an `http.serve` handler."
+        },
+        {
+          "name": "slack_signature",
+          "kind": "fn",
+          "sig": "fn slack_signature(key: Secret[Bytes], timestamp: Int where _ >= 0, body: Str) -> Str",
+          "sig_hash": "by7e7mpcc7dctelkko3e6yqqv4",
+          "hash": "6ejeod7nwhq5oiu3us5j4es47jcrcineqnanmq2rsxcgs5belo3q",
+          "effects": [],
+          "doc": "The `X-Slack-Signature` value for `body` sent at `timestamp`: `v0=` and the hex\nHMAC-SHA-256 of `\"v0:{timestamp}:{body}\"`."
+        },
+        {
+          "name": "slack_headers",
+          "kind": "fn",
+          "sig": "fn slack_headers(key: Secret[Bytes], timestamp: Int where _ >= 0, body: Str) -> List[(Str, Str)]",
+          "sig_hash": "hwobjxdt3oqg2u7cgiskme2hua",
+          "hash": "foaxwr6s4ikfga22mspzml4to4ir7wdpsdmiteofsszraiqjwduq",
+          "effects": [],
+          "doc": "The headers Slack sends with a request: the timestamp and the signature."
+        },
+        {
+          "name": "slack_verify",
+          "kind": "fn",
+          "sig": "fn slack_verify(keys: List[Secret[Bytes]] where _.len > 0, body: Str, timestamp: Str, signature: Str, now: Int, tolerance: Int where _ >= 0) -> Res[Unit, WebhookErr]",
+          "sig_hash": "wx7fmz46szbefn4qijhaqjaswy",
+          "hash": "pkkgdk4hyq5hzyykumseh3ojjg4tye3enmz6wvnoo7ujiaxcqmcq",
+          "effects": [],
+          "doc": "Checks a Slack request given its `X-Slack-Request-Timestamp` and `X-Slack-Signature`\nvalues. The timestamp is checked first, as Slack recommends, against `tolerance` seconds."
+        },
+        {
+          "name": "slack_verify_request",
+          "kind": "fn",
+          "sig": "fn slack_verify_request(keys: List[Secret[Bytes]] where _.len > 0, req: Request, now: Int) -> Res[Unit, WebhookErr]",
+          "sig_hash": "zdhhjabpwdcyimagj6wo775sam",
+          "hash": "n56bzlzxtfknbwtaptkn7rumz2gf6ttne5k5naexwcvzzfmt46oa",
+          "effects": [],
+          "doc": "Checks a Slack request received by an `http.serve` handler, with Slack's 5 minute window."
+        },
+        {
+          "name": "StandardHeaders",
+          "kind": "type",
+          "sig": "pub type StandardHeaders = {id: Str, timestamp: Str, signature: Str} derive Eq, Show",
+          "sig_hash": "qnldve7tynipqxckchviw6qoha",
+          "hash": "eew4zmfdfqlddjhmksd2s5utmyzckk7nl2zmv2shzrgjfsaidxwq",
+          "effects": [],
+          "doc": "The three headers of the Standard Webhooks specification, as received."
+        },
+        {
+          "name": "standard_key",
+          "kind": "fn",
+          "sig": "fn standard_key(s: Secret[Str]) -> Res[Secret[Bytes], WebhookErr]",
+          "sig_hash": "2eb6p6okhhm54pctb3llpqwbfy",
+          "hash": "inn26xwe3664ytsgm2jjenbqk4ld2sldopt7f3jxv7ktghqhvbza",
+          "effects": [],
+          "doc": "A symmetric Standard Webhooks secret, `whsec_` and base64 (the prefix is optional), as an\nHMAC key. The specification requires 24 to 64 bytes."
+        },
+        {
+          "name": "standard_public_key",
+          "kind": "fn",
+          "sig": "fn standard_public_key(s: Str) -> Res[Bytes, WebhookErr]",
+          "sig_hash": "jl6uea4diqawg66ncr2e2sraai",
+          "hash": "jk34xn3wmka3cenpkbyatt7gva7wlej5jbvc75fqqv5hi2drpzka",
+          "effects": [],
+          "doc": "A Standard Webhooks Ed25519 public key, `whpk_` and the base64 of 32 bytes (prefix optional)."
+        },
+        {
+          "name": "standard_content",
+          "kind": "fn",
+          "sig": "fn standard_content(id: Str, timestamp: Int, body: Str) -> Str",
+          "sig_hash": "ntgqibz5rua246viui4ev5ol3q",
+          "hash": "32nydhh5njv65nfduslmymqjnhz6jzeiwl2e5yb7uakhtg67x2ia",
+          "effects": [],
+          "doc": "The content every Standard Webhooks signature covers: `\"{id}.{timestamp}.{body}\"`."
+        },
+        {
+          "name": "standard_signature",
+          "kind": "fn",
+          "sig": "fn standard_signature(key: Secret[Bytes], id: Str, timestamp: Int where _ >= 0, body: Str) -> Str",
+          "sig_hash": "f4cc6i7tzne2bp4sqqfaystwse",
+          "hash": "7ymsmtgeencedve6t6d3wfwes5ja3kbrsa54j255cg72cvrqomcq",
+          "effects": [],
+          "doc": "A `v1,<base64>` symmetric signature of a message."
+        },
+        {
+          "name": "standard_signature_ed25519",
+          "kind": "fn",
+          "sig": "fn standard_signature_ed25519(sk: Secret[Bytes], id: Str, timestamp: Int where _ >= 0, body: Str) -> Str",
+          "sig_hash": "sgsg5mbdywqeckraqvyi6rmgma",
+          "hash": "dwjxxswavq7oyefbkmrakpi3x5gusdxjt6pgscrmgcaczbtja2ka",
+          "effects": [],
+          "doc": "A `v1a,<base64>` Ed25519 signature of a message, under the 32-byte secret seed `sk`."
+        },
+        {
+          "name": "standard_headers",
+          "kind": "fn",
+          "sig": "fn standard_headers(key: Secret[Bytes], id: Str where _.len > 0, timestamp: Int where _ >= 0, body: Str) -> List[(Str, Str)]",
+          "sig_hash": "a7pqgd6h44ow3qfwjfe6xvuf74",
+          "hash": "nbwrusjudvftbdqintilyp2levdbh2wowz67r6sjxqsfbvnes3ma",
+          "effects": [],
+          "doc": "The three headers a sender adds, with one `v1` signature."
+        },
+        {
+          "name": "standard_signatures",
+          "kind": "fn",
+          "sig": "fn standard_signatures(header: Str, v: Str) -> Res[List[Str], WebhookErr]",
+          "sig_hash": "kydcjn7uxdd4v2jzrogxhdia4a",
+          "hash": "wd3wsxqws5fxhbrxyu7s7acjrwe3s4g7q4khltthnpgojse5nypq",
+          "effects": [],
+          "doc": "The signatures of a `webhook-signature` value with version `v`: the list is space separated,\neach entry `version,base64`, and other versions are skipped."
+        },
+        {
+          "name": "standard_verify",
+          "kind": "fn",
+          "sig": "fn standard_verify(keys: List[Secret[Bytes]] where _.len > 0, h: StandardHeaders, body: Str, now: Int, tolerance: Int where _ >= 0) -> Res[Unit, WebhookErr]",
+          "sig_hash": "6c5atmnme7gnrcqanrig5c6n2u",
+          "hash": "n33oimh5vgzsjhk7d22omcsfz66hxva2i2jo4f46g7davhb6g47q",
+          "effects": [],
+          "doc": "Checks a message signed with symmetric keys: the timestamp within `tolerance` seconds of\n`now`, then a `v1` signature under one of `keys`."
+        },
+        {
+          "name": "standard_verify_ed25519",
+          "kind": "fn",
+          "sig": "fn standard_verify_ed25519(pks: List[Bytes] where _.len > 0, h: StandardHeaders, body: Str, now: Int, tolerance: Int where _ >= 0) -> Res[Unit, WebhookErr]",
+          "sig_hash": "jol7vj23qkyessbmmr5mrexovm",
+          "hash": "twkpycm7ulbo5rosvkmuukmijtzjth6lumeont427go7elyvfpfa",
+          "effects": [],
+          "doc": "Checks a message signed with Ed25519 (`v1a`) against any of the public keys `pks`."
+        },
+        {
+          "name": "standard_headers_of",
+          "kind": "fn",
+          "sig": "fn standard_headers_of(req: Request) -> Res[StandardHeaders, WebhookErr]",
+          "sig_hash": "gfhsjq2rjkdrsez26q5oik3f7q",
+          "hash": "murx6j3wefan6h3ahse5xwbcpm3khikcu4duvgdb532s44tdyzza",
+          "effects": [],
+          "doc": "The Standard Webhooks headers of a request, or the first one missing."
+        },
+        {
+          "name": "standard_verify_request",
+          "kind": "fn",
+          "sig": "fn standard_verify_request(keys: List[Secret[Bytes]] where _.len > 0, req: Request, now: Int, tolerance: Int where _ >= 0) -> Res[Unit, WebhookErr]",
+          "sig_hash": "ihneudsk7mhrfoupvtczokxu5a",
+          "hash": "vlicysu3mie4lsadgnrqthwni5ryyil3kzjhxad5gss552zr2ufq",
+          "effects": [],
+          "doc": "Checks a symmetric Standard Webhooks message received by an `http.serve` handler."
+        },
+        {
+          "name": "shopify_signature",
+          "kind": "fn",
+          "sig": "fn shopify_signature(key: Secret[Bytes], body: Str) -> Str",
+          "sig_hash": "kipsnirlgn3fawpukyp2tp4wiq",
+          "hash": "snio67e7w5wpgvu3b7ytqfiscvn2xmrk42n2bsnc5w7e3fgyqdlq",
+          "effects": [],
+          "doc": "The `X-Shopify-Hmac-Sha256` value for `body`: the base64 HMAC-SHA-256."
+        },
+        {
+          "name": "shopify_verify",
+          "kind": "fn",
+          "sig": "fn shopify_verify(keys: List[Secret[Bytes]] where _.len > 0, body: Str, header: Str) -> Res[Unit, WebhookErr]",
+          "sig_hash": "zfex4x7up3v6holdbybnle2xte",
+          "hash": "3qmqmjjelltcwyiwv3mmwt3g7xrl3o2c22it2czprdxvzeqbvdmq",
+          "effects": [],
+          "doc": "Checks an `X-Shopify-Hmac-Sha256` value against `body` and any of `keys`."
+        },
+        {
+          "name": "shopify_verify_request",
+          "kind": "fn",
+          "sig": "fn shopify_verify_request(keys: List[Secret[Bytes]] where _.len > 0, req: Request) -> Res[Unit, WebhookErr]",
+          "sig_hash": "zszxqto32f6cbby7b3rq2yfzv4",
+          "hash": "htmj2u24gdyqpuekd5mxy7xiivm43mj2hs7t5wrnklz32hj2wviq",
+          "effects": [],
+          "doc": "Checks a Shopify webhook received by an `http.serve` handler."
+        },
+        {
+          "name": "Signed",
+          "kind": "type",
+          "sig": "pub type Signed = BodyOnly | Timestamped{header: Str where _.len > 0, lead: Str, sep: Str, tolerance: Int where _ >= 0} derive Eq, Show",
+          "sig_hash": "tyiiybopvrnmakgkq6tlha5lte",
+          "hash": "5dwgxpcufvpiirpzt4bt45owsr4jyg5njgxpmayqbp7lv45pg7za",
+          "effects": [],
+          "doc": "What a scheme signs: the body alone, or `lead + timestamp + sep + body` with the timestamp\n(Unix seconds) taken from the header `header` and checked against `tolerance` seconds (0\ndisables the check). Slack's scheme is `Timestamped{header: \"x-slack-request-timestamp\",\nlead: \"v0:\", sep: \":\", tolerance: 300}`."
+        },
+        {
+          "name": "Scheme",
+          "kind": "type",
+          "sig": "pub type Scheme = {header: Str where _.len > 0, prefix: Str, algorithm: Algorithm, encoding: Encoding, separator: Str, signed: Signed} derive Eq, Show",
+          "sig_hash": "g6ij6acqzuu6s3fty3pmcbulfy",
+          "hash": "3e3dxe5b6slu2rs2ypkvgmtaddfwqbkot45227dfmfkycf62pviq",
+          "effects": [],
+          "doc": "A custom HMAC scheme: the signature is in `header` as `prefix` and the encoded HMAC of the\nsigned content. Several signatures may be sent separated by `separator` (`\"\"` for one)."
+        },
+        {
+          "name": "hmac_scheme",
+          "kind": "fn",
+          "sig": "fn hmac_scheme(header: Str where _.len > 0) -> Scheme",
+          "sig_hash": "b6ctxjw4c7zvbq74xq2ndkkioa",
+          "hash": "6rkajndt4nx2j63ebgeerek6z3zsap5tixwo4trohwwmioerdxta",
+          "effects": [],
+          "doc": "A scheme with the common defaults: HMAC-SHA-256 of the body, hex, no prefix, one signature in\n`header`. Change fields with `with`."
+        },
+        {
+          "name": "scheme_content",
+          "kind": "fn",
+          "sig": "fn scheme_content(s: Scheme, timestamp: Int, body: Str) -> Str",
+          "sig_hash": "lrybowvdvmd7xhvkin4mimvpvu",
+          "hash": "tyy37x6p5danbxzdfc24vsdhzdfhd3piil2osv2j62gqunm5my6a",
+          "effects": [],
+          "doc": "The content `s` signs for `body` sent at `timestamp` (ignored for `BodyOnly`)."
+        },
+        {
+          "name": "scheme_signature",
+          "kind": "fn",
+          "sig": "fn scheme_signature(s: Scheme, key: Secret[Bytes], timestamp: Int where _ >= 0, body: Str) -> Str",
+          "sig_hash": "nyw2yaxxnmeyuecoaplxplb7f4",
+          "hash": "s4ko67yxh6zcdtgxooftrcrk2ekuv4fzlqwqfnmehvkgmjaov5fq",
+          "effects": [],
+          "doc": "The signature header value under `s` for `body` sent at `timestamp`."
+        },
+        {
+          "name": "scheme_headers",
+          "kind": "fn",
+          "sig": "fn scheme_headers(s: Scheme, key: Secret[Bytes], timestamp: Int where _ >= 0, body: Str) -> List[(Str, Str)]",
+          "sig_hash": "okyxsdhqnek5kx73lo4liek3z4",
+          "hash": "k6fgb4m3v7kk3lutzolgb7eonqcrauqh5eotors4okrhlbibkddq",
+          "effects": [],
+          "doc": "The headers a sender adds under `s`: the signature, and the timestamp when the scheme signs one."
+        },
+        {
+          "name": "scheme_verify",
+          "kind": "fn",
+          "sig": "fn scheme_verify(s: Scheme, keys: List[Secret[Bytes]] where _.len > 0, headers: List[(Str, Str)], body: Str, now: Int) -> Res[Unit, WebhookErr]",
+          "sig_hash": "4gec5nzmhnpq74povslhsjeaee",
+          "hash": "aq4hgqe6frqelehoyyd7i4uceveioehpb4lhzqcffbme5o7227bq",
+          "effects": [],
+          "doc": "Checks a message under `s`, given the headers it came with (names compared without regard to\ncase) and its raw body."
+        },
+        {
+          "name": "scheme_verify_request",
+          "kind": "fn",
+          "sig": "fn scheme_verify_request(s: Scheme, keys: List[Secret[Bytes]] where _.len > 0, req: Request, now: Int) -> Res[Unit, WebhookErr]",
+          "sig_hash": "wng4n6ksoomiwszt5cfgbfsa7a",
+          "hash": "dfxlmi4xxhthhskzy37ne3bgojje3oolyaaf7qiduefm2fdi2daa",
+          "effects": [],
+          "doc": "Checks a request received by an `http.serve` handler under `s`."
+        },
+        {
+          "name": "Seen",
+          "kind": "type",
+          "sig": "pub type Seen = {until: Map[Str, Int]} derive Eq, Show",
+          "sig_hash": "77txpmc3g7g44cck6ed7lc7oli",
+          "hash": "bbnfmes5yeltxlejiyrxyseuqukmmpy2hqsdj7wvckvbfncs5tia",
+          "effects": [],
+          "doc": "Delivery ids seen recently, each with the Unix second it may be forgotten at. An immutable\nvalue for one thread or one process loop; use the SQLite store to share it between handlers."
+        },
+        {
+          "name": "seen_empty",
+          "kind": "fn",
+          "sig": "fn seen_empty() -> Seen",
+          "sig_hash": "5zp74jfzoj7ogcmfiqn5kdxtra",
+          "hash": "j7ekmhasdmmtbys46sewpumlwgxm4r6imhn6iczbw3d5uuqgzmea",
+          "effects": [],
+          "doc": "No ids seen."
+        },
+        {
+          "name": "seen_purge",
+          "kind": "fn",
+          "sig": "fn seen_purge(s: Seen, now: Int) -> Seen",
+          "sig_hash": "rcpuaydqnodszdbfkm6d3r6voq",
+          "hash": "euj7ajxbxbst5axvoet7tm5a6njk4powdpskasnqiwqtcyhqndsa",
+          "effects": [],
+          "doc": "`s` without the ids whose time ran out by `now`."
+        },
+        {
+          "name": "seen_claim",
+          "kind": "fn",
+          "sig": "fn seen_claim(s: Seen, id: Str where _.len > 0, now: Int, ttl: Int where _ > 0) -> (Res[Unit, WebhookErr], Seen)",
+          "sig_hash": "sgbovvgsufl5nztjzq22wh3ep4",
+          "hash": "pmip3pfrchtjboigxashmmr3hbn4f4svu5ac7pseumtb675jaida",
+          "effects": [],
+          "doc": "Claims `id` at `now` for `ttl` seconds: `ok` and the updated set the first time, `Replayed`\nwhile an earlier claim is live. Expired ids are dropped as it goes. Use a `ttl` at least the\ntimestamp tolerance, so a replay can't outlive its claim and still pass the timestamp check."
+        },
+        {
+          "name": "replay_setup",
+          "kind": "fn",
+          "sig": "fn replay_setup(c: Db) -> Unit ! db, fail[DbErr]",
+          "sig_hash": "ut2znjf73wv6l7rrnshol5ifte",
+          "hash": "j6vxisoo3s6qfz3vmourb52bxvxenf4wj7lcudihojjjnrjrdzia",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Creates the SQLite table of claimed ids, `webhooks_seen`, if it isn't there."
+        },
+        {
+          "name": "replay_claim",
+          "kind": "fn",
+          "sig": "fn replay_claim(c: Db, id: Str where _.len > 0, now: Int, ttl: Int where _ > 0) -> Res[Unit, WebhookErr] ! db, fail[DbErr]",
+          "sig_hash": "7sm26q75kgvecusoquwb6r7yea",
+          "hash": "fjxhvcueopyic4qtgischgx6jmrbtbnjhsqkpfudnv5kqckemmaa",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Claims `id` in the database at `now` for `ttl` seconds, atomically: of any number of handlers\nor processes claiming one id at once, exactly one gets `ok`. An expired claim can be taken\nagain."
+        },
+        {
+          "name": "replay_purge",
+          "kind": "fn",
+          "sig": "fn replay_purge(c: Db, now: Int) -> Int ! db, fail[DbErr]",
+          "sig_hash": "bnnpzrv626sb5jtd6o2vkp6yue",
+          "hash": "hamuaezfumxoocbxagwutamsicn5ktrjakm6qjjnghtk56p5zqea",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "Deletes the claims that ran out by `now`, and gives how many went."
+        }
+      ]
+    }
+  ]
+}
