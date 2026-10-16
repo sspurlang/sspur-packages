@@ -32,6 +32,16 @@
       "deprecated": null
     },
     {
+      "name": "numeric",
+      "description": "Number theory, exact rounding modes, primes, combinatorics and statistics for Int, F64 and BigInt, pure and tested in both tiers",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:04:46Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "pagination",
       "description": "Offset, page-number and keyset pagination: clamped requests, signed cursors, page ranges for UIs, Link headers and JSON envelopes",
       "latest": "0.2.0",
