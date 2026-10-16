@@ -52,6 +52,16 @@
       "deprecated": null
     },
     {
+      "name": "jobs",
+      "description": "Durable background jobs on SQLite: priorities, delays, unique keys, leases, retries with backoff, dead letters, workers and cron schedules",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:25:46Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "jwt",
       "description": "JSON Web Tokens and JWS: HS256, HS384, HS512 and EdDSA, strict parsing, claim validation with leeway, typed keys bound to one algorithm, and JWKS",
       "latest": "0.1.0",
