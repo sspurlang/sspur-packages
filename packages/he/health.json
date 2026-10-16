@@ -1,0 +1,538 @@
+{
+  "schema": 1,
+  "name": "health",
+  "description": "Liveness, readiness and startup endpoints with concurrent checks (SQLite, HTTP dependencies, files) in the application/health+json format",
+  "repository": "https://github.com/sspurlang/sspur-health",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-health.git",
+      "tag": "v0.1.0",
+      "commit": "13c3c86974a2626b028e9cf6b053846c3ba4637b",
+      "hash": "q7qs2s6vwspxqkco4cd2lkutmg52jktfwlqivkriy6v7f2avkesq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/health-0.1.0/health-0.1.0.tar",
+        "sha256": "e9fc95cf01aa34bed264b024d08cc18df57f923db81a5fd322ce08b272923214",
+        "size": 56320
+      },
+      "effects": [
+        "db",
+        "fs",
+        "net"
+      ],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:27:53Z",
+      "publisher": "utkarshavardhana",
+      "request": 43,
+      "api": [
+        {
+          "name": "Status",
+          "kind": "type",
+          "sig": "pub type Status = Pass | Warn | Fail derive Eq, Show",
+          "sig_hash": "k22dgdcmspjjuretrjo6g6akli",
+          "hash": "yx4hs6f6swl2ffyehukqyrecozkllf4zwjomgwt4eczib3q5wjzq",
+          "effects": [],
+          "doc": "The status of a check or of the whole service: `pass` (healthy), `warn` (healthy, with\nconcerns) or `fail` (unhealthy)."
+        },
+        {
+          "name": "Value",
+          "kind": "type",
+          "sig": "pub type Value = NoValue | Number{n: F64} | Count{n: Int} | Text{s: Str} | Flag{b: Bool} derive Eq, Show",
+          "sig_hash": "vi3fxok57dkv53ekgw6k2zf5qq",
+          "hash": "niaowgs7k5xtbgtw7yypwdkys5pvok3xzgxm2qlkcbso2dwvjgsa",
+          "effects": [],
+          "doc": "What a check measured, for `observedValue`: nothing, a number, a count, text or a flag."
+        },
+        {
+          "name": "Observation",
+          "kind": "type",
+          "sig": "pub type Observation = {component_id: Opt[Str], component_type: Opt[Str], observed_value: Value, observed_unit: Opt[Str], status: Status, affected_endpoints: List[Str], time: Opt[Time], output: Opt[Str], links: List[(Str, Str)]} derive Eq, Show",
+          "sig_hash": "pfnnekvpdpp5wiupj6o3x63uva",
+          "hash": "bhgpln5fx7gj6pt4ugfbhkmhwjwogczai3yigrcocnrhejcflftq",
+          "effects": [],
+          "doc": "One entry of the `checks` object: the draft's `componentId`, `componentType`, `observedValue`,\n`observedUnit`, `status`, `affectedEndpoints`, `time`, `output` and `links` (relation, URI pairs)."
+        },
+        {
+          "name": "Report",
+          "kind": "type",
+          "sig": "pub type Report = {status: Status, version: Opt[Str], release_id: Opt[Str], service_id: Opt[Str], description: Opt[Str], notes: List[Str], output: Opt[Str], checks: List[(Str, List[Observation])]} derive Eq, Show",
+          "sig_hash": "ue74lpjobkn5t6wuazdnrfxdui",
+          "hash": "6qj223bcjjqnverb3h5amxc4b72ges5yy5tcllcqtroiutrdidfa",
+          "effects": [],
+          "doc": "A whole health response: the overall status, the service's identity and the observations keyed\nby `component:measurement`, in the order the checks were given."
+        },
+        {
+          "name": "severity",
+          "kind": "fn",
+          "sig": "fn severity(s: Status) -> Int",
+          "sig_hash": "3umd5rdq4zbfjooodvmn5rhkhq",
+          "hash": "d7r3vm7bznj2r4lf5y2nrnlzkzur3mbawliakt45bxhcd4bnahca",
+          "effects": [],
+          "doc": "The severity order of statuses: pass 0, warn 1, fail 2."
+        },
+        {
+          "name": "worst",
+          "kind": "fn",
+          "sig": "fn worst(a: Status, b: Status) -> Status",
+          "sig_hash": "74n42skgxfi36ji4fucvoiczaa",
+          "hash": "fwdjflmgutuatim2hw75hvw3wesgufiycewxr25l2g7zwgvg4p2q",
+          "effects": [],
+          "doc": "The more severe of two statuses."
+        },
+        {
+          "name": "status_name",
+          "kind": "fn",
+          "sig": "fn status_name(s: Status) -> Str",
+          "sig_hash": "qtgpysg45xpvvneks3hejfjdfm",
+          "hash": "nevmuptz6e335rwyo2jyn3htgd3zdolwyqcs3gbhdmids5s6ok2q",
+          "effects": [],
+          "doc": "The status's name in responses: `pass`, `warn` or `fail`."
+        },
+        {
+          "name": "parse_status",
+          "kind": "fn",
+          "sig": "fn parse_status(s: Str) -> Opt[Status]",
+          "sig_hash": "zic7qmbwmax4l5yhkasliur3gi",
+          "hash": "vbxboiz73rpipfyjgsvh2m6m65wgs66o4owfg7zpgbl7xyob5jfq",
+          "effects": [],
+          "doc": "Reads a status name. The draft's aliases are accepted too: `ok` and `up` for pass, `error` and\n`down` for fail (any case)."
+        },
+        {
+          "name": "http_status",
+          "kind": "fn",
+          "sig": "fn http_status(s: Status) -> Int",
+          "sig_hash": "kegmzwtmgyovrg5j43qyrky4b4",
+          "hash": "pp3ctfp2c2up35pg4rkqfbyj74fb4iwbmvhuaq5b6eyc6plvkz6a",
+          "effects": [],
+          "doc": "The HTTP status for a health status: 200 for pass and warn, 503 for fail."
+        },
+        {
+          "name": "observation",
+          "kind": "fn",
+          "sig": "fn observation(s: Status, output: Str) -> Observation",
+          "sig_hash": "o2hp7i2jljl7trf2asdkdu43iq",
+          "hash": "cuthc7x33jvpued7tjajx4rsmtgvehdcejx4kc3jwx44odowbmmq",
+          "effects": [],
+          "doc": "An observation with only a status (and an output for anything but pass), for custom checks."
+        },
+        {
+          "name": "Probe",
+          "kind": "type",
+          "sig": "pub type Probe = DbPing{db: Db, query: Str} | HttpGet{url: Str, timeout_ms: Int, expect: List[Int]} | Writable{path: Str} | Exists{path: Str} | Static{obs: Observation} derive Eq, Show",
+          "sig_hash": "2limd4iazjgvnaonmbxxmd4pme",
+          "hash": "xht3326ra4urvkodmqomm67yafavrqmqs34cjyjjbiilhjpjmdxa",
+          "effects": [],
+          "doc": "What a check does. `DbPing` runs `query` (usually `select 1`) and measures it; `HttpGet` requests\n`url` within `timeout_ms` and expects a status in `expect` (any 2xx or 3xx when empty);\n`Writable` creates and removes a file in the directory `path`, or appends nothing to the file\n`path`; `Exists` checks that `path` exists; `Static` reports a fixed observation."
+        },
+        {
+          "name": "Check",
+          "kind": "type",
+          "sig": "pub type Check = {name: Str where _.len > 0, measurement: Str, component_type: Str, component_id: Opt[Str], critical: Bool, warn_ms: Opt[Int], affected_endpoints: List[Str], links: List[(Str, Str)], probe: Probe} derive Eq, Show",
+          "sig_hash": "cm3jcm67m5szigvnlv6wwzmutq",
+          "hash": "6bpzqaob263mpycsm5fnej3g7usfv4q5tdfwoyw6whmlf3fkdo4q",
+          "effects": [],
+          "doc": "A named check: its key in the response is `name:measurement` (just `name` when `measurement`\nis empty). A check that is not `critical` makes the service `warn` instead of `fail` when it\nfails (graceful degradation). With `warn_ms`, a passing check slower than that warns."
+        },
+        {
+          "name": "check",
+          "kind": "fn",
+          "sig": "fn check(name: Str where _.len > 0, p: Probe) -> Check",
+          "sig_hash": "u33kqhvboamxojp5tocaqp25nm",
+          "hash": "lwhfudqeltn4lkfsppt7xvycpf7kbosiesc43tkki22nbcbfqm6q",
+          "effects": [],
+          "doc": "A critical check named `name` with the measurement `responseTime` and the component type\n`component`."
+        },
+        {
+          "name": "db_check",
+          "kind": "fn",
+          "sig": "fn db_check(name: Str where _.len > 0, c: Db) -> Check",
+          "sig_hash": "mzm6vf4cp7arwvdtkjnroam5ui",
+          "hash": "exnw6owi2esu4n4hlayeqy4adsmmk5cxz4vdn4tgvdu6tky4cc2a",
+          "effects": [],
+          "doc": "A check of the database `c` with `select 1`, as the component `name` of type `datastore`."
+        },
+        {
+          "name": "http_check",
+          "kind": "fn",
+          "sig": "fn http_check(name: Str where _.len > 0, url: Str, timeout_ms: Int where _ > 0) -> Check",
+          "sig_hash": "gus2k4qrprkw5ljwoxuh4mwifa",
+          "hash": "664ainhyotdp64gasklivqnshkosd33is3rcffgfofpl435o2yna",
+          "effects": [],
+          "doc": "A check of a dependency's URL: a GET within `timeout_ms` that must answer 2xx or 3xx."
+        },
+        {
+          "name": "writable_check",
+          "kind": "fn",
+          "sig": "fn writable_check(name: Str where _.len > 0, path: Str) -> Check",
+          "sig_hash": "fuf3tjtatqyd25mfq6wcsgdbri",
+          "hash": "ahmf7urtj4h2qrhsavzg4p7dgtkhxz6b6qwvoepu5qwnogmksqxq",
+          "effects": [],
+          "doc": "A check that `path` (a directory, or a file) can be written, as a `system` component."
+        },
+        {
+          "name": "exists_check",
+          "kind": "fn",
+          "sig": "fn exists_check(name: Str where _.len > 0, path: Str) -> Check",
+          "sig_hash": "jvbbedawcfcr6kr6s7ehcfawg4",
+          "hash": "lpmhgwnpkyxtnljdp644sapltcmkukmc6njlzxk724zy7sygdiua",
+          "effects": [],
+          "doc": "A check that `path` exists, as a `system` component."
+        },
+        {
+          "name": "non_critical",
+          "kind": "fn",
+          "sig": "fn non_critical(c: Check) -> Check",
+          "sig_hash": "ey67zlitrc2ydzvkr3i4oder5e",
+          "hash": "g75brkhq2gy7qyyrr55ehkfosb6hycdu26it5yqpwmdple3jkaha",
+          "effects": [],
+          "doc": "`c` as a non-critical check: its failure makes the service warn, not fail."
+        },
+        {
+          "name": "check_key",
+          "kind": "fn",
+          "sig": "fn check_key(c: Check) -> Str",
+          "sig_hash": "irkxbq7isb4mzkibwhltychb2u",
+          "hash": "zk22ucrz5pm7mt2rfusi5wbracxktgfltz6dxdqdzfp26pipllea",
+          "effects": [],
+          "doc": "The key of a check in the response."
+        },
+        {
+          "name": "run_probe",
+          "kind": "fn",
+          "sig": "fn run_probe(p: Probe, now: Time) -> Observation ! db, net, fs, time",
+          "sig_hash": "c4gmlvtyjbw5skkwrpxq3idcke",
+          "hash": "ruq4ngeqxq2wpcisgivoe5gulogetcf7md5mtnw6he2fwa3imh6a",
+          "effects": [
+            "db",
+            "net",
+            "fs",
+            "time"
+          ],
+          "doc": "Runs one probe at `now` and gives its observation. Failures are observations, never errors."
+        },
+        {
+          "name": "run_check",
+          "kind": "fn",
+          "sig": "fn run_check(c: Check, now: Time) -> Observation ! db, net, fs, time",
+          "sig_hash": "eilpjqqeu6zhcdrtqbosygibly",
+          "hash": "tzotxgq367avlvos5pevh53amcu7vmkxybmvx5av7xpmkgc626oa",
+          "effects": [
+            "db",
+            "net",
+            "fs",
+            "time"
+          ],
+          "doc": "Runs a check at `now`: its probe, then the check's identity, links and slowness threshold."
+        },
+        {
+          "name": "run_checks",
+          "kind": "fn",
+          "sig": "fn run_checks(cs: List[Check], now: Time) -> List[(Str, Observation)] ! db, net, fs, time, conc",
+          "sig_hash": "jmpor6rfjonbxjqxdlvllnpsny",
+          "hash": "eqndrff7err6rpnw7knlgcqjpu4jpgwzrwxtsnrsnoushsgmdbrq",
+          "effects": [
+            "db",
+            "net",
+            "fs",
+            "time",
+            "conc"
+          ],
+          "doc": "Runs every check at once (one task each) at `now`, and gives the observations in the order of\n`cs`, each with the key of its check."
+        },
+        {
+          "name": "contribution",
+          "kind": "fn",
+          "sig": "fn contribution(c: Check, o: Observation) -> Status",
+          "sig_hash": "ld6ijm6u2aenpr2uadbdyow7ea",
+          "hash": "obnld6hgznyarsx5zqevqcgeafsfjffarxy5o7cigfbf73tugatq",
+          "effects": [],
+          "doc": "The status a check contributes to the service: a failing non-critical check only warns."
+        },
+        {
+          "name": "group_checks",
+          "kind": "fn",
+          "sig": "fn group_checks(obs: List[(Str, Observation)]) -> List[(Str, List[Observation])]",
+          "sig_hash": "qxeenprbtcf2houfgasqtqslky",
+          "hash": "vgp4yzzjxcm6shyysz3f2rofxsedf77mxrvam4qwrqqjxff2bh3a",
+          "effects": [],
+          "doc": "Groups keyed observations by key, keeping the first-seen order of keys."
+        },
+        {
+          "name": "Health",
+          "kind": "type",
+          "sig": "pub type Health = {service_id: Opt[Str], version: Opt[Str], release_id: Opt[Str], description: Opt[Str], notes: List[Str], liveness: List[Check], readiness: List[Check], details: Bool, cache_ms: Int where _ >= 0, cache: Opt[Db]} derive Eq, Show",
+          "sig_hash": "upfqm5mjnsmqpoozc4k5ajj4bm",
+          "hash": "j4lh3t2od737snuumxwe4a5drf5krld4hd4ziordvkwlt6prqtma",
+          "effects": [],
+          "doc": "A service's health setup: its identity for the response, its liveness and readiness checks,\nwhether responses list the checks or give the status only (`details`), and the response cache\n(see `with_cache`). The started and draining state lives apart, in `Flags`."
+        },
+        {
+          "name": "health",
+          "kind": "fn",
+          "sig": "fn health(service_id: Str) -> Health",
+          "sig_hash": "rmw3to2aw4vf74ynkn4fg6qgri",
+          "hash": "eku6vumycewandqj2vrxftoytruwumnx5olen3jcgytxdy4ruk6q",
+          "effects": [],
+          "doc": "A health setup for the service `service_id` with no checks, details shown and no caching. Add\nchecks with `with readiness := [...]`."
+        },
+        {
+          "name": "Flags",
+          "kind": "type",
+          "sig": "pub type Flags = Atomic[Int]",
+          "sig_hash": "3fz7hk6d6frpb7vlhnhu47fs6i",
+          "hash": "rf7sivxiodko6ivyk67euoecijssjg5euwnvgl2y57wecxvnhgva",
+          "effects": [],
+          "doc": "Whether the service has started and whether it is draining, shared by every handler: bit 0 is\nstarted, bit 1 draining."
+        },
+        {
+          "name": "flags",
+          "kind": "fn",
+          "sig": "fn flags() -> Flags ! conc",
+          "sig_hash": "issieflhp52wlgjpzcf7jvb2mq",
+          "hash": "5a26cih3eagxvkkwuq3u52m3qzsvaw4ng6muucogoxl62i3hmzba",
+          "effects": [
+            "conc"
+          ],
+          "doc": "New flags: started and not draining."
+        },
+        {
+          "name": "with_cache",
+          "kind": "fn",
+          "sig": "fn with_cache(h: Health, ttl_ms: Int where _ > 0) -> Health ! db, fail[DbErr]",
+          "sig_hash": "oxutkuzqzdpn6oxsfet6seeseu",
+          "hash": "somajvv7gmmdctiy6sykgx7qq7zpts2ey7u22evnhjrgkt3zfefa",
+          "effects": [
+            "db",
+            "fail[DbErr]"
+          ],
+          "doc": "`h` with responses cached for `ttl_ms` milliseconds, in an in-memory SQLite database shared by\nevery handler, so a busy probe doesn't run the checks on every request."
+        },
+        {
+          "name": "mark_starting",
+          "kind": "fn",
+          "sig": "fn mark_starting(f: Flags) -> Unit ! conc",
+          "sig_hash": "tutqdlab4myvtivupengosyqza",
+          "hash": "ysmerhf632f4dpvq46rp5atboogkmo6ejulp7ioffsswtk6z2ejq",
+          "effects": [
+            "conc"
+          ],
+          "doc": "Marks the service as still starting: the startup and readiness endpoints fail until\n`mark_started`."
+        },
+        {
+          "name": "mark_started",
+          "kind": "fn",
+          "sig": "fn mark_started(f: Flags) -> Unit ! conc",
+          "sig_hash": "uo5xtabseu3befqrzuiwg6uxja",
+          "hash": "zf2cvoqbr673yy4fyswup5ckd5aivbkhok6r5m4nshrhbg2s7dxa",
+          "effects": [
+            "conc"
+          ],
+          "doc": "Marks the service as started."
+        },
+        {
+          "name": "is_started",
+          "kind": "fn",
+          "sig": "fn is_started(f: Flags) -> Bool ! conc",
+          "sig_hash": "mofvinl2qqmpeepx6pyuwuqrli",
+          "hash": "lsi3md764zom4dvdz3glalv35gl5o7c2idzvsrd44xmn7dq6aa4a",
+          "effects": [
+            "conc"
+          ],
+          "doc": "Whether the service has started."
+        },
+        {
+          "name": "start_draining",
+          "kind": "fn",
+          "sig": "fn start_draining(f: Flags) -> Unit ! conc",
+          "sig_hash": "4mcortrf2c3asb3moel3kdh73a",
+          "hash": "kg6a3o3aqtc42dn3r5vwr72jjzf7du63p3bxjxboc2npv3vzcufq",
+          "effects": [
+            "conc"
+          ],
+          "doc": "Starts draining: readiness fails at once (so load balancers stop sending traffic) while liveness\nstill passes and requests in flight finish. Call it when shutdown begins."
+        },
+        {
+          "name": "stop_draining",
+          "kind": "fn",
+          "sig": "fn stop_draining(f: Flags) -> Unit ! conc",
+          "sig_hash": "nxz3kazkvytxvtnnpqnjmio7oi",
+          "hash": "udr6cwq4bwdhfggx44b2goivaesn53wfv6xpsl7h7wrav6zpe7mq",
+          "effects": [
+            "conc"
+          ],
+          "doc": "Stops draining."
+        },
+        {
+          "name": "is_draining",
+          "kind": "fn",
+          "sig": "fn is_draining(f: Flags) -> Bool ! conc",
+          "sig_hash": "hsumvlhhs2bmal7dwhcxeqajya",
+          "hash": "r4dltaur3r4lba6xpf3y35s2j5jinl6av3fhdffyrpne7sav7zaq",
+          "effects": [
+            "conc"
+          ],
+          "doc": "Whether the service is draining."
+        },
+        {
+          "name": "report",
+          "kind": "fn",
+          "sig": "fn report(h: Health, checks: List[Check], obs: List[(Str, Observation)], extra: List[(Str, Observation)]) -> Report",
+          "sig_hash": "xle33247razk7mb5slwgbanazu",
+          "hash": "cxx7ovzzrmj65ghn3qv6hng42prhbokflv2ytwvkovvtw7li2fpa",
+          "effects": [],
+          "doc": "The report for `checks` with their observations and `extra` custom observations, keyed."
+        },
+        {
+          "name": "readiness_report",
+          "kind": "fn",
+          "sig": "fn readiness_report(h: Health, f: Flags, extra: List[(Str, Observation)], now: Time) -> Report ! db, net, fs, time, conc",
+          "sig_hash": "et3xpbxrldmco4b5cc2h2vlxfu",
+          "hash": "rz24hphlob6ebxu5cn67bca3ui3omf2ykeitvvlhzkuvw7b2nxfq",
+          "effects": [
+            "db",
+            "net",
+            "fs",
+            "time",
+            "conc"
+          ],
+          "doc": "Evaluates readiness at `now`: fails without running checks while starting or draining,\notherwise runs the readiness checks and folds in `extra`."
+        },
+        {
+          "name": "liveness_report",
+          "kind": "fn",
+          "sig": "fn liveness_report(h: Health, extra: List[(Str, Observation)], now: Time) -> Report ! db, net, fs, time, conc",
+          "sig_hash": "ajjzirkl7rw32ctkgbkpxepzmy",
+          "hash": "jq3fdnybefhuu2igbqyz4l2p6qaiaasxtm3ypwectxvjfl3fk3sq",
+          "effects": [
+            "db",
+            "net",
+            "fs",
+            "time",
+            "conc"
+          ],
+          "doc": "Evaluates liveness at `now`: the liveness checks (often none, which passes) and `extra`.\nDraining does not affect liveness, so an orchestrator doesn't restart a service that is\nshutting down."
+        },
+        {
+          "name": "startup_report",
+          "kind": "fn",
+          "sig": "fn startup_report(h: Health, f: Flags) -> Report ! conc",
+          "sig_hash": "wyippxtb6r742hmnpnar4prhoe",
+          "hash": "bpwxta5mdzw3orj6d7ecgviqov4grrbvv7cvsikdclby3pckj4rq",
+          "effects": [
+            "conc"
+          ],
+          "doc": "Evaluates startup: passes once the service is started."
+        },
+        {
+          "name": "json_string",
+          "kind": "fn",
+          "sig": "fn json_string(s: Str) -> Str",
+          "sig_hash": "fthz6zsusq7k4an6ou2y7vj3jq",
+          "hash": "v4xprgmruezriztf4vjalelbohtodet2me5gsqkqnwhmolyggjnq",
+          "effects": [],
+          "doc": "`s` as a JSON string literal, with quotes, backslashes and control characters escaped."
+        },
+        {
+          "name": "to_json",
+          "kind": "fn",
+          "sig": "fn to_json(r: Report, details: Bool) -> Str",
+          "sig_hash": "6mex4pjdu3nxlmluxjwjwnijga",
+          "hash": "h4hyafoimznvqloft4ktrxtht2ghgjjlsqrmr7yzcxbefh5xybwa",
+          "effects": [],
+          "doc": "The report as `application/health+json`. With `details` false only the status (and the output of\na failure) is included, so a public endpoint doesn't reveal the service's dependencies."
+        },
+        {
+          "name": "respond",
+          "kind": "fn",
+          "sig": "fn respond(r: Report, details: Bool, method: Str) -> Response",
+          "sig_hash": "dz44lthfj6mz2bc3dsgaaz2lzm",
+          "hash": "2n4ei36n5scsd7fcarz3qzowzu2hvakq4yxoniu2l4bjftferk3q",
+          "effects": [],
+          "doc": "The response for a report: 200 or 503, `application/health+json`, never cached by clients and\nproxies, and no body for a `HEAD` request."
+        },
+        {
+          "name": "readiness",
+          "kind": "fn",
+          "sig": "fn readiness(h: Health, f: Flags, extra: List[(Str, Observation)], req: Request) -> Response ! db, net, fs, time, conc",
+          "sig_hash": "kxekyyt2lk3wwk27jhzwt6lvh4",
+          "hash": "e3hvjmkrw4fxv2bkftoksytfs7okqud7vtvjn6kbmeiwjysfif7a",
+          "effects": [
+            "db",
+            "net",
+            "fs",
+            "time",
+            "conc"
+          ],
+          "doc": "The readiness endpoint: `readiness_report` with the custom observations `extra`, cached when\ncaching is on (the draining state is never cached: it answers at once)."
+        },
+        {
+          "name": "liveness",
+          "kind": "fn",
+          "sig": "fn liveness(h: Health, extra: List[(Str, Observation)], req: Request) -> Response ! db, net, fs, time, conc",
+          "sig_hash": "awfepr2f25hmtp6w4ggi5aqufe",
+          "hash": "52ohy7hqed7mgiziinqxxpoldtdkx3vepx4ndv6jur2uggfvghoq",
+          "effects": [
+            "db",
+            "net",
+            "fs",
+            "time",
+            "conc"
+          ],
+          "doc": "The liveness endpoint, cached when caching is on."
+        },
+        {
+          "name": "startup",
+          "kind": "fn",
+          "sig": "fn startup(h: Health, f: Flags, req: Request) -> Response ! conc",
+          "sig_hash": "tg533rhxuxyddzc6ui32gi6lya",
+          "hash": "pmpsrahm5xobfsbqkic3rfbe3v3ajnxx5jcl65iqvaye5vjiaegq",
+          "effects": [
+            "conc"
+          ],
+          "doc": "The startup endpoint."
+        },
+        {
+          "name": "Paths",
+          "kind": "type",
+          "sig": "pub type Paths = {live: Str, ready: Str, startup: Str} derive Eq, Show",
+          "sig_hash": "ifbnt5o3opfrckfxlqmfzjdb6u",
+          "hash": "epcch5bbshcgva2x2f7spcgtcipwr2venabja7xtuqfvxytaykea",
+          "effects": [],
+          "doc": "The paths the endpoints answer on."
+        },
+        {
+          "name": "default_paths",
+          "kind": "fn",
+          "sig": "fn default_paths() -> Paths",
+          "sig_hash": "6xmqocjtoe7qou4ktc2u5ps5oi",
+          "hash": "bk5ecew6nimxg2x5vznuowgs36mcgkjxyfighzobao6mm4stvu2q",
+          "effects": [],
+          "doc": "`/health/live`, `/health/ready` and `/health/startup`."
+        },
+        {
+          "name": "routes",
+          "kind": "fn",
+          "sig": "fn routes[e](h: Health, f: Flags, p: Paths, req: Request, next: Request -> Response ! e) -> Response ! db, net, fs, time, conc, e",
+          "sig_hash": "4be64qcfk5upss2hlmdk5fgk4i",
+          "hash": "jusdgbbft22qw4gmcnaufytxxuebqzjxdqy5sgpsvnx4ipf2esma",
+          "effects": [
+            "db",
+            "net",
+            "fs",
+            "time",
+            "conc",
+            "e"
+          ],
+          "doc": "Answers `GET` and `HEAD` requests for the three paths and passes everything else to `next`,\nso it goes in front of a handler: `req => health.routes(h, f, health.default_paths(), req, api)`.\nOther methods on a health path get 405 with `Allow`."
+        }
+      ]
+    }
+  ]
+}
