@@ -1,0 +1,589 @@
+{
+  "schema": 1,
+  "name": "ids",
+  "description": "Identifiers and encodings: ULID, KSUID, nanoid, Snowflake, UUID v4/v7 from bytes, base58, base62, base36, base32 and Crockford",
+  "repository": "https://github.com/sspurlang/sspur-ids",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-ids.git",
+      "tag": "v0.1.0",
+      "commit": "645997df14485ef64de5fcee7713c3dd6c524ef0",
+      "hash": "7p5yzcidrdyxmnoal7igb7caatnq7a5xq2ldmygvjcekkflamujq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/ids-0.1.0/ids-0.1.0.tar",
+        "sha256": "db3605f178b48453603b4df01ade6f88add18c121001283e78a646b400dfccbb",
+        "size": 43008
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:10:21Z",
+      "publisher": "utkarshavardhana",
+      "request": 26,
+      "api": [
+        {
+          "name": "base58_alphabet",
+          "kind": "fn",
+          "sig": "fn base58_alphabet() -> Str",
+          "sig_hash": "oxicney6upae2vqc624gw25xqq",
+          "hash": "lnqyeeamyyhcq4sazzcz5l66g2i2chk5n6v7uhwdsit6wygsrf3q",
+          "effects": [],
+          "doc": "The base58 alphabet of Bitcoin addresses: digits and letters without `0`, `O`, `I` and `l`."
+        },
+        {
+          "name": "base62_alphabet",
+          "kind": "fn",
+          "sig": "fn base62_alphabet() -> Str",
+          "sig_hash": "v3cjt3zj33kxw4exv6ernjnwsy",
+          "hash": "2r4uhbtlk6w2dasbqhdx3f2whk4s5hw7uxpze2arjy75mjrhwlsa",
+          "effects": [],
+          "doc": "The base62 alphabet: `0-9`, `A-Z`, `a-z`, in that order (as KSUID and most base62 libraries)."
+        },
+        {
+          "name": "base36_alphabet",
+          "kind": "fn",
+          "sig": "fn base36_alphabet() -> Str",
+          "sig_hash": "jzl3mn6kmfg7saprd7hm4e5uiy",
+          "hash": "jmeymyi7xarlumywrr6ee7tq46sbw2uxxxwa2ex5c2esfa4m4s2q",
+          "effects": [],
+          "doc": "The base36 alphabet: `0-9` then `a-z`."
+        },
+        {
+          "name": "crockford_alphabet",
+          "kind": "fn",
+          "sig": "fn crockford_alphabet() -> Str",
+          "sig_hash": "rwpg6j22cp4ovaa3dyjgiavezm",
+          "hash": "67wkxfyur5d5u6ywqnw43eqgolt5xmfrhmnl6v3qz2ymjbok5w3a",
+          "effects": [],
+          "doc": "Douglas Crockford's base32 alphabet: `0-9` and the letters without `I`, `L`, `O` and `U`."
+        },
+        {
+          "name": "encode_base",
+          "kind": "fn",
+          "sig": "fn encode_base(b: Bytes, alphabet: Str where _.len >= 2) -> Str",
+          "sig_hash": "ccj7qfmfozeasztyvuxb7yrmky",
+          "hash": "dprjkpuvgzn3fiqqfg357og4mit5avpkuivxjbwtwbrqxbn5eikq",
+          "effects": [],
+          "doc": "The bytes `b` written in the base of `alphabet` (its length), most significant digit first:\nthe bytes are one big-endian number, and every leading zero byte becomes one leading copy of\nthe alphabet's first character, as in Bitcoin's base58, so `decode_base` gives the same bytes\nback. Empty bytes give `\"\"`."
+        },
+        {
+          "name": "decode_base",
+          "kind": "fn",
+          "sig": "fn decode_base(s: Str, alphabet: Str where _.len >= 2) -> Opt[Bytes]",
+          "sig_hash": "b5oq5u4lxj6ontu43zczxpyrvu",
+          "hash": "taa236vt32v3tts5qfg5ygnpbfp3kvgr4mcsjuhw6qhup25zvuga",
+          "effects": [],
+          "doc": "The bytes that `encode_base` wrote as `s`, or `none` if `s` has a character outside the\nalphabet. Each leading first character is a zero byte."
+        },
+        {
+          "name": "encode_int",
+          "kind": "fn",
+          "sig": "fn encode_int(n: Int where _ >= 0, alphabet: Str where _.len >= 2) -> Str",
+          "sig_hash": "hfnyoonswgcgkmktldzf2o6pey",
+          "hash": "orccg3vpzfmhdmrnv5s25mayo5jm4taefgtcdqayfuwzckjvxj6q",
+          "effects": [],
+          "doc": "The non-negative integer `n` in the base of `alphabet`, without leading zeros (`0` is the\nalphabet's first character)."
+        },
+        {
+          "name": "decode_int",
+          "kind": "fn",
+          "sig": "fn decode_int(s: Str, alphabet: Str where _.len >= 2) -> Opt[Int]",
+          "sig_hash": "gq6a2utjf7m2tuk4ptts3fd32e",
+          "hash": "zuwwopzmgdqor3ez4zjmzlmv5pkrls372h3qhkxysps3cois66gq",
+          "effects": [],
+          "doc": "The integer `s` spells in the base of `alphabet`, or `none` for `\"\"`, a character outside the\nalphabet, or a value above the 64-bit maximum. Leading zero digits are allowed."
+        },
+        {
+          "name": "encode_big",
+          "kind": "fn",
+          "sig": "fn encode_big(n: BigInt, alphabet: Str where _.len >= 2) -> Str",
+          "sig_hash": "bypmgx744nxi677cm32dszm2sq",
+          "hash": "yu7jtujk2n7irgtkjwxtau2inkqintqi3g4zp4r3zirqkh7pkkea",
+          "effects": [],
+          "doc": "The non-negative `BigInt` `n` in the base of `alphabet`, without leading zeros."
+        },
+        {
+          "name": "decode_big",
+          "kind": "fn",
+          "sig": "fn decode_big(s: Str, alphabet: Str where _.len >= 2) -> Opt[BigInt]",
+          "sig_hash": "rawm7kcbn4dzr3uqzuikkzmama",
+          "hash": "k5r7o4xjl3lmpcm6msveuppca3yhtmeislkazasnv3lp7zpku3ua",
+          "effects": [],
+          "doc": "The `BigInt` `s` spells in the base of `alphabet`, or `none` for `\"\"` or a character outside\nthe alphabet."
+        },
+        {
+          "name": "base58",
+          "kind": "fn",
+          "sig": "fn base58(b: Bytes) -> Str",
+          "sig_hash": "5wjjwgebacim6xzp4s7de5eu4i",
+          "hash": "qzhvi3qnolj3rsdjassvjlig3cohwnkrvdw2dqrikeke4mygbxma",
+          "effects": [],
+          "doc": "Bitcoin base58 of `b` (`encode_base` with `base58_alphabet`)."
+        },
+        {
+          "name": "from_base58",
+          "kind": "fn",
+          "sig": "fn from_base58(s: Str) -> Opt[Bytes]",
+          "sig_hash": "mm2bd35mvlgxcqsxidqgv7w7q4",
+          "hash": "6xpqn53tg3p4fsetaftzodqaowac5ms7ppafm62gpdwnl6iezivq",
+          "effects": [],
+          "doc": "The bytes of Bitcoin base58 text, or `none`."
+        },
+        {
+          "name": "base62",
+          "kind": "fn",
+          "sig": "fn base62(b: Bytes) -> Str",
+          "sig_hash": "owxld7ygp3izsdw7revagldqhu",
+          "hash": "efu4ta5kevpoq2r72gwyyqkoub3eulmyt66wgojw7vnyxcj3xpjq",
+          "effects": [],
+          "doc": "Base62 of `b` (`encode_base` with `base62_alphabet`)."
+        },
+        {
+          "name": "from_base62",
+          "kind": "fn",
+          "sig": "fn from_base62(s: Str) -> Opt[Bytes]",
+          "sig_hash": "bsfqiiezpjcc246eu7sl45l2ym",
+          "hash": "63ytr2xyagtpthgfkf5cafbrvzxod7euuiouh6npppidgmevfyvq",
+          "effects": [],
+          "doc": "The bytes of base62 text, or `none`."
+        },
+        {
+          "name": "base36",
+          "kind": "fn",
+          "sig": "fn base36(b: Bytes) -> Str",
+          "sig_hash": "qqg4qkimgxuqpldci4jwers7nu",
+          "hash": "q2woas73f242to3xcmx5laqjwa63pvw2p6axybt65nyucxhch5dq",
+          "effects": [],
+          "doc": "Base36 of `b` (`encode_base` with `base36_alphabet`, lower case)."
+        },
+        {
+          "name": "from_base36",
+          "kind": "fn",
+          "sig": "fn from_base36(s: Str) -> Opt[Bytes]",
+          "sig_hash": "a7hlylvhizxttoxues7u3zw2xu",
+          "hash": "36wo2mc4ez3geysszkzfsev7hfqafum6nzl5odg7txf24tci2tzq",
+          "effects": [],
+          "doc": "The bytes of base36 text, either case, or `none`."
+        },
+        {
+          "name": "base32",
+          "kind": "fn",
+          "sig": "fn base32(b: Bytes, pad: Bool) -> Str",
+          "sig_hash": "nh55ufehs5q57a25mdzlpumgti",
+          "hash": "ftl5oeymfoebatqex2ig2gefk3da2hrnlfrry4fytcjsjwlos3xa",
+          "effects": [],
+          "doc": "RFC 4648 base32 of `b` (`A-Z`, `2-7`), padded with `=` to a multiple of 8 characters when `pad`."
+        },
+        {
+          "name": "from_base32",
+          "kind": "fn",
+          "sig": "fn from_base32(s: Str) -> Opt[Bytes]",
+          "sig_hash": "2sg4zt33sqb7wrantjrs4dk2ay",
+          "hash": "mddzc76qms7nqlzow63zrpnuip7v4mesjprp4t4ouqzac7t7oogq",
+          "effects": [],
+          "doc": "The bytes of RFC 4648 base32 text, either case, with or without padding (padding, when\npresent, must make the length a multiple of 8). `none` for other characters, an impossible\nlength, or nonzero unused bits."
+        },
+        {
+          "name": "crockford",
+          "kind": "fn",
+          "sig": "fn crockford(n: Int where _ >= 0, check: Bool) -> Str",
+          "sig_hash": "ukj6f3wvajzzeoi25bmxdamety",
+          "hash": "4a3o3kkpnp23j43d2q5wh6gnfuldm4jwrlox5nrn2umegy36kwuq",
+          "effects": [],
+          "doc": "The non-negative integer `n` in Crockford base32 (upper case, no leading zeros), followed by\nthe mod 37 check symbol (`0-9A-Z` without `ILOU`, then `*~$=U`) when `check`."
+        },
+        {
+          "name": "from_crockford",
+          "kind": "fn",
+          "sig": "fn from_crockford(s: Str, check: Bool) -> Opt[Int]",
+          "sig_hash": "rltgfn7f4xkmmuk2dzzv7pqagi",
+          "hash": "qrkmdo6pqtp5bdxusyfxaxacdnw5c7hujpqq3uvkm2kg64m2tabq",
+          "effects": [],
+          "doc": "The integer of Crockford base32 text: either case, hyphens ignored, `I` and `L` read as `1`\nand `O` as `0`; with `check`, the last character must be the right check symbol. `none` for\nanything else or a value above the 64-bit maximum."
+        },
+        {
+          "name": "ulid_from",
+          "kind": "fn",
+          "sig": "fn ulid_from(ms: Int where _ >= 0 and _ <= 281474976710655, rnd: Bytes) -> Str",
+          "sig_hash": "7rctm7irttnlb43hjaq7yueh3u",
+          "hash": "yu3nejll7f24dggiakqr45ichptnl5jdlmohbmd6aq4hrznxc7oq",
+          "effects": [],
+          "doc": "The ULID of a Unix time in milliseconds and 10 random bytes: 26 Crockford base32 characters, the\n48-bit time first, so ULIDs sort by time as text."
+        },
+        {
+          "name": "parse_ulid",
+          "kind": "fn",
+          "sig": "fn parse_ulid(s: Str) -> Opt[Bytes]",
+          "sig_hash": "kyxwhp3fbtr6t3kglpslsay2ai",
+          "hash": "xtbxbenssarfebbzxydi4h453hnid4qdmem6yw4p7qaqn3j6bwsa",
+          "effects": [],
+          "doc": "The 16 bytes of a ULID, or `none` unless `s` is 26 Crockford base32 characters (either case,\nno `I`, `L`, `O` or `U`) starting with `0` to `7` (higher values exceed 128 bits)."
+        },
+        {
+          "name": "is_ulid",
+          "kind": "fn",
+          "sig": "fn is_ulid(s: Str) -> Bool",
+          "sig_hash": "aapjitr4kaicza2exruak3gr7e",
+          "hash": "wnj6vib7dxttsx4ozj746vvuxlk7f6qis4iuhetjmnkejrcqcwxa",
+          "effects": [],
+          "doc": "Whether `s` is a ULID (`parse_ulid`)."
+        },
+        {
+          "name": "ulid_time",
+          "kind": "fn",
+          "sig": "fn ulid_time(s: Str) -> Opt[Int]",
+          "sig_hash": "2ogfn24dpjneywzomgebkvq2xe",
+          "hash": "y2twmhmgjgiwvbeazm2cgudof3mz7brolwvq4uopvyyom5jhpckq",
+          "effects": [],
+          "doc": "The Unix time in milliseconds of a ULID, or `none` if `s` is not one."
+        },
+        {
+          "name": "ulid",
+          "kind": "fn",
+          "sig": "fn ulid() -> Str ! time, rand",
+          "sig_hash": "cfbs74zpbnlkv465s2rlpzwhie",
+          "hash": "5ody6p36oy5v3ubo7sv7eqbcq7x5nykannrkogk4kplwcy4vp6aa",
+          "effects": [
+            "time",
+            "rand"
+          ],
+          "doc": "A new ULID from the clock and 10 random bytes from the operating system."
+        },
+        {
+          "name": "UlidGen",
+          "kind": "type",
+          "sig": "pub type UlidGen = {last_ms: Int, last_rand: Bytes} derive Eq, Show",
+          "sig_hash": "omeo4qculykzg3sq756qe4zuxi",
+          "hash": "hwbuowdzk3vx4msydgc4dwihgmfhe54szl6xaaj7no3ngfxx5wfa",
+          "effects": [],
+          "doc": "The state of a monotonic ULID generator: the time and random part of the last ULID."
+        },
+        {
+          "name": "ulid_gen",
+          "kind": "fn",
+          "sig": "fn ulid_gen() -> UlidGen",
+          "sig_hash": "7q5ywivd4pfyatykwn6cfzxxou",
+          "hash": "7sgqw2teh2a5trxtmkbuc3j7hbpvogbllo5goirflz5rtekazfga",
+          "effects": [],
+          "doc": "A monotonic generator that has made no ULID yet."
+        },
+        {
+          "name": "ulid_next",
+          "kind": "fn",
+          "sig": "fn ulid_next(g: UlidGen, ms: Int where _ >= 0 and _ <= 281474976710655, rnd: Bytes) -> Opt[(Str, UlidGen)]",
+          "sig_hash": "5vrxdju4nkigdiz4p4mqtpl35i",
+          "hash": "vn4hmrpcqpjyaznbmmf5cdmcmrcsepq6wscfqscrtdtlajsmzhea",
+          "effects": [],
+          "doc": "The next ULID of a monotonic generator and its new state, as the ULID specification describes:\na later millisecond uses `rnd`; the same millisecond, or an earlier one (a clock that went\nback), keeps the last time and adds 1 to the last random part, so every ULID sorts after the one\nbefore. `none` when the random part would overflow (2^80 ULIDs in one millisecond)."
+        },
+        {
+          "name": "ulid_next_now",
+          "kind": "fn",
+          "sig": "fn ulid_next_now(g: UlidGen) -> Opt[(Str, UlidGen)] ! time, rand",
+          "sig_hash": "lt4we6q526hn6bhiok6mdmjewm",
+          "hash": "beefsl7dyclfikzda65rln52qnuyylbpjglf6omjxhrrosxueqoa",
+          "effects": [
+            "time",
+            "rand"
+          ],
+          "doc": "`ulid_next` with the clock and fresh random bytes."
+        },
+        {
+          "name": "ulid_to_uuid",
+          "kind": "fn",
+          "sig": "fn ulid_to_uuid(s: Str) -> Opt[Str]",
+          "sig_hash": "kpj5sp3rwy7bfsvv4iggooqqtu",
+          "hash": "37so3trh3p42dwf4m23grafhzachzo7aewfmaxmwoylz5n2p24ia",
+          "effects": [],
+          "doc": "The UUID text of the same 128 bits as a ULID, or `none` if `s` is not one."
+        },
+        {
+          "name": "ulid_from_uuid",
+          "kind": "fn",
+          "sig": "fn ulid_from_uuid(u: Str) -> Opt[Str]",
+          "sig_hash": "gptdctnetgrzm2jscakxasa5pi",
+          "hash": "sbtfq5yfrl6heml6ff4iat45iawgr5jesmoenexafudc4kz5wasq",
+          "effects": [],
+          "doc": "The ULID of the same 128 bits as a UUID, or `none` if `u` is not a canonical UUID."
+        },
+        {
+          "name": "ksuid_epoch",
+          "kind": "fn",
+          "sig": "fn ksuid_epoch() -> Int",
+          "sig_hash": "qfudfq4fbhrgudylcharhdlvju",
+          "hash": "xaqps7rwwqylbc4i3lt6t33dkdtzsdcls5ccgg3gggv5xqsjdnga",
+          "effects": [],
+          "doc": "The KSUID epoch, 1400000000 seconds after the Unix epoch (2014-05-13T16:53:20Z)."
+        },
+        {
+          "name": "ksuid_from_epoch",
+          "kind": "fn",
+          "sig": "fn ksuid_from_epoch(secs: Int, epoch: Int, rnd: Bytes) -> Str",
+          "sig_hash": "cvi5ugbe6jodcx6e7fl5y2mne4",
+          "hash": "dp7jpwbyjsxtsiwkpn2nu42fqtzssgstcy3yziplflwbsthvsqsq",
+          "effects": [],
+          "doc": "The KSUID of a Unix time in seconds and 16 random bytes, counting time from `epoch` (Unix\nseconds): a 32-bit time then the random bytes, as 27 base62 characters that sort by time."
+        },
+        {
+          "name": "ksuid_from",
+          "kind": "fn",
+          "sig": "fn ksuid_from(secs: Int, rnd: Bytes) -> Str",
+          "sig_hash": "7sc6la6olq7n4nfmjacniolleq",
+          "hash": "bf46oq24dd2kb3myypdkqhjpqjcqdrilwunjjkuihsn3ya4kfcwa",
+          "effects": [],
+          "doc": "The KSUID of a Unix time in seconds (from 2014-05-13 to 2150) and 16 random bytes, with the\nstandard epoch."
+        },
+        {
+          "name": "parse_ksuid",
+          "kind": "fn",
+          "sig": "fn parse_ksuid(s: Str) -> Opt[Bytes]",
+          "sig_hash": "ytumgdx53ytpac2eavfxl7njkm",
+          "hash": "3hxkaawusbuiv3tix5zvkxz5ioe6elkqx7lsf5khryphnzjbkjca",
+          "effects": [],
+          "doc": "The 20 bytes of a KSUID, or `none` unless `s` is 27 base62 characters of at most 160 bits\n(`aWgEPTl1tmebfsQzFP4bxwgy80V` is the largest)."
+        },
+        {
+          "name": "is_ksuid",
+          "kind": "fn",
+          "sig": "fn is_ksuid(s: Str) -> Bool",
+          "sig_hash": "52543xb3ypexrhhrj5yjhuc76u",
+          "hash": "hpx4q5foeqnep47eotzgl3qpfrcn36au77sy3fbwfwdqbgwx6l4a",
+          "effects": [],
+          "doc": "Whether `s` is a KSUID (`parse_ksuid`)."
+        },
+        {
+          "name": "ksuid_time_epoch",
+          "kind": "fn",
+          "sig": "fn ksuid_time_epoch(s: Str, epoch: Int) -> Opt[Int]",
+          "sig_hash": "xlxcsrkfocgvocb6evsh4iuboi",
+          "hash": "cqy6fryidev7p2mdvarlcwo5l4ahxpre4tkmt4adsdcqbvhtwhya",
+          "effects": [],
+          "doc": "The Unix time in seconds of a KSUID made with `epoch`, or `none` if `s` is not one."
+        },
+        {
+          "name": "ksuid_time",
+          "kind": "fn",
+          "sig": "fn ksuid_time(s: Str) -> Opt[Int]",
+          "sig_hash": "e4ntfpjslbm73sggaqanzhkswa",
+          "hash": "ntergbvmiqhvq6xetym4sigg5lfuk46y73r2hrkirvwf6vp4fcha",
+          "effects": [],
+          "doc": "The Unix time in seconds of a KSUID with the standard epoch, or `none` if `s` is not one."
+        },
+        {
+          "name": "ksuid",
+          "kind": "fn",
+          "sig": "fn ksuid() -> Str ! time, rand",
+          "sig_hash": "czqbrc4wqqpcnaintpmrucodrm",
+          "hash": "vn5npy5t4hez4vi2imt3su4silqpzxss5egvuq3a3qmiyg76iscq",
+          "effects": [
+            "time",
+            "rand"
+          ],
+          "doc": "A new KSUID from the clock and 16 random bytes from the operating system."
+        },
+        {
+          "name": "nanoid_alphabet",
+          "kind": "fn",
+          "sig": "fn nanoid_alphabet() -> Str",
+          "sig_hash": "5wpwt75rganhgh4qtsk4cy46hq",
+          "hash": "uqbg5nd3uyqq2s4xk4cb23kwe4oq3zx5aghhck6li6zfh3m4w5ha",
+          "effects": [],
+          "doc": "The alphabet of nanoid's default ids: 64 URL-safe characters (`A-Za-z0-9_-`)."
+        },
+        {
+          "name": "nanoid_from",
+          "kind": "fn",
+          "sig": "fn nanoid_from(rnd: Bytes, alphabet: Str where _.len >= 2 and _.len <= 256, size: Int where _ >= 0) -> Opt[Str]",
+          "sig_hash": "5uodytctxcad2mtncy2kvyisle",
+          "hash": "yiiyf7kbqsznc5jxnerh3vaakknpuymepdp6cbxbomqhazmyvl5a",
+          "effects": [],
+          "doc": "The id nanoid's algorithm makes from the random bytes `rnd`: each byte, masked to the smallest\n`2^k - 1` that covers the alphabet, picks a character when it falls inside the alphabet and is\nskipped otherwise, so every character is equally likely. `none` when `rnd` runs out before\n`size` characters. The bytes are used in order (nanoid's JavaScript reads them from the end)."
+        },
+        {
+          "name": "nanoid_custom",
+          "kind": "fn",
+          "sig": "fn nanoid_custom(alphabet: Str where _.len >= 2 and _.len <= 256, size: Int where _ >= 0) -> Str ! rand",
+          "sig_hash": "u427hzvy4qnxvjzlxmiurmmopy",
+          "hash": "t5lpekx46lo2qfbx6n5vgoa74clrdbj5vvnf5o76ry2cro6frybq",
+          "effects": [
+            "rand"
+          ],
+          "doc": "A random id of `size` characters from `alphabet`, by nanoid's unbiased algorithm, with bytes\nfrom the operating system. It draws `ceil(1.6 * mask * size / len)` bytes at a time (nanoid's\nstep) until it has enough; after 64 draws, which happens with a probability below 2^-64, it\nfills the rest by taking bytes modulo the alphabet length."
+        },
+        {
+          "name": "nanoid",
+          "kind": "fn",
+          "sig": "fn nanoid() -> Str ! rand",
+          "sig_hash": "5deijdwezhbgge2dso3n466v5m",
+          "hash": "kd66tp3sjlawjlgz4mavqdtelb67klu5yuileztnilwkmox47ifa",
+          "effects": [
+            "rand"
+          ],
+          "doc": "A nanoid: 21 characters from `nanoid_alphabet`, about 126 random bits."
+        },
+        {
+          "name": "short_id",
+          "kind": "fn",
+          "sig": "fn short_id(size: Int where _ >= 0) -> Str ! rand",
+          "sig_hash": "4gsqdnnkwcjcx75ye77rg2olda",
+          "hash": "piuhg2twnr4j4g4seklocldbzqiswf6ioefx73za7zj3evdpkslq",
+          "effects": [
+            "rand"
+          ],
+          "doc": "A random id of `size` letters and digits (`base62_alphabet`), for ids that must not contain `-`\nor `_`. Eight characters carry about 47 bits; use 22 or more for unguessable ids."
+        },
+        {
+          "name": "Snowflake",
+          "kind": "type",
+          "sig": "pub type Snowflake = {epoch_ms: Int, time_bits: Int, node_bits: Int, seq_bits: Int} derive Eq, Show",
+          "sig_hash": "4pbqbfnx6hngbjxafsjbaz4xhy",
+          "hash": "eld5ssflrglavwf2uq6mgbtz3qzblxk624m73o5cuqsygjqk7e6a",
+          "effects": [],
+          "doc": "The layout of Snowflake-style 64-bit ids: milliseconds since `epoch_ms` in the top `time_bits`,\nthen a node (machine or shard) number in `node_bits`, then a per-millisecond sequence in\n`seq_bits`; the three add up to 63 so ids are positive `Int`s."
+        },
+        {
+          "name": "SnowflakeParts",
+          "kind": "type",
+          "sig": "pub type SnowflakeParts = {ms: Int, node: Int, seq: Int} derive Eq, Show",
+          "sig_hash": "clqlkbxtfqy54wc55eb52k7eae",
+          "hash": "w6hmvaeczl2czcrsuiaxwrlich3ahrirndtb4si2cxdiujyxpeqa",
+          "effects": [],
+          "doc": "The parts of a Snowflake id: Unix time in milliseconds, node and sequence."
+        },
+        {
+          "name": "twitter_layout",
+          "kind": "fn",
+          "sig": "fn twitter_layout() -> Snowflake",
+          "sig_hash": "sxbzteyiyjulz5xorhhg27itxa",
+          "hash": "64qyyhks3acqf6w3m2n43sul4apqgnt4f4ufdmuskq4zl65bs2ga",
+          "effects": [],
+          "doc": "Twitter's layout: epoch 1288834974657 (2010-11-04), 41 time bits, 10 node bits, 12 sequence bits."
+        },
+        {
+          "name": "snowflake_layout",
+          "kind": "fn",
+          "sig": "fn snowflake_layout(epoch_ms: Int, time_bits: Int, node_bits: Int, seq_bits: Int) -> Opt[Snowflake]",
+          "sig_hash": "7mct4srnhekt7vzuxz6l7vmpuu",
+          "hash": "unji355nwxqngisbd2xrpttxqsb7dysadscy7qrky35knx4cjgtq",
+          "effects": [],
+          "doc": "A layout with an epoch of your own and the usual 41, 10 and 12 bits; `none` unless the bit\ncounts are non-negative and add up to 63."
+        },
+        {
+          "name": "snowflake_compose",
+          "kind": "fn",
+          "sig": "fn snowflake_compose(l: Snowflake, p: SnowflakeParts) -> Opt[Int]",
+          "sig_hash": "wl4x3pahwwn3nbgkmig6klgxgm",
+          "hash": "i3ccpkgeiwi3qqxpxqz7abrulc2epdhmdwrbd2krg7iclyb3wh3a",
+          "effects": [],
+          "doc": "The id of `p` in layout `l`, or `none` when the time is before the epoch or any part does not\nfit its bits."
+        },
+        {
+          "name": "snowflake_decompose",
+          "kind": "fn",
+          "sig": "fn snowflake_decompose(l: Snowflake, id: Int where _ >= 0) -> SnowflakeParts",
+          "sig_hash": "ngrcypnqxhje3se2eyns5h72va",
+          "hash": "7uhm45u3mwyris72t62jwtsg4gmzgjutrrrwh6ujqyf55gu67rhq",
+          "effects": [],
+          "doc": "The parts of the id `id` in layout `l` (the time as Unix milliseconds)."
+        },
+        {
+          "name": "SnowflakeGen",
+          "kind": "type",
+          "sig": "pub type SnowflakeGen = {last_ms: Int, last_seq: Int} derive Eq, Show",
+          "sig_hash": "xzeq4zfikblwjeg7m2fwuocagm",
+          "hash": "4diezcnet5ezmwhltf4s2qmnpuywmyfrbohcyuor57wouawqzmcq",
+          "effects": [],
+          "doc": "The state of a Snowflake generator: the millisecond and sequence of its last id."
+        },
+        {
+          "name": "snowflake_gen",
+          "kind": "fn",
+          "sig": "fn snowflake_gen() -> SnowflakeGen",
+          "sig_hash": "srny3qd27ylopgrwmljxjjryi4",
+          "hash": "3u54opxobb6e7hsvxloc6oohfhxqsgkmw56ytxlelq4ig25texza",
+          "effects": [],
+          "doc": "A Snowflake generator that has made no id yet."
+        },
+        {
+          "name": "snowflake_next",
+          "kind": "fn",
+          "sig": "fn snowflake_next(l: Snowflake, g: SnowflakeGen, node: Int, at_ms: Int) -> Opt[(Int, SnowflakeGen)]",
+          "sig_hash": "tqhxkdbefaz5zwfkzffgfe5rym",
+          "hash": "gdym7ozpld4himoxsqqeuj4fpirrbmnkrlvhdevnr4bgrncclhha",
+          "effects": [],
+          "doc": "The next id of node `node` at Unix time `at_ms`, and the new state: a later millisecond starts\nthe sequence at 0; the same one, or an earlier one (a clock that went back), keeps the last time\nand adds 1 to the sequence, so ids only grow. `none` when the sequence is full (wait for the\nnext millisecond and call again) or a part does not fit the layout."
+        },
+        {
+          "name": "uuid_from_bytes",
+          "kind": "fn",
+          "sig": "fn uuid_from_bytes(b: Bytes) -> Opt[Str]",
+          "sig_hash": "ltlrr3obpfdpsaqtnoptrkcb4i",
+          "hash": "bzmnhs5okuz6mxwz2ut6upz4vxlpr53wfthdzaue3esct5ayvq2a",
+          "effects": [],
+          "doc": "The canonical lower-case text of 16 bytes as a UUID, or `none` for another length."
+        },
+        {
+          "name": "uuid_bytes",
+          "kind": "fn",
+          "sig": "fn uuid_bytes(s: Str) -> Opt[Bytes]",
+          "sig_hash": "cduvplo7dwhnqezzx5vly3h7gi",
+          "hash": "flkwhulezosnjmib5ncyerefk5uhqrtsu2mvem7qgncp666npmla",
+          "effects": [],
+          "doc": "The 16 bytes of a canonical UUID (8-4-4-4-12 hex digits, either case), or `none`."
+        },
+        {
+          "name": "uuid_v4_from",
+          "kind": "fn",
+          "sig": "fn uuid_v4_from(rnd: Bytes) -> Str",
+          "sig_hash": "43bic7hkazgo6ib5klk2terh4y",
+          "hash": "cavdvymnsiltybw6rrhckvdvcdxriqtqssdtrbdikco47rcmkv7a",
+          "effects": [],
+          "doc": "The version 4 (random) UUID of 16 random bytes: their version bits set to 4 and variant bits to\nRFC 9562's, as `uuid.v4()` does with bytes from the operating system."
+        },
+        {
+          "name": "uuid_v7_from",
+          "kind": "fn",
+          "sig": "fn uuid_v7_from(ms: Int where _ >= 0 and _ <= 281474976710655, rnd: Bytes) -> Str",
+          "sig_hash": "64mo3uk6ebpkhjsitobtqp25jm",
+          "hash": "yis52wls2ajdbvqbx5ewifgwqiqknt2sglz72gn7msf7zcx6cluq",
+          "effects": [],
+          "doc": "The version 7 (time-ordered) UUID of a Unix time in milliseconds and 10 random bytes: the 48-bit\ntime, version 7, 12 random bits, the variant, 62 random bits (RFC 9562 section 5.7). The first\nrandom byte gives its low 4 bits and the third its low 6."
+        },
+        {
+          "name": "uuid_v7_time",
+          "kind": "fn",
+          "sig": "fn uuid_v7_time(s: Str) -> Opt[Int]",
+          "sig_hash": "76to33zscjt4ki2gew7z3kq7x4",
+          "hash": "c7qlyf5rer7zafqdiqph6oa7jatofmamozteegfc5bnkhapwh5ma",
+          "effects": [],
+          "doc": "The Unix time in milliseconds of a version 7 UUID, or `none` if `s` is not one."
+        },
+        {
+          "name": "nil_uuid",
+          "kind": "fn",
+          "sig": "fn nil_uuid() -> Str",
+          "sig_hash": "byxjlnzql3nusx7gdacqc5dk44",
+          "hash": "sl4hcxzinubtlqxhpsdsyb5juwlba55zze4be43hlp4xeaxkoakq",
+          "effects": [],
+          "doc": "The nil UUID, all zeros."
+        },
+        {
+          "name": "max_uuid",
+          "kind": "fn",
+          "sig": "fn max_uuid() -> Str",
+          "sig_hash": "b3k55p66pwn2ayu4nvdzjww63e",
+          "hash": "ut7tguryma7kgdyvxzad276hocylw4wkzrvm3db23ddgqmzh527a",
+          "effects": [],
+          "doc": "The max UUID, all ones."
+        }
+      ]
+    }
+  ]
+}

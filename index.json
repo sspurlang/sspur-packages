@@ -32,6 +32,16 @@
       "deprecated": null
     },
     {
+      "name": "ids",
+      "description": "Identifiers and encodings: ULID, KSUID, nanoid, Snowflake, UUID v4/v7 from bytes, base58, base62, base36, base32 and Crockford",
+      "latest": "0.1.0",
+      "versions": 1,
+      "keywords": [],
+      "updated": "2026-10-16T20:10:21Z",
+      "yanked": false,
+      "deprecated": null
+    },
+    {
       "name": "lists",
       "description": "List utilities beyond the builtins: windows, splits, grouping, zips, set operations, combinatorics, searching and safe index edits",
       "latest": "0.1.0",
