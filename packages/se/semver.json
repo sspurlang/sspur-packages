@@ -1,0 +1,529 @@
+{
+  "schema": 1,
+  "name": "semver",
+  "description": "Semantic Versioning 2.0.0: parse, compare, sort and bump versions, and match Cargo and npm version ranges",
+  "repository": "https://github.com/sspurlang/sspur-semver",
+  "owners": [
+    "utkarshavardhana"
+  ],
+  "keywords": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "git": "https://github.com/sspurlang/sspur-semver.git",
+      "tag": "v0.1.0",
+      "commit": "50e4772cb127a26ba12b721706175b64530b9ee5",
+      "hash": "n7re2mwmjdjuks4wrmqbwcxzvhqif4e3hnomsnwz2ewg4aemd3rq",
+      "snapshot": {
+        "url": "https://github.com/sspurlang/sspur-packages/releases/download/semver-0.1.0/semver-0.1.0.tar",
+        "sha256": "6a2190a39f6bdd0a644fde622dbd433f4fe58d32455fd7e9c1384bcfb2e7a88d",
+        "size": 65536
+      },
+      "effects": [],
+      "deps": {},
+      "license": "MIT",
+      "yanked": false,
+      "deprecated": null,
+      "published": "2026-10-16T20:11:34Z",
+      "publisher": "utkarshavardhana",
+      "request": 28,
+      "api": [
+        {
+          "name": "Ident",
+          "kind": "type",
+          "sig": "pub type Ident = NumId{n: Int} | StrId{s: Str} derive Eq, Show",
+          "sig_hash": "wiuzf7tehotryck7olccs3jgji",
+          "hash": "fbglpvqq7ufmgxw7brd7f4mwbrgqsc2m26yrvuhm3zkl2inybnia",
+          "effects": [],
+          "doc": "One pre-release identifier: a number (compared numerically) or an alphanumeric word\n(compared in ASCII order). Numbers sort before words."
+        },
+        {
+          "name": "Version",
+          "kind": "type",
+          "sig": "pub type Version = {major: Int where _ >= 0, minor: Int where _ >= 0, patch: Int where _ >= 0, prerelease: List[Ident], build: List[Str]} derive Eq, Show",
+          "sig_hash": "uba2qfnqtjwganvzn6qvpfh7nu",
+          "hash": "wp7rq42h2yy6bhs5qa4ad722eengjl4q43qnmf5xcxt5byrgesva",
+          "effects": [],
+          "doc": "A version `major.minor.patch[-prerelease][+build]`. Build metadata never affects precedence."
+        },
+        {
+          "name": "VersionErr",
+          "kind": "type",
+          "sig": "pub type VersionErr = EmptyVersion | WrongPartCount{found: Int} | BadNumber{part: Str} | LeadingZero{part: Str} | NumberTooLarge{part: Str} | EmptyIdentifier{section: Str} | BadIdentifier{ident: Str} derive Eq, Show",
+          "sig_hash": "kexgf7ihyti7muspe7a3fmqzfi",
+          "hash": "pyn6cthljf7lwsgechkev3o4mhddawsb3c53y23unta2j6dkrslq",
+          "effects": [],
+          "doc": "Why a text is not a valid version. `part` is the offending piece of the input."
+        },
+        {
+          "name": "Part",
+          "kind": "type",
+          "sig": "pub type Part = Major | Minor | Patch | Prerelease | Build derive Eq, Show",
+          "sig_hash": "pyu24crxrjo24sgm464hv4it7u",
+          "hash": "acyhcf6rqr3xtwyoro7dys3kfovvmej64us5e7m26rpnq2xawkwq",
+          "effects": [],
+          "doc": "The highest component in which two versions differ."
+        },
+        {
+          "name": "Op",
+          "kind": "type",
+          "sig": "pub type Op = OpEq | OpGt | OpGe | OpLt | OpLe derive Eq, Show",
+          "sig_hash": "twfope5xvix7wiodf26c3a7g7q",
+          "hash": "acyhcf6rqr3xtwyoro7dys3kfovvmej64us5e7m26rpnq2xawkwq",
+          "effects": [],
+          "doc": "A comparison operator of a range comparator."
+        },
+        {
+          "name": "Comparator",
+          "kind": "type",
+          "sig": "pub type Comparator = {op: Op, ver: Version} derive Eq, Show",
+          "sig_hash": "slcsko22woytdy3ooh2hxuhude",
+          "hash": "frpmnqefz63nr4rcvhoc5lyi3gkemkxaa4ne6k3kvdkc4p3gpplq",
+          "effects": [],
+          "doc": "One comparator, such as `>=1.2.0`."
+        },
+        {
+          "name": "Range",
+          "kind": "type",
+          "sig": "pub type Range = {sets: List[List[Comparator]]} derive Eq, Show",
+          "sig_hash": "5wz2fkqbgrhpf4z3s47rcmt2t4",
+          "hash": "qxtdkouf2c4vjxjprkuegrkvafldj36heihm5iz745bnvi56c5xa",
+          "effects": [],
+          "doc": "A range: a version matches when it matches every comparator of at least one set. An empty\nset matches every version (pre-releases only with include_prerelease)."
+        },
+        {
+          "name": "RangeErr",
+          "kind": "type",
+          "sig": "pub type RangeErr = {text: Str, reason: Str} derive Eq, Show",
+          "sig_hash": "2zv6nllt6o5ecckqhi2rcpzjaa",
+          "hash": "c3f3bzhwe6b3qyhol4xmvk52gjnvppdqikwykzwnzkxlgzszqd5q",
+          "effects": [],
+          "doc": "Why a text is not a valid range: `text` is the offending comparator or the whole input."
+        },
+        {
+          "name": "version",
+          "kind": "fn",
+          "sig": "fn version(major: Int where _ >= 0, minor: Int where _ >= 0, patch: Int where _ >= 0) -> Version",
+          "sig_hash": "mygt7w5vgncocfh4pbtb34ysd4",
+          "hash": "vrbai6z3uifbl6t2imle3jkrzjzjwezahx7e6oikjrnrap22ijrq",
+          "effects": [],
+          "doc": "The release version `major.minor.patch`, with no pre-release or build."
+        },
+        {
+          "name": "parse",
+          "kind": "fn",
+          "sig": "fn parse(s: Str) -> Res[Version, VersionErr]",
+          "sig_hash": "ksdayd6q7vm5ju33dw3r524j7e",
+          "hash": "g3kd3lazvwseovk4jslvp5moepqgrtdgtto3vz3qzrzokvsaprcq",
+          "effects": [],
+          "doc": "Parses a version exactly as SemVer 2.0.0 writes it: three numbers without leading zeros,\nthen optional `-` pre-release and `+` build identifiers. No surrounding spaces or `v`."
+        },
+        {
+          "name": "parse_loose",
+          "kind": "fn",
+          "sig": "fn parse_loose(s: Str) -> Res[Version, VersionErr]",
+          "sig_hash": "epxud34vi6of247bf5b5xsthny",
+          "hash": "t3sn3wbx3ai2tandi53gfrmza3pj4x53sh642qsnigvrcj4eyeoa",
+          "effects": [],
+          "doc": "Parses like `parse` after trimming spaces and dropping any leading `=`, `v` or `V`\ncharacters (`\" =v1.2.3 \"` is 1.2.3). Everything after them must still be a strict version."
+        },
+        {
+          "name": "is_valid",
+          "kind": "fn",
+          "sig": "fn is_valid(s: Str) -> Bool",
+          "sig_hash": "vzlui6bfsguihcjdvstpw3tatu",
+          "hash": "tpb3pvqq53bcm5aucoo6bedd6idaxqesakvc77qo3nkgpgnx6kbq",
+          "effects": [],
+          "doc": "True when `s` is a strict SemVer 2.0.0 version."
+        },
+        {
+          "name": "coerce",
+          "kind": "fn",
+          "sig": "fn coerce(s: Str) -> Opt[Version]",
+          "sig_hash": "3uqi33ub4io5tnxwagvr4x2ayi",
+          "hash": "bjoputq5qs5c4nqglqo6is3bg47pax67yiwe4zmq2wulupcw4a5a",
+          "effects": [],
+          "doc": "The first version-like run of digits in `s`, as node-semver's `coerce`: up to three\ndot-separated numbers, missing ones are 0, and anything around them (a `v`, a fourth number,\na pre-release) is ignored: `\"v1.2\"` is 1.2.0, `\"1.2.3.4\"` is 1.2.3, `\"x 7 y\"` is 7.0.0.\nA number too large for `Int` makes the result `none`."
+        },
+        {
+          "name": "describe_error",
+          "kind": "fn",
+          "sig": "fn describe_error(e: VersionErr) -> Str",
+          "sig_hash": "yafbx2f5lcba6qpscz4t5f67j4",
+          "hash": "4c6iwpmj7tqmwkucecxh343t55357yxcnyeizwz7d7c4phltl4va",
+          "effects": [],
+          "doc": "A readable message for a version error."
+        },
+        {
+          "name": "format_version",
+          "kind": "fn",
+          "sig": "fn format_version(v: Version) -> Str",
+          "sig_hash": "oi4f6mspd4rq4c6qkpog4e2jeu",
+          "hash": "g4sgd6fhzmpf7mnrlfq2knl6o6jsdcwztvxsn43xfkagumf7juvq",
+          "effects": [],
+          "doc": "The canonical text of a version, `1.2.3-rc.1+build.5`."
+        },
+        {
+          "name": "compare",
+          "kind": "fn",
+          "sig": "fn compare(a: Version, b: Version) -> Int",
+          "sig_hash": "h6r2ugd6cutgeeswjfb2sgvbaq",
+          "hash": "oclhw3ndywyhpmexih2duuu3eapkz2fo4rjw4nugybhyimlfrb6a",
+          "effects": [],
+          "doc": "SemVer precedence (spec item 11): -1, 0 or 1. Numbers compare numerically, a pre-release\nis lower than its release, identifiers compare left to right, and build metadata is ignored."
+        },
+        {
+          "name": "compare_total",
+          "kind": "fn",
+          "sig": "fn compare_total(a: Version, b: Version) -> Int",
+          "sig_hash": "vr4lyekeyfys55uyces6swapca",
+          "hash": "6dompc6bnzn3g7v2owed4422n27mazsujrlwbjzliu7ltrfakvsq",
+          "effects": [],
+          "doc": "A total order consistent with `==`: precedence first, then build metadata (none first,\nthen identifier by identifier, numeric ones numerically and before alphanumeric ones, as the\nCargo `semver` crate orders them)."
+        },
+        {
+          "name": "impl Ord for Version",
+          "kind": "impl",
+          "sig": "impl Ord for Version",
+          "sig_hash": "fq2misxrw4nsmhm2x6fq4z3r4q",
+          "hash": "fficgzjpcujvpgo6depvlgwyl5btr5zbpkbichqgcst3fasafrxq",
+          "effects": [],
+          "doc": "`<`, `<=`, `>` and `>=` on versions follow `compare_total`."
+        },
+        {
+          "name": "precedence_eq",
+          "kind": "fn",
+          "sig": "fn precedence_eq(a: Version, b: Version) -> Bool",
+          "sig_hash": "h3ctxueu7md3owgjqgnb65ixhq",
+          "hash": "nsais4hntql4z6tgxmicjlwoe3fcxnq3z3ju3zravov7za7wbpga",
+          "effects": [],
+          "doc": "True when the two versions have the same precedence (they may differ in build metadata)."
+        },
+        {
+          "name": "sort_versions",
+          "kind": "fn",
+          "sig": "fn sort_versions(vs: List[Version]) -> List[Version]",
+          "sig_hash": "63lcmdmo5upzdtthntw7ll5e5i",
+          "hash": "7xxddqrsiloirv2pypx7rtzkrk2savmfni4jndyht4c4hmwqz6tq",
+          "effects": [],
+          "doc": "The versions in ascending `compare_total` order (stable). The builtin `sort` is structural\nand does not follow SemVer order, so use this instead."
+        },
+        {
+          "name": "sort_versions_desc",
+          "kind": "fn",
+          "sig": "fn sort_versions_desc(vs: List[Version]) -> List[Version]",
+          "sig_hash": "iozztbqqln4dg5uldsiq62irj4",
+          "hash": "3htgwmu3px366k6z5ief6z35bbwvpmkltag66r5lefdptsbplgyq",
+          "effects": [],
+          "doc": "The versions in descending `compare_total` order."
+        },
+        {
+          "name": "highest",
+          "kind": "fn",
+          "sig": "fn highest(vs: List[Version]) -> Opt[Version]",
+          "sig_hash": "xw2pldep6ftxx6xvmvp3lt2rxi",
+          "hash": "trclm7yngvsnu3i4jphmjazz4kc2utzbpsvfqwyfrauhrhjrlh7a",
+          "effects": [],
+          "doc": "The highest version by `compare_total`, `none` for an empty list."
+        },
+        {
+          "name": "lowest",
+          "kind": "fn",
+          "sig": "fn lowest(vs: List[Version]) -> Opt[Version]",
+          "sig_hash": "y2r7bezhvnj4ehdochhlyrxyya",
+          "hash": "i6tniotyec7w7yznnxpbruo4jefiodmkxirdm6usonrevsuqdhgq",
+          "effects": [],
+          "doc": "The lowest version by `compare_total`, `none` for an empty list."
+        },
+        {
+          "name": "diff",
+          "kind": "fn",
+          "sig": "fn diff(a: Version, b: Version) -> Opt[Part]",
+          "sig_hash": "je2zpp5vm367nqddmoayqszrai",
+          "hash": "btdzdvgbhq2deqvl2jcw72ik22rpxuxlcewbux2zpiykkuljc5rq",
+          "effects": [],
+          "doc": "The highest component in which `a` and `b` differ, `none` when they are equal."
+        },
+        {
+          "name": "is_prerelease",
+          "kind": "fn",
+          "sig": "fn is_prerelease(v: Version) -> Bool",
+          "sig_hash": "wjg3pdklm3rsa45krx4hd2h6qu",
+          "hash": "ztosd4lj5q3yhtygkujyup3ywhs7vtptx3cnnr2emcv4lzbkmgia",
+          "effects": [],
+          "doc": "True when `v` has pre-release identifiers."
+        },
+        {
+          "name": "is_stable",
+          "kind": "fn",
+          "sig": "fn is_stable(v: Version) -> Bool",
+          "sig_hash": "towc7cv4nynfejdg3cslvqgb2m",
+          "hash": "b43ibpc3x6hxrcnucuswsi433zzxbezhp5ltlkt4gy73vcgmw3ba",
+          "effects": [],
+          "doc": "True when `v` is a release with major version 1 or more: SemVer's stable public API."
+        },
+        {
+          "name": "is_compatible",
+          "kind": "fn",
+          "sig": "fn is_compatible(base: Version, candidate: Version) -> Bool",
+          "sig_hash": "nem2gf3ajlazdqbpb7pnegugzi",
+          "hash": "qymfrnbivamntxgec34jgwq2xrdwhy6dpaa26x34fvvqvklk742q",
+          "effects": [],
+          "doc": "True when `candidate` can replace `base` under Cargo's default (caret) rule: the same\nleftmost non-zero component and not lower; pre-releases only of the same `major.minor.patch`."
+        },
+        {
+          "name": "release",
+          "kind": "fn",
+          "sig": "fn release(v: Version) -> Version",
+          "sig_hash": "dhy7osw7o4vbc3ryderjbzuhm4",
+          "hash": "7pqbr5fcfrtfdowekqr5umh26obusjw34pq6hstpebdcthkdgibq",
+          "effects": [],
+          "doc": "The release without pre-release or build identifiers."
+        },
+        {
+          "name": "strip_build",
+          "kind": "fn",
+          "sig": "fn strip_build(v: Version) -> Version",
+          "sig_hash": "epi6dsmntskqc3cqioiaduy7bm",
+          "hash": "hc24tnvorlik56y73amhpxi52ipbwzsasj2imqeqls7nb3tljgpa",
+          "effects": [],
+          "doc": "`v` without build metadata."
+        },
+        {
+          "name": "with_prerelease",
+          "kind": "fn",
+          "sig": "fn with_prerelease(v: Version, text: Str) -> Res[Version, VersionErr]",
+          "sig_hash": "mzrf2hdq7htsdef2mmshpy74nq",
+          "hash": "cl77ba33aiacyjjuiqbmcdsso4at5yuxcnzapsp4stimphm674ca",
+          "effects": [],
+          "doc": "`v` with the pre-release identifiers parsed from `text` (`\"rc.1\"`); `\"\"` removes them."
+        },
+        {
+          "name": "with_build",
+          "kind": "fn",
+          "sig": "fn with_build(v: Version, text: Str) -> Res[Version, VersionErr]",
+          "sig_hash": "2swwca4jsc7xz5qdjya52dtvea",
+          "hash": "4wyi7h5tdczz5oxbn7545vatdyfwb73sxdamclnf7v7gonwug7da",
+          "effects": [],
+          "doc": "`v` with the build identifiers parsed from `text` (`\"sha.5114f85\"`); `\"\"` removes them."
+        },
+        {
+          "name": "bump_major",
+          "kind": "fn",
+          "sig": "fn bump_major(v: Version) -> Version",
+          "sig_hash": "mrhaaooljniipk3jkbapdkqzwm",
+          "hash": "h5tqhrrwbusthf2sjgkgvic3wtyk2tw44soocp7t5lh4evn3vl5a",
+          "effects": [],
+          "doc": "The next major version, as npm's `inc`: 1.2.3 becomes 2.0.0, and a pre-release of a major\nversion (2.0.0-rc.1) becomes that release. Build metadata is dropped."
+        },
+        {
+          "name": "bump_minor",
+          "kind": "fn",
+          "sig": "fn bump_minor(v: Version) -> Version",
+          "sig_hash": "dbttk7gylfp5jh5pyny3hkvv2m",
+          "hash": "y5stcfturlngsc5aw2t26dltcfpc66gldum2iwoqdpwai3pqs6pa",
+          "effects": [],
+          "doc": "The next minor version: 1.2.3 becomes 1.3.0, and 1.3.0-rc.1 becomes 1.3.0."
+        },
+        {
+          "name": "bump_patch",
+          "kind": "fn",
+          "sig": "fn bump_patch(v: Version) -> Version",
+          "sig_hash": "p7rqylm6237mefeu5ctkg3eyua",
+          "hash": "ztjozmvqori37qrosg5ktp543bpbcenq2ilnsqif3nsjwsw5azrq",
+          "effects": [],
+          "doc": "The next patch version: 1.2.3 becomes 1.2.4, and 1.2.4-rc.1 becomes 1.2.4."
+        },
+        {
+          "name": "bump_pre",
+          "kind": "fn",
+          "sig": "fn bump_pre(v: Version, id: Str) -> Res[Version, VersionErr]",
+          "sig_hash": "dil46tbh3dj6p3q4v63p3j7ajm",
+          "hash": "oijemwdqqt572mmmj3bqcr2j34uqvnbzujsfogaafoxaxgzjtq2q",
+          "effects": [],
+          "doc": "The next pre-release, as npm's `inc(\"prerelease\", id)`: a release gets the next patch and\n`-id.0` (1.2.3 to 1.2.4-rc.0); a pre-release whose first identifier is `id` (or any when `id`\nis \"\") gets its last number incremented (1.2.4-rc.0 to 1.2.4-rc.1) or `.0` appended; another\nidentifier restarts at `-id.0`. `id` must be \"\" or an alphanumeric identifier that is not a\nnumber; otherwise the result is an error."
+        },
+        {
+          "name": "bump_premajor",
+          "kind": "fn",
+          "sig": "fn bump_premajor(v: Version, id: Str) -> Res[Version, VersionErr]",
+          "sig_hash": "d3uux6tgne3cygxtotwhb4gtse",
+          "hash": "ada2evnznjwanalmsbylnwlzximm42ujn5g57l5aukuuwtnijrha",
+          "effects": [],
+          "doc": "The next major version as a first pre-release: 1.2.3 with \"rc\" becomes 2.0.0-rc.0."
+        },
+        {
+          "name": "bump_preminor",
+          "kind": "fn",
+          "sig": "fn bump_preminor(v: Version, id: Str) -> Res[Version, VersionErr]",
+          "sig_hash": "qt6fcknrp6qiytpblfu2cuwnbm",
+          "hash": "q32iba7obpqvfrtt3cv7xnjyootabl5lkch2ipxb56vyxxcujv6a",
+          "effects": [],
+          "doc": "The next minor version as a first pre-release: 1.2.3 with \"rc\" becomes 1.3.0-rc.0."
+        },
+        {
+          "name": "bump_prepatch",
+          "kind": "fn",
+          "sig": "fn bump_prepatch(v: Version, id: Str) -> Res[Version, VersionErr]",
+          "sig_hash": "x77tma5zghr6vlurm7xa4cvv2u",
+          "hash": "zdy2loypduxdvcy2e4tf6d3mimfrzhz24qfkocjusurm3wgwnlga",
+          "effects": [],
+          "doc": "The next patch version as a first pre-release: 1.2.3 with \"rc\" becomes 1.2.4-rc.0."
+        },
+        {
+          "name": "any_range",
+          "kind": "fn",
+          "sig": "fn any_range() -> Range",
+          "sig_hash": "gcqpotrzbfeuytuyjfaun35bhy",
+          "hash": "5mscliqqbqsyen6odwopqb62esyywkc7kqikmbls6nnxjdrgzhha",
+          "effects": [],
+          "doc": "The range that matches every release (`*`)."
+        },
+        {
+          "name": "exact",
+          "kind": "fn",
+          "sig": "fn exact(v: Version) -> Range",
+          "sig_hash": "gygpgqq4zrqxlmelvm6sps7bdm",
+          "hash": "rs4wgnyp3vf3m6r3we6bwmb5wynsbiti723ef3zkahzurdcse5cq",
+          "effects": [],
+          "doc": "The range `=v`: only versions with the same precedence as `v`."
+        },
+        {
+          "name": "caret",
+          "kind": "fn",
+          "sig": "fn caret(v: Version) -> Range",
+          "sig_hash": "hq7erwqrti7swrojynpykyycey",
+          "hash": "vmct6k6cnpwqsspi6omtnil2tlh2tjwfzgs5xvttfckjnmf7j6ba",
+          "effects": [],
+          "doc": "The caret range `^v`: from `v` up to the next change of its leftmost non-zero component\n(^1.2.3 is >=1.2.3 <2.0.0-0, ^0.2.3 is >=0.2.3 <0.3.0-0, ^0.0.3 is >=0.0.3 <0.0.4-0)."
+        },
+        {
+          "name": "tilde",
+          "kind": "fn",
+          "sig": "fn tilde(v: Version) -> Range",
+          "sig_hash": "rpwvakl2hrbavz7pmzq6qtxsdu",
+          "hash": "w3rwu7wgt4r4f4mpelaiwb52jwa34e3bp7r7vh5j4k5erfclkuaa",
+          "effects": [],
+          "doc": "The tilde range `~v`: from `v` up to the next minor version (~1.2.3 is >=1.2.3 <1.3.0-0)."
+        },
+        {
+          "name": "range_or",
+          "kind": "fn",
+          "sig": "fn range_or(a: Range, b: Range) -> Range",
+          "sig_hash": "mhm3vzqiptk7n7tghiimwwqply",
+          "hash": "mx3yveupyuoogipnwzunou5yxddyr3zvcsdl5rafbfvdqd5kelma",
+          "effects": [],
+          "doc": "A version matches `range_or(a, b)` when it matches `a` or `b`."
+        },
+        {
+          "name": "range_and",
+          "kind": "fn",
+          "sig": "fn range_and(a: Range, b: Range) -> Range",
+          "sig_hash": "j2puvg5crxlw3p6xl3q5672bma",
+          "hash": "aeqc4cqkelbnhxaombw7azn25h26z2fjefjff7itrijyzogsg5ya",
+          "effects": [],
+          "doc": "A version matches `range_and(a, b)` when it matches both `a` and `b`."
+        },
+        {
+          "name": "parse_cargo",
+          "kind": "fn",
+          "sig": "fn parse_cargo(s: Str) -> Res[Range, RangeErr]",
+          "sig_hash": "5wnluwrxe47bosqfz3har3mda4",
+          "hash": "222nbqqkmd7vgbkpnw4fkrdxv2ypbpwwu5rpqal7npqretpi4isa",
+          "effects": [],
+          "doc": "Parses a Cargo version requirement: comparators separated by commas, each `^`, `~`, `=`,\n`>`, `>=`, `<`, `<=` or none (a bare version is a caret requirement, a bare wildcard such as\n`1.2.*` an exact one), with partial versions and `*`, `x` or `X` wildcards. Spaces around operators are allowed.\nCargo has no `||`, hyphen ranges or `v` prefixes, so those are errors, as is an empty text."
+        },
+        {
+          "name": "parse_npm",
+          "kind": "fn",
+          "sig": "fn parse_npm(s: Str) -> Res[Range, RangeErr]",
+          "sig_hash": "u4pvcx7d6zsf47lucoxpcv6fy4",
+          "hash": "xr57pwkvrx2fedutysqu35xyrmq5mne4g75mrxnffn3yxbdfol3a",
+          "effects": [],
+          "doc": "Parses an npm (node-semver) range: sets separated by `||`, each a space-separated list of\ncomparators (`>=1.2.7 <1.3.0`) or one hyphen range (`1.2 - 2.3.4`). Comparators take `=`,\n`<`, `<=`, `>`, `>=`, `~` (or `~>`), `^` or no operator, partial versions, `x`, `X` and `*`\nwildcards, and a `v` or `=` before the version. A bare version is exact, a partial one an\nX-range (`1.2` is >=1.2.0 <1.3.0-0), and an empty set means any version. Derived upper bounds\nare written `<2.0.0-0`, as node-semver does, so pre-releases of the bound never match."
+        },
+        {
+          "name": "parse_npm_with",
+          "kind": "fn",
+          "sig": "fn parse_npm_with(s: Str, include_prerelease: Bool) -> Res[Range, RangeErr]",
+          "sig_hash": "lqfovk26grw3yxs36libo47zr4",
+          "hash": "wdekmqtxuabzrig5puvvvumbsefozrhqemwn7sddmkpqtnrmn7ta",
+          "effects": [],
+          "doc": "Like `parse_npm` with node-semver's `includePrerelease` reading: lower bounds that come from\npartial versions and wildcards are written with `-0` (`1.x` is >=1.0.0-0 <2.0.0-0), so with\n`matches_with(r, v, true)` the pre-releases inside the range match too."
+        },
+        {
+          "name": "matches",
+          "kind": "fn",
+          "sig": "fn matches(r: Range, v: Version) -> Bool",
+          "sig_hash": "edyrmh7gj4z67ftiydvs5x5ejy",
+          "hash": "imd6elvenoft3e2fbs73j6fdqyhzcf3w5pmvd4eugkhpacsajm4a",
+          "effects": [],
+          "doc": "True when `v` matches `r`. A pre-release matches only a set with a comparator of the same\n`major.minor.patch` that has a pre-release itself (so `>=1.2.3-beta` takes 1.2.3-rc but not\n1.2.4-rc), the rule both Cargo and npm follow."
+        },
+        {
+          "name": "matches_with",
+          "kind": "fn",
+          "sig": "fn matches_with(r: Range, v: Version, include_prerelease: Bool) -> Bool",
+          "sig_hash": "ka47lwzaw5gjxlxd6uvbrdioou",
+          "hash": "gaeu2ore2czc5dakbhmev4poj3fqgplzindmuzaa3r3hpwova4vq",
+          "effects": [],
+          "doc": "Like `matches`, but `include_prerelease` drops the pre-release rule, as node-semver's\noption of that name: a pre-release then matches whenever every comparator holds."
+        },
+        {
+          "name": "filter_matching",
+          "kind": "fn",
+          "sig": "fn filter_matching(vs: List[Version], r: Range) -> List[Version]",
+          "sig_hash": "kuuvw3yoddanh4amqznwkdhwa4",
+          "hash": "nwfbte67ehqjscomg4prrubescoycosr72ibdowmbjzluz7gloua",
+          "effects": [],
+          "doc": "The versions of `vs` that match `r`, in their order."
+        },
+        {
+          "name": "max_satisfying",
+          "kind": "fn",
+          "sig": "fn max_satisfying(vs: List[Version], r: Range) -> Opt[Version]",
+          "sig_hash": "thodornmpzufm3fujazqqyeqbu",
+          "hash": "535bbtgzunkevprtns6d64cdbuaoj67x2hcxbrh2ln2nd5lt5h7a",
+          "effects": [],
+          "doc": "The highest version of `vs` that matches `r`."
+        },
+        {
+          "name": "min_satisfying",
+          "kind": "fn",
+          "sig": "fn min_satisfying(vs: List[Version], r: Range) -> Opt[Version]",
+          "sig_hash": "zx6tjrqpu27s4umtaeblzoe6xa",
+          "hash": "kk645t3ta5subu7rspxcf6qmhnswarytmro3klm64y6soxsx4y6q",
+          "effects": [],
+          "doc": "The lowest version of `vs` that matches `r`."
+        },
+        {
+          "name": "intersects",
+          "kind": "fn",
+          "sig": "fn intersects(a: Range, b: Range) -> Bool",
+          "sig_hash": "cwaq6n6kua74twh2wrxnwuxggm",
+          "hash": "lrjpjbhvtpbr6x2o4u63wfty7huctfwygppnoqdxlkeqefo65noq",
+          "effects": [],
+          "doc": "True when some version, counting pre-releases (the `include_prerelease` reading), matches\nboth `a` and `b`. Exact: it knows that nothing lies between 1.0.0 and 1.0.1-0."
+        },
+        {
+          "name": "min_version",
+          "kind": "fn",
+          "sig": "fn min_version(r: Range) -> Opt[Version]",
+          "sig_hash": "kugnbqp5jun2ri22enpbgl2cjq",
+          "hash": "53egagfpimkat66qjq56ynx7a5el7gnshiiuktvzwhnuzkiovqwa",
+          "effects": [],
+          "doc": "The lowest version that can match `r` under `include_prerelease`, as node-semver's\n`minVersion`: 0.0.0 or 0.0.0-0 when they match, else the lowest of the sets' tightest lower\nbounds (`>1.2.3` gives 1.2.4, `>1.2.3-rc` gives 1.2.3-rc.0) when it matches; `none` when no\nsuch version matches."
+        },
+        {
+          "name": "format_range",
+          "kind": "fn",
+          "sig": "fn format_range(r: Range) -> Str",
+          "sig_hash": "lad3rmoinhdwh57kgbvypbko6m",
+          "hash": "trmxe376nu7lqv3daqc6ueoa6ur6t4xn4e7yfj3mxjf5ne3pqdkq",
+          "effects": [],
+          "doc": "The canonical text of a range, in node-semver's form: comparators joined by spaces, sets by\n` || `, an empty set as `*` (`parse_npm(\"^1.2\")` gives `>=1.2.0 <2.0.0-0`)."
+        }
+      ]
+    }
+  ]
+}
