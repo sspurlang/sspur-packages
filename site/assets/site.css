@@ -15,28 +15,27 @@ h1,h2,h3,.disp{font-family:var(--display);font-weight:800;letter-spacing:-.02em;
 h2{font-size:clamp(1.25rem,2.6vw,1.6rem);margin-bottom:12px}h3{font-size:1.08rem}
 p{margin:0}
 code,pre,kbd{font-family:var(--mono);font-size:.9em}
-.wrap{max-width:1200px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .skip{position:absolute;left:12px;top:-60px;z-index:50;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px}.skip:focus{top:12px}
 .ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic .fill{fill:currentColor;stroke:none}
 .top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
-.top-in{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"logo . theme" "nav nav nav";align-items:center;column-gap:12px;padding-top:6px;min-height:60px}
-.logo{grid-area:logo;display:inline-flex;align-items:center;gap:9px;text-decoration:none;min-height:44px;font-family:var(--display);font-weight:800;font-size:1.3rem;letter-spacing:-.02em}
+.top-in{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;min-height:60px}
+.logo{display:inline-flex;align-items:center;gap:9px;text-decoration:none;min-height:44px;font-family:var(--display);font-weight:800;font-size:1.3rem;letter-spacing:-.02em}
 .logo-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#22d3ee,#6366f1 55%,#a855f7);color:#fff;transition:transform .5s var(--spring)}
 .logo:active .logo-mark{transform:scale(.9) rotate(-12deg)}
 .spin .logo-mark{animation:spin 1s var(--spring)}@keyframes spin{to{transform:rotate(360deg)}}
-.theme{grid-area:theme;width:44px;height:44px;border-radius:14px;border:0;background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;transition:transform .25s var(--spring)}
+.theme{width:44px;height:44px;border-radius:14px;border:0;background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;transition:transform .25s var(--spring)}
 @media (hover:hover) and (pointer:fine){.theme:hover{background:var(--card2)}}.theme:active{transform:scale(.9) rotate(-20deg)}
-.chips-nav{grid-area:nav;min-width:0;margin:0 calc(-1 * max(18px,env(safe-area-inset-left)))}
-.chips-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:4px max(18px,env(safe-area-inset-left)) 10px}
-.chips-row::-webkit-scrollbar{display:none}
-.chip{display:inline-flex;align-items:center;gap:7px;flex:none;min-height:44px;padding:0 15px 0 12px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.94rem;color:var(--ink2);transition:background .2s,color .2s,transform .2s var(--spring)}
-.chip .ic{width:18px;height:18px}
-@media (hover:hover) and (pointer:fine){.chip:hover{background:var(--card2);color:var(--ink)}}.chip:active{transform:scale(.94)}
-.chip.on{background:var(--ink);color:var(--bg)}
-@media (max-width:560px){.chips-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;overflow:visible}.chip{justify-content:center;padding:0 6px;font-size:.9rem}.chip .ic{display:none}.copy-btn{padding-inline:14px}.copy-btn span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.copy pre{padding:12px;font-size:.88rem}}
-@media (max-width:340px){.chip{font-size:.8rem;padding:0 4px}}
-@media (min-width:900px){.top-in{grid-template-areas:"logo nav theme";padding-top:0}.chips-nav{margin:0}.chips-row{padding:8px 0;justify-content:center}}
+.nav{display:flex;justify-content:flex-end;align-items:center;gap:2px;min-width:0}
+.nav-a{display:inline-flex;align-items:center;min-height:44px;padding:0 13px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.95rem;color:var(--ink2);transition:background .2s,color .2s,transform .2s var(--spring)}
+.nav-a.icon-a{width:44px;padding:0;justify-content:center}
+.nav-a[aria-current=page]{color:var(--ink);background:var(--card2)}
+@media (hover:hover) and (pointer:fine){.nav-a:hover{background:var(--card2);color:var(--ink)}}
+.nav-a:active{transform:scale(.94)}
+@media (max-width:760px){.nav-a.wide{display:none}}
+@media (max-width:560px){.copy-btn{padding-inline:14px}.copy-btn span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
 .hero{padding-top:clamp(26px,6vw,60px);padding-bottom:clamp(16px,3vw,28px)}
 .kicker{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;color:var(--acc);background:var(--soft);padding:6px 12px 6px 10px;border-radius:999px;margin-bottom:16px}
 .kicker .ic{width:18px;height:18px}
