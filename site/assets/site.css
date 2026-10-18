@@ -21,20 +21,21 @@ code,pre,kbd{font-family:var(--mono);font-size:.9em}
 .ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ic .fill{fill:currentColor;stroke:none}
 .top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
-.top-in{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;min-height:60px}
 .logo{display:inline-flex;align-items:center;gap:9px;text-decoration:none;min-height:44px;font-family:var(--display);font-weight:800;font-size:1.3rem;letter-spacing:-.02em}
 .logo-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#22d3ee,#6366f1 55%,#a855f7);color:#fff;transition:transform .5s var(--spring)}
-.logo:active .logo-mark{transform:scale(.9) rotate(-12deg)}
+.logo:active .logo-mark{transform:scale(.88) rotate(-14deg)}
 .spin .logo-mark{animation:spin 1s var(--spring)}@keyframes spin{to{transform:rotate(360deg)}}
 .theme{width:44px;height:44px;border-radius:14px;border:0;background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;transition:transform .25s var(--spring)}
 @media (hover:hover) and (pointer:fine){.theme:hover{background:var(--card2)}}.theme:active{transform:scale(.9) rotate(-20deg)}
+.top-in{display:grid;grid-template-columns:auto 1fr auto auto;grid-template-areas:"logo nav gh theme";align-items:center;gap:8px;min-height:60px}
+.top-in .logo{grid-area:logo}.top-in .nav{grid-area:nav}.top-in .gh{grid-area:gh}.top-in .theme{grid-area:theme}
 .nav{display:flex;justify-content:flex-end;align-items:center;gap:2px;min-width:0}
-.nav-a{display:inline-flex;align-items:center;min-height:44px;padding:0 13px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.95rem;color:var(--ink2);transition:background .2s,color .2s,transform .2s var(--spring)}
-.nav-a.icon-a{width:44px;padding:0;justify-content:center}
+.nav-a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 13px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.95rem;color:var(--ink2);white-space:nowrap;transition:background .2s,color .2s,transform .2s var(--spring)}
+.nav-a.icon-a{width:44px;padding:0}
 .nav-a[aria-current=page]{color:var(--ink);background:var(--card2)}
 @media (hover:hover) and (pointer:fine){.nav-a:hover{background:var(--card2);color:var(--ink)}}
 .nav-a:active{transform:scale(.94)}
-@media (max-width:760px){.nav-a.wide{display:none}}
+@media (max-width:760px){.top-in{grid-template-areas:"logo . gh theme" "nav nav nav nav";row-gap:0}.top-in .nav{justify-content:space-between;margin:0 -8px 6px}.nav .nav-a{padding:0 8px}}
 @media (max-width:560px){.copy-btn{padding-inline:14px}.copy-btn span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
 .hero{padding-top:clamp(26px,6vw,60px);padding-bottom:clamp(16px,3vw,28px)}
 .kicker{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;color:var(--acc);background:var(--soft);padding:6px 12px 6px 10px;border-radius:999px;margin-bottom:16px}
@@ -95,10 +96,10 @@ thead th{color:var(--ink3);font-weight:650;font-size:.85rem}
 .hash{font-size:.78rem;word-break:break-all}
 .links{list-style:none;padding:0;margin:0;display:grid;gap:6px}
 .foot{margin-top:56px;padding:36px 0 calc(36px + env(safe-area-inset-bottom));border-top:1px solid var(--line);color:var(--ink2);font-size:.92rem}
-.foot-lead{font-weight:600;color:var(--ink)}
-.foot-links{display:flex;flex-wrap:wrap;gap:4px 6px;margin:6px 0 4px -10px}
+.foot-lead{font-weight:600;color:var(--ink);max-width:70ch}
+.foot-links{display:flex;flex-wrap:wrap;gap:0 4px;margin:6px 0 4px -10px}
 .foot-links a{display:inline-flex;align-items:center;min-height:44px;padding:0 10px}
-.made{font-family:var(--display);font-weight:800;font-size:1.05rem;color:var(--ink);margin-top:8px}
+.made{font-family:var(--display);font-weight:800;font-size:1.1rem;color:var(--ink);margin-top:8px}
 .made a{text-decoration:none}@media (hover:hover) and (pointer:fine){.made a:hover{text-decoration:underline}}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-weight:600;animation:pop .25s var(--spring)}
 @keyframes pop{from{transform:translate(-50%,12px) scale(.96);opacity:0}}
