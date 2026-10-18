@@ -94,10 +94,10 @@
     {
       "name": "maps",
       "description": "Map utilities (merge with resolvers, invert, filter and map keys and values, counters, multimaps, diffs) and dynamic JSON values with paths, pointers and merge patches",
-      "latest": "0.1.0",
-      "versions": 1,
+      "latest": "0.1.1",
+      "versions": 2,
       "keywords": [],
-      "updated": "2026-10-16T20:03:11Z",
+      "updated": "2026-10-18T03:18:19Z",
       "yanked": false,
       "deprecated": null
     },
