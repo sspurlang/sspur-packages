@@ -154,10 +154,10 @@
     {
       "name": "retry",
       "description": "Retries with exponential backoff and jitter, retry budgets, a circuit breaker and rate limiters, on a clock effect that tests run virtually",
-      "latest": "0.1.0",
-      "versions": 1,
+      "latest": "0.1.1",
+      "versions": 2,
       "keywords": [],
-      "updated": "2026-10-16T20:12:37Z",
+      "updated": "2026-10-18T03:19:01Z",
       "yanked": false,
       "deprecated": null
     },
