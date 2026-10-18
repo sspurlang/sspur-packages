@@ -34,10 +34,10 @@
     {
       "name": "health",
       "description": "Liveness, readiness and startup endpoints with concurrent checks (SQLite, HTTP dependencies, files) in the application/health+json format",
-      "latest": "0.1.0",
-      "versions": 1,
+      "latest": "0.1.1",
+      "versions": 2,
       "keywords": [],
-      "updated": "2026-10-16T20:27:53Z",
+      "updated": "2026-10-18T03:21:08Z",
       "yanked": false,
       "deprecated": null
     },
